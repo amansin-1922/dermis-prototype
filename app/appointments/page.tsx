@@ -1,0 +1,3442 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  CalendarDays,
+  Check,
+  CheckCircle2,
+  Clock3,
+  Pencil,
+  RotateCcw,
+  Trash2,
+  X,
+  XCircle,
+} from "lucide-react";
+
+import Sidebar from "../components/sidebar";
+
+type Patient = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  age: number;
+  lastVisit: string;
+  status: "Active" | "Inactive";
+  concern: string;
+  analyses: number;
+};
+
+type Practitioner = {
+  id: number;
+  name: string;
+  role: string;
+  email: string;
+  phone: string;
+  speciality: string;
+  qualifications: string;
+  registrationNumber: string;
+  experience: string;
+  workingDays: string[];
+  startTime: string;
+  endTime: string;
+  notes: string;
+  active: boolean;
+};
+
+type ClinicSettings = {
+  clinicName: string;
+  practitionerName: string;
+  email: string;
+  phone: string;
+  initials: string;
+  location: string;
+  practitioners: Practitioner[];
+};
+
+type AppointmentStatus =
+  | "Confirmed"
+  | "Upcoming"
+  | "Completed"
+  | "Cancelled";
+
+type Appointment = {
+  id: number;
+  patient: string;
+  patientId?: number;
+  initials: string;
+  treatment: string;
+  date: string;
+  rawDate: string;
+  time: string;
+  rawTime: string;
+  duration: string;
+  practitioner: string;
+  practitionerId?: number;
+  notes: string;
+  status: AppointmentStatus;
+};
+
+type TreatmentPlan = {
+  patient: string;
+  patientId?: number;
+  treatment: string;
+  duration: string;
+  price: string;
+  status: string;
+  notes?: string;
+};
+
+type TreatmentHistoryEntry = {
+  id: number;
+  appointmentId: number;
+  patientId?: number;
+  patient: string;
+  treatment: string;
+  date: string;
+  rawDate: string;
+  time: string;
+  duration: string;
+  practitioner: string;
+  practitionerId?: number;
+  notes: string;
+  completedAt: string;
+};
+
+type FollowUpStatus =
+  | "Due"
+  | "Scheduled"
+  | "Analysis started"
+  | "Completed";
+
+type FollowUpRecord = {
+  id: number;
+  appointmentId: number;
+  patientId?: number;
+  patient: string;
+  treatment: string;
+  completedDate: string;
+  completedRawDate: string;
+  practitioner: string;
+  practitionerId?: number;
+  status: FollowUpStatus;
+  createdAt: string;
+  followUpAppointmentId?: number;
+};
+
+type FollowUpBookingHandoff = {
+  followUpId: number;
+  appointmentId: number;
+  patientId?: number;
+  patient: string;
+  treatment: string;
+  practitioner?: string;
+  practitionerId?: number;
+  completedDate: string;
+};
+
+
+const defaultPractitioners: Practitioner[] = [
+  {
+    id: 1,
+    name: "Sarah Williams",
+    role: "Lead Practitioner",
+    email: "sarah@skinhouseclinic.co.uk",
+    phone: "+44 20 7946 0958",
+    speciality: "Skin health & facial aesthetics",
+    qualifications: "BSc, Level 7 Aesthetic Practice",
+    registrationNumber: "SKN-1001",
+    experience: "8 years",
+    workingDays: [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+    ],
+    startTime: "09:00",
+    endTime: "17:00",
+    notes: "",
+    active: true,
+  },
+  {
+    id: 2,
+    name: "Emma Thompson",
+    role: "Aesthetic Practitioner",
+    email: "emma@skinhouseclinic.co.uk",
+    phone: "+44 20 7946 0959",
+    speciality: "Acne, pigmentation & skin rejuvenation",
+    qualifications: "Level 5 Aesthetic Practice",
+    registrationNumber: "SKN-1002",
+    experience: "5 years",
+    workingDays: [
+      "Monday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+    ],
+    startTime: "10:00",
+    endTime: "18:00",
+    notes: "",
+    active: true,
+  },
+];
+
+const defaultClinicSettings: ClinicSettings = {
+  clinicName: "Skinhouse Clinic",
+  practitionerName: "Sarah Williams",
+  email: "sarah@skinhouseclinic.co.uk",
+  phone: "+44 20 7946 0958",
+  initials: "SW",
+  location: "London, United Kingdom",
+  practitioners: defaultPractitioners,
+};
+
+const defaultPatients: Patient[] = [
+  {
+    id: 1,
+    name: "Emily Johnson",
+    email: "emily.johnson@email.com",
+    phone: "+44 7700 900123",
+    age: 29,
+    lastVisit: "25 Aug 2026",
+    status: "Active",
+    concern: "Acne & pigmentation",
+    analyses: 4,
+  },
+  {
+    id: 2,
+    name: "Olivia Smith",
+    email: "olivia.smith@email.com",
+    phone: "+44 7700 900124",
+    age: 34,
+    lastVisit: "24 Aug 2026",
+    status: "Active",
+    concern: "Fine lines",
+    analyses: 3,
+  },
+  {
+    id: 3,
+    name: "Amelia Brown",
+    email: "amelia.brown@email.com",
+    phone: "+44 7700 900125",
+    age: 27,
+    lastVisit: "23 Aug 2026",
+    status: "Active",
+    concern: "Hyperpigmentation",
+    analyses: 6,
+  },
+  {
+    id: 4,
+    name: "Sophia Williams",
+    email: "sophia.williams@email.com",
+    phone: "+44 7700 900126",
+    age: 41,
+    lastVisit: "21 Aug 2026",
+    status: "Inactive",
+    concern: "Skin ageing",
+    analyses: 2,
+  },
+  {
+    id: 5,
+    name: "Isabella Taylor",
+    email: "isabella.taylor@email.com",
+    phone: "+44 7700 900127",
+    age: 31,
+    lastVisit: "19 Aug 2026",
+    status: "Active",
+    concern: "Rosacea",
+    analyses: 5,
+  },
+  {
+    id: 6,
+    name: "Mia Anderson",
+    email: "mia.anderson@email.com",
+    phone: "+44 7700 900128",
+    age: 26,
+    lastVisit: "18 Aug 2026",
+    status: "Active",
+    concern: "Acne",
+    analyses: 3,
+  },
+];
+
+const initialAppointments: Appointment[] = [
+  {
+    id: 1,
+    patient: "Emily Johnson",
+    patientId: 1,
+    initials: "EJ",
+    treatment: "Hydration Facial",
+    date: "25 Aug 2026",
+    rawDate: "2026-08-25",
+    time: "10:30 AM",
+    rawTime: "10:30",
+    duration: "60 min",
+    practitioner: "Sarah Williams",
+    practitionerId: 1,
+    notes: "",
+    status: "Confirmed",
+  },
+  {
+    id: 2,
+    patient: "Olivia Smith",
+    patientId: 2,
+    initials: "OS",
+    treatment: "Skin consultation",
+    date: "25 Aug 2026",
+    rawDate: "2026-08-25",
+    time: "12:15 PM",
+    rawTime: "12:15",
+    duration: "30 min",
+    practitioner: "Sarah Williams",
+    practitionerId: 1,
+    notes: "",
+    status: "Confirmed",
+  },
+  {
+    id: 3,
+    patient: "Amelia Brown",
+    patientId: 3,
+    initials: "AB",
+    treatment: "Pigmentation Peel",
+    date: "25 Aug 2026",
+    rawDate: "2026-08-25",
+    time: "2:00 PM",
+    rawTime: "14:00",
+    duration: "60 min",
+    practitioner: "Emma Thompson",
+    practitionerId: 2,
+    notes: "",
+    status: "Upcoming",
+  },
+];
+
+const treatmentOptions = [
+  {
+    name: "Hydration Facial",
+    duration: "60 min",
+  },
+  {
+    name: "Skin consultation",
+    duration: "30 min",
+  },
+  {
+    name: "Pigmentation Peel",
+    duration: "45 min",
+  },
+  {
+    name: "Acne Clarifying Treatment",
+    duration: "50 min",
+  },
+  {
+    name: "Skin Renewal Treatment",
+    duration: "75 min",
+  },
+  {
+    name: "Skin analysis",
+    duration: "45 min",
+  },
+];
+
+const timeSlots = [
+  "09:00",
+  "09:30",
+  "10:00",
+  "10:30",
+  "11:00",
+  "11:30",
+  "12:00",
+  "12:15",
+  "12:30",
+  "13:00",
+  "13:30",
+  "14:00",
+  "14:30",
+  "15:00",
+  "15:30",
+  "16:00",
+  "16:30",
+  "17:00",
+  "17:30",
+];
+
+const dateLabels: Record<string, string> = {
+  "25": "Tuesday, 25 August",
+  "26": "Wednesday, 26 August",
+  "27": "Thursday, 27 August",
+  "28": "Friday, 28 August",
+  "29": "Saturday, 29 August",
+  "30": "Sunday, 30 August",
+  "31": "Monday, 31 August",
+};
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function formatDate(dateValue: string) {
+  if (!dateValue) return "";
+
+  const date = new Date(`${dateValue}T12:00:00`);
+
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatTime(timeValue: string) {
+  if (!timeValue) return "";
+
+  const [hours, minutes] = timeValue
+    .split(":")
+    .map(Number);
+
+  const suffix =
+    hours >= 12 ? "PM" : "AM";
+
+  const displayHour =
+    hours % 12 === 0 ? 12 : hours % 12;
+
+  return `${displayHour}:${minutes
+    .toString()
+    .padStart(2, "0")} ${suffix}`;
+}
+
+function getWeekday(dateValue: string) {
+  if (!dateValue) return "";
+
+  const date = new Date(`${dateValue}T12:00:00`);
+
+  return date.toLocaleDateString("en-GB", {
+    weekday: "long",
+  });
+}
+
+function timeToMinutes(value: string) {
+  if (!value) return 0;
+
+  const [hours, minutes] = value
+    .split(":")
+    .map(Number);
+
+  return hours * 60 + minutes;
+}
+
+function durationToMinutes(duration: string) {
+  const match = duration.match(/\d+/);
+
+  return match ? Number(match[0]) : 0;
+}
+
+function appointmentMatchesPractitioner(
+  appointment: Appointment,
+  practitioner: Practitioner
+) {
+  if (appointment.practitionerId !== undefined) {
+    return (
+      appointment.practitionerId ===
+      practitioner.id
+    );
+  }
+
+  return (
+    appointment.practitioner ===
+    practitioner.name
+  );
+}
+
+export default function AppointmentsPage() {
+  const [
+    clinicSettings,
+    setClinicSettings,
+  ] = useState<ClinicSettings>(
+    defaultClinicSettings
+  );
+
+  const [patients, setPatients] =
+    useState<Patient[]>(defaultPatients);
+
+  const [appointments, setAppointments] =
+    useState<Appointment[]>(
+      initialAppointments
+    );
+
+  const [search, setSearch] =
+    useState("");
+
+  const [filter, setFilter] =
+    useState("All");
+
+  const [showForm, setShowForm] =
+    useState(false);
+
+  const [
+    editingAppointmentId,
+    setEditingAppointmentId,
+  ] = useState<number | null>(null);
+
+  const [
+    bookingConfirmed,
+    setBookingConfirmed,
+  ] = useState(false);
+
+  const [
+    updateConfirmed,
+    setUpdateConfirmed,
+  ] = useState("");
+
+  const [
+    selectedDate,
+    setSelectedDate,
+  ] = useState("27");
+
+  const [
+    treatmentPlan,
+    setTreatmentPlan,
+  ] = useState<TreatmentPlan | null>(
+    null
+  );
+
+  const [
+    formPatient,
+    setFormPatient,
+  ] = useState("Emily Johnson");
+
+  const [
+    formTreatment,
+    setFormTreatment,
+  ] = useState("Hydration Facial");
+
+  const [
+    formDate,
+    setFormDate,
+  ] = useState("2026-08-27");
+
+  const [
+    formTime,
+    setFormTime,
+  ] = useState("10:30");
+
+  const [
+    formDuration,
+    setFormDuration,
+  ] = useState("60 min");
+
+  const [
+    formPractitionerId,
+    setFormPractitionerId,
+  ] = useState<number | null>(null);
+
+  const [formNotes, setFormNotes] =
+    useState("");
+
+  const [
+    conflictMessage,
+    setConflictMessage,
+  ] = useState("");
+
+  const [followUps, setFollowUps] =
+    useState<FollowUpRecord[]>([]);
+
+  const [
+    schedulingFollowUpId,
+    setSchedulingFollowUpId,
+  ] = useState<number | null>(null);
+
+  /*
+   * LOAD DATA
+   */
+  useEffect(() => {
+    const storedClinicSettings =
+      localStorage.getItem(
+        "dermisClinicSettings"
+      );
+
+    let loadedSettings =
+      defaultClinicSettings;
+
+    if (storedClinicSettings) {
+      try {
+        const parsedSettings =
+          JSON.parse(
+            storedClinicSettings
+          );
+
+        loadedSettings = {
+          ...defaultClinicSettings,
+          ...parsedSettings,
+          practitioners:
+            Array.isArray(
+              parsedSettings.practitioners
+            ) &&
+            parsedSettings.practitioners
+              .length > 0
+              ? parsedSettings.practitioners
+              : defaultPractitioners,
+        };
+      } catch (error) {
+        console.error(
+          "Could not load clinic settings:",
+          error
+        );
+      }
+    }
+
+    setClinicSettings(
+      loadedSettings
+    );
+
+    const primaryPractitioner =
+      loadedSettings.practitioners.find(
+        (practitioner) =>
+          practitioner.name ===
+            loadedSettings.practitionerName &&
+          practitioner.active
+      ) ||
+      loadedSettings.practitioners.find(
+        (practitioner) =>
+          practitioner.active
+      ) ||
+      null;
+
+    setFormPractitionerId(
+      primaryPractitioner?.id ?? null
+    );
+
+    const savedPatients =
+      localStorage.getItem(
+        "dermisPatients"
+      );
+
+    if (savedPatients) {
+      try {
+        const parsedPatients: Patient[] =
+          JSON.parse(
+            savedPatients
+          );
+
+        if (parsedPatients.length > 0) {
+          setPatients(
+            parsedPatients
+          );
+
+          setFormPatient(
+            parsedPatients[0].name
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Could not load patients:",
+          error
+        );
+      }
+    }
+
+    const savedAppointments =
+      localStorage.getItem(
+        "dermisAppointments"
+      );
+
+    if (savedAppointments) {
+      try {
+        const parsedAppointments: Appointment[] =
+          JSON.parse(
+            savedAppointments
+          );
+
+        setAppointments(
+          parsedAppointments
+        );
+      } catch (error) {
+        console.error(
+          "Could not load appointments:",
+          error
+        );
+      }
+    }
+
+    const savedPlan =
+      localStorage.getItem(
+        "dermisTreatmentPlan"
+      );
+
+    if (savedPlan) {
+      try {
+        const plan: TreatmentPlan =
+          JSON.parse(
+            savedPlan
+          );
+
+        setTreatmentPlan(
+          plan
+        );
+
+        setFormPatient(
+          plan.patient
+        );
+
+        setFormTreatment(
+          plan.treatment
+        );
+
+        setFormDuration(
+          plan.duration
+        );
+
+        setFormNotes(
+          plan.notes || ""
+        );
+
+        const params =
+          new URLSearchParams(
+            window.location.search
+          );
+
+        if (
+          params.get("from") ===
+          "treatment"
+        ) {
+          setShowForm(true);
+        }
+      } catch (error) {
+        console.error(
+          "Could not load treatment plan:",
+          error
+        );
+      }
+    }
+
+    const storedFollowUps =
+      localStorage.getItem("dermisFollowUps");
+
+    if (storedFollowUps) {
+      try {
+        const parsedFollowUps =
+          JSON.parse(storedFollowUps);
+
+        if (Array.isArray(parsedFollowUps)) {
+          setFollowUps(parsedFollowUps);
+        }
+      } catch (error) {
+        console.error(
+          "Could not load follow-up records:",
+          error
+        );
+      }
+    }
+  }, []);
+
+  const activePractitioners =
+    useMemo(() => {
+      return clinicSettings.practitioners.filter(
+        (practitioner) =>
+          practitioner.active
+      );
+    }, [
+      clinicSettings.practitioners,
+    ]);
+
+  const practitionersAvailableOnDate =
+    useMemo(() => {
+      const weekday =
+        getWeekday(
+          formDate
+        );
+
+      return activePractitioners.filter(
+        (practitioner) =>
+          practitioner.workingDays.length === 0 ||
+          practitioner.workingDays.includes(
+            weekday
+          )
+      );
+    }, [
+      activePractitioners,
+      formDate,
+    ]);
+
+  const selectedPractitioner =
+    useMemo(() => {
+      return (
+        practitionersAvailableOnDate.find(
+          (practitioner) =>
+            practitioner.id ===
+            formPractitionerId
+        ) || null
+      );
+    }, [
+      practitionersAvailableOnDate,
+      formPractitionerId,
+    ]);
+
+  /*
+   * DASHBOARD / PATIENT -> FOLLOW-UP BOOKING HANDOFF
+   *
+   * We prefill the appointment form here, but the follow-up remains Due
+   * until the user actually saves the appointment.
+   */
+  useEffect(() => {
+    const storedFollowUpBooking =
+      localStorage.getItem(
+        "dermisFollowUpBooking"
+      );
+
+    if (!storedFollowUpBooking) {
+      return;
+    }
+
+    try {
+      const handoff =
+        JSON.parse(
+          storedFollowUpBooking
+        ) as FollowUpBookingHandoff;
+
+      const matchingPatient =
+        patients.find(
+          (patient) =>
+            patient.id ===
+              handoff.patientId ||
+            patient.name ===
+              handoff.patient
+        );
+
+      if (!matchingPatient) {
+        localStorage.removeItem(
+          "dermisFollowUpBooking"
+        );
+        return;
+      }
+
+      localStorage.setItem(
+        "dermisSelectedPatient",
+        JSON.stringify(
+          matchingPatient
+        )
+      );
+
+      setFormPatient(
+        matchingPatient.name
+      );
+
+      setFormTreatment(
+        "Skin analysis"
+      );
+
+      setFormDuration(
+        "45 min"
+      );
+
+      setFormNotes(
+        `Follow-up after ${handoff.treatment} completed on ${handoff.completedDate}.`
+      );
+
+      const preferredPractitioner =
+        practitionersAvailableOnDate.find(
+          (practitioner) =>
+            practitioner.id ===
+              handoff.practitionerId ||
+            practitioner.name ===
+              handoff.practitioner
+        ) ||
+        practitionersAvailableOnDate[0];
+
+      setFormPractitionerId(
+        preferredPractitioner?.id ??
+          null
+      );
+
+      setSchedulingFollowUpId(
+        handoff.followUpId
+      );
+
+      setBookingConfirmed(false);
+      setUpdateConfirmed("");
+      setEditingAppointmentId(null);
+      setConflictMessage("");
+      setTreatmentPlan(null);
+      setShowForm(true);
+
+      /*
+       * Consume this one-shot handoff now. If the form is cancelled,
+       * the follow-up stays Due because we have not changed its status.
+       */
+      localStorage.removeItem(
+        "dermisFollowUpBooking"
+      );
+
+      window.setTimeout(
+        () => {
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+          });
+        },
+        50
+      );
+    } catch (error) {
+      console.error(
+        "Could not load follow-up booking handoff:",
+        error
+      );
+
+      localStorage.removeItem(
+        "dermisFollowUpBooking"
+      );
+    }
+  }, [
+    patients,
+    practitionersAvailableOnDate,
+  ]);
+
+  /*
+   * CONFLICT CHECK
+   *
+   * When editing, the appointment being edited
+   * does not conflict with itself.
+   */
+  const slotHasConflict = (
+    slot: string,
+    practitioner: Practitioner
+  ) => {
+    const newStart =
+      timeToMinutes(
+        slot
+      );
+
+    const newDuration =
+      durationToMinutes(
+        formDuration
+      );
+
+    const newEnd =
+      newStart +
+      newDuration;
+
+    return appointments.some(
+      (appointment) => {
+        if (
+          editingAppointmentId !== null &&
+          appointment.id ===
+            editingAppointmentId
+        ) {
+          return false;
+        }
+
+        if (
+          appointment.rawDate !==
+          formDate
+        ) {
+          return false;
+        }
+
+        if (
+          appointment.status ===
+          "Cancelled"
+        ) {
+          return false;
+        }
+
+        if (
+          !appointmentMatchesPractitioner(
+            appointment,
+            practitioner
+          )
+        ) {
+          return false;
+        }
+
+        const existingStart =
+          timeToMinutes(
+            appointment.rawTime
+          );
+
+        const existingDuration =
+          durationToMinutes(
+            appointment.duration
+          );
+
+        const existingEnd =
+          existingStart +
+          existingDuration;
+
+        return (
+          newStart < existingEnd &&
+          newEnd > existingStart
+        );
+      }
+    );
+  };
+
+  const availableTimeSlots =
+    useMemo(() => {
+      if (!selectedPractitioner) {
+        return [];
+      }
+
+      const shiftStart =
+        timeToMinutes(
+          selectedPractitioner.startTime
+        );
+
+      const shiftEnd =
+        timeToMinutes(
+          selectedPractitioner.endTime
+        );
+
+      const duration =
+        durationToMinutes(
+          formDuration
+        );
+
+      return timeSlots.filter(
+        (slot) => {
+          const slotStart =
+            timeToMinutes(
+              slot
+            );
+
+          const slotEnd =
+            slotStart +
+            duration;
+
+          if (
+            slotStart <
+              shiftStart ||
+            slotEnd >
+              shiftEnd
+          ) {
+            return false;
+          }
+
+          return !slotHasConflict(
+            slot,
+            selectedPractitioner
+          );
+        }
+      );
+    }, [
+      selectedPractitioner,
+      formDate,
+      formDuration,
+      appointments,
+      editingAppointmentId,
+    ]);
+
+  /*
+   * AUTO SELECT PRACTITIONER
+   */
+  useEffect(() => {
+    if (
+      practitionersAvailableOnDate.length ===
+      0
+    ) {
+      setFormPractitionerId(
+        null
+      );
+
+      return;
+    }
+
+    const currentExists =
+      practitionersAvailableOnDate.some(
+        (practitioner) =>
+          practitioner.id ===
+          formPractitionerId
+      );
+
+    if (currentExists) {
+      return;
+    }
+
+    const primary =
+      practitionersAvailableOnDate.find(
+        (practitioner) =>
+          practitioner.name ===
+          clinicSettings.practitionerName
+      );
+
+    setFormPractitionerId(
+      primary?.id ??
+        practitionersAvailableOnDate[0].id
+    );
+  }, [
+    practitionersAvailableOnDate,
+    formPractitionerId,
+    clinicSettings.practitionerName,
+  ]);
+
+  /*
+   * AUTO SELECT AVAILABLE TIME
+   */
+  useEffect(() => {
+    if (
+      availableTimeSlots.length ===
+      0
+    ) {
+      setConflictMessage(
+        selectedPractitioner
+          ? `No available time slots remain for ${selectedPractitioner.name} on ${formatDate(
+              formDate
+            )}.`
+          : ""
+      );
+
+      return;
+    }
+
+    setConflictMessage("");
+
+    if (
+      !availableTimeSlots.includes(
+        formTime
+      )
+    ) {
+      setFormTime(
+        availableTimeSlots[0]
+      );
+    }
+  }, [
+    availableTimeSlots,
+    formTime,
+    selectedPractitioner,
+    formDate,
+  ]);
+
+  /*
+   * SEARCH
+   */
+  const filteredAppointments =
+    appointments.filter(
+      (appointment) => {
+        const searchText =
+          search
+            .toLowerCase()
+            .trim();
+
+        const matchesSearch =
+          searchText === "" ||
+          appointment.patient
+            .toLowerCase()
+            .includes(
+              searchText
+            ) ||
+          appointment.treatment
+            .toLowerCase()
+            .includes(
+              searchText
+            ) ||
+          appointment.practitioner
+            .toLowerCase()
+            .includes(
+              searchText
+            );
+
+        const matchesFilter =
+          filter === "All" ||
+          appointment.status ===
+            filter;
+
+        return (
+          matchesSearch &&
+          matchesFilter
+        );
+      }
+    );
+
+  /*
+   * SAVE APPOINTMENTS
+   */
+  const saveAppointments = (
+    updatedAppointments: Appointment[]
+  ) => {
+    setAppointments(
+      updatedAppointments
+    );
+
+    localStorage.setItem(
+      "dermisAppointments",
+      JSON.stringify(
+        updatedAppointments
+      )
+    );
+  };
+
+  /*
+   * RESET FORM
+   */
+  const resetAppointmentForm = () => {
+    setEditingAppointmentId(
+      null
+    );
+
+    setFormTreatment(
+      "Hydration Facial"
+    );
+
+    setFormDuration(
+      "60 min"
+    );
+
+    setFormNotes("");
+
+    setConflictMessage("");
+  };
+
+  /*
+   * NEW APPOINTMENT
+   */
+  const openNewAppointment = () => {
+    setBookingConfirmed(
+      false
+    );
+
+    setUpdateConfirmed("");
+
+    setEditingAppointmentId(
+      null
+    );
+
+    setConflictMessage("");
+
+    if (!treatmentPlan) {
+      const storedSelectedPatient =
+        localStorage.getItem(
+          "dermisSelectedPatient"
+        );
+
+      if (storedSelectedPatient) {
+        try {
+          const selectedPatient: Patient =
+            JSON.parse(
+              storedSelectedPatient
+            );
+
+          setFormPatient(
+            selectedPatient.name
+          );
+        } catch {
+          setFormPatient(
+            patients[0]?.name ||
+              "Emily Johnson"
+          );
+        }
+      } else {
+        setFormPatient(
+          patients[0]?.name ||
+            "Emily Johnson"
+        );
+      }
+
+      setFormTreatment(
+        "Hydration Facial"
+      );
+
+      setFormDuration(
+        "60 min"
+      );
+
+      setFormNotes("");
+    }
+
+    const primary =
+      practitionersAvailableOnDate.find(
+        (practitioner) =>
+          practitioner.name ===
+          clinicSettings.practitionerName
+      ) ||
+      practitionersAvailableOnDate[0];
+
+    setFormPractitionerId(
+      primary?.id ?? null
+    );
+
+    setShowForm(
+      true
+    );
+  };
+
+  /*
+   * EDIT APPOINTMENT
+   */
+  const editAppointment = (
+    appointment: Appointment
+  ) => {
+    setBookingConfirmed(
+      false
+    );
+
+    setUpdateConfirmed("");
+
+    setEditingAppointmentId(
+      appointment.id
+    );
+
+    setFormPatient(
+      appointment.patient
+    );
+
+    setFormTreatment(
+      appointment.treatment
+    );
+
+    setFormDate(
+      appointment.rawDate
+    );
+
+    setFormTime(
+      appointment.rawTime
+    );
+
+    setFormDuration(
+      appointment.duration
+    );
+
+    setFormNotes(
+      appointment.notes || ""
+    );
+
+    let practitionerId =
+      appointment.practitionerId;
+
+    if (!practitionerId) {
+      practitionerId =
+        clinicSettings.practitioners.find(
+          (practitioner) =>
+            practitioner.name ===
+            appointment.practitioner
+        )?.id;
+    }
+
+    setFormPractitionerId(
+      practitionerId ??
+        null
+    );
+
+    setConflictMessage("");
+
+    setShowForm(
+      true
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  /*
+   * CHANGE TREATMENT
+   */
+  const changeTreatment = (
+    treatmentName: string
+  ) => {
+    setFormTreatment(
+      treatmentName
+    );
+
+    const treatment =
+      treatmentOptions.find(
+        (item) =>
+          item.name ===
+          treatmentName
+      );
+
+    if (treatment) {
+      setFormDuration(
+        treatment.duration
+      );
+    }
+  };
+
+  const bookingHasConflict =
+    useMemo(() => {
+      if (
+        !selectedPractitioner ||
+        !formTime
+      ) {
+        return false;
+      }
+
+      return slotHasConflict(
+        formTime,
+        selectedPractitioner
+      );
+    }, [
+      selectedPractitioner,
+      formTime,
+      formDate,
+      formDuration,
+      appointments,
+      editingAppointmentId,
+    ]);
+
+  /*
+   * CREATE OR UPDATE
+   */
+  const saveAppointment = () => {
+    if (
+      !formPatient ||
+      !formTreatment ||
+      !formDate ||
+      !formTime ||
+      !selectedPractitioner
+    ) {
+      return;
+    }
+
+    if (
+      slotHasConflict(
+        formTime,
+        selectedPractitioner
+      )
+    ) {
+      setConflictMessage(
+        `${selectedPractitioner.name} already has another appointment that overlaps this time.`
+      );
+
+      return;
+    }
+
+    const selectedPatient =
+      patients.find(
+        (patient) =>
+          patient.name ===
+          formPatient
+      );
+
+    /*
+     * EDIT EXISTING
+     */
+    if (
+      editingAppointmentId !== null
+    ) {
+      const updatedAppointments =
+        appointments.map(
+          (appointment) => {
+            if (
+              appointment.id !==
+              editingAppointmentId
+            ) {
+              return appointment;
+            }
+
+            return {
+              ...appointment,
+              patient:
+                formPatient,
+              patientId:
+                selectedPatient?.id,
+              initials:
+                getInitials(
+                  formPatient
+                ),
+              treatment:
+                formTreatment,
+              date:
+                formatDate(
+                  formDate
+                ),
+              rawDate:
+                formDate,
+              time:
+                formatTime(
+                  formTime
+                ),
+              rawTime:
+                formTime,
+              duration:
+                formDuration,
+              practitioner:
+                selectedPractitioner.name,
+              practitionerId:
+                selectedPractitioner.id,
+              notes:
+                formNotes,
+            };
+          }
+        );
+
+      saveAppointments(
+        updatedAppointments
+      );
+
+      setShowForm(
+        false
+      );
+
+      setUpdateConfirmed(
+        "Appointment updated successfully."
+      );
+
+      setEditingAppointmentId(
+        null
+      );
+
+      return;
+    }
+
+    /*
+     * CREATE NEW
+     */
+    const newAppointment: Appointment = {
+      id: Date.now(),
+      patient:
+        formPatient,
+      patientId:
+        selectedPatient?.id,
+      initials:
+        getInitials(
+          formPatient
+        ),
+      treatment:
+        formTreatment,
+      date:
+        formatDate(
+          formDate
+        ),
+      rawDate:
+        formDate,
+      time:
+        formatTime(
+          formTime
+        ),
+      rawTime:
+        formTime,
+      duration:
+        formDuration,
+      practitioner:
+        selectedPractitioner.name,
+      practitionerId:
+        selectedPractitioner.id,
+      notes:
+        formNotes,
+      status:
+        "Confirmed",
+    };
+
+    const updatedAppointments = [
+      newAppointment,
+      ...appointments,
+    ];
+
+    saveAppointments(
+      updatedAppointments
+    );
+
+    if (
+      schedulingFollowUpId !==
+      null
+    ) {
+      const updatedFollowUps =
+        followUps.map(
+          (record) =>
+            record.id ===
+            schedulingFollowUpId
+              ? {
+                  ...record,
+                  status:
+                    "Scheduled" as FollowUpStatus,
+                  followUpAppointmentId:
+                    newAppointment.id,
+                }
+              : record
+        );
+
+      saveFollowUps(
+        updatedFollowUps
+      );
+
+      setSchedulingFollowUpId(
+        null
+      );
+    }
+
+    if (selectedPatient) {
+      localStorage.setItem(
+        "dermisSelectedPatient",
+        JSON.stringify(
+          selectedPatient
+        )
+      );
+    }
+
+    localStorage.removeItem(
+      "dermisTreatmentPlan"
+    );
+
+    localStorage.removeItem(
+      "dermisFollowUpBooking"
+    );
+
+    setTreatmentPlan(
+      null
+    );
+
+    setShowForm(
+      false
+    );
+
+    setBookingConfirmed(
+      true
+    );
+
+    setConflictMessage("");
+
+    const bookingDay =
+      String(
+        Number(
+          formDate.split("-")[2]
+        )
+      );
+
+    if (
+      dateLabels[
+        bookingDay
+      ]
+    ) {
+      setSelectedDate(
+        bookingDay
+      );
+    }
+
+    window.history.replaceState(
+      {},
+      "",
+      "/appointments"
+    );
+  };
+
+  const saveFollowUps = (
+    records: FollowUpRecord[]
+  ) => {
+    setFollowUps(records);
+
+    localStorage.setItem(
+      "dermisFollowUps",
+      JSON.stringify(records)
+    );
+  };
+
+  const createFollowUpRecord = (
+    appointment: Appointment
+  ) => {
+    /*
+     * Prevent recursive follow-up loops.
+     *
+     * A completed treatment should create a follow-up.
+     * A completed follow-up / Skin analysis appointment should NOT create
+     * another follow-up record.
+     */
+    const normalizedTreatment =
+      appointment.treatment
+        .trim()
+        .toLowerCase();
+
+    const isAnalysisAppointment =
+      normalizedTreatment ===
+        "skin analysis" ||
+      normalizedTreatment ===
+        "skin analysis follow-up" ||
+      normalizedTreatment ===
+        "follow-up skin analysis";
+
+    const isExistingFollowUpAppointment =
+      followUps.some(
+        (record) =>
+          record.followUpAppointmentId ===
+          appointment.id
+      );
+
+    if (
+      isAnalysisAppointment ||
+      isExistingFollowUpAppointment
+    ) {
+      return;
+    }
+    const existing = followUps.find(
+      (record) =>
+        record.appointmentId ===
+        appointment.id
+    );
+
+    if (existing) return;
+
+    const patientId =
+      appointment.patientId ??
+      patients.find(
+        (patient) =>
+          patient.name === appointment.patient
+      )?.id;
+
+    const record: FollowUpRecord = {
+      id: Date.now(),
+      appointmentId: appointment.id,
+      patientId,
+      patient: appointment.patient,
+      treatment: appointment.treatment,
+      completedDate: appointment.date,
+      completedRawDate: appointment.rawDate,
+      practitioner: appointment.practitioner,
+      practitionerId:
+        appointment.practitionerId,
+      status: "Due",
+      createdAt: new Date().toISOString(),
+    };
+
+    saveFollowUps([
+      record,
+      ...followUps,
+    ]);
+  };
+
+  const getFollowUpForAppointment = (
+    appointmentId: number
+  ) =>
+    followUps.find(
+      (record) =>
+        record.appointmentId ===
+        appointmentId
+    ) || null;
+
+  const deleteFollowUp = (
+    appointment: Appointment
+  ) => {
+    const followUp =
+      getFollowUpForAppointment(
+        appointment.id
+      );
+
+    if (!followUp) {
+      return;
+    }
+
+    const confirmed =
+      window.confirm(
+        `Delete the follow-up for ${followUp.patient} after ${followUp.treatment}?\n\nThis removes the follow-up record only. It will not delete any appointment that has already been booked.`
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const updatedFollowUps =
+      followUps.filter(
+        (record) =>
+          record.id !== followUp.id
+      );
+
+    saveFollowUps(
+      updatedFollowUps
+    );
+
+    if (
+      schedulingFollowUpId ===
+      followUp.id
+    ) {
+      setSchedulingFollowUpId(
+        null
+      );
+    }
+
+    const storedBooking =
+      localStorage.getItem(
+        "dermisFollowUpBooking"
+      );
+
+    if (storedBooking) {
+      try {
+        const parsedBooking =
+          JSON.parse(storedBooking) as {
+            followUpId?: number;
+          };
+
+        if (
+          parsedBooking.followUpId ===
+          followUp.id
+        ) {
+          localStorage.removeItem(
+            "dermisFollowUpBooking"
+          );
+        }
+      } catch {
+        localStorage.removeItem(
+          "dermisFollowUpBooking"
+        );
+      }
+    }
+
+    const storedSource =
+      localStorage.getItem(
+        "dermisFollowUpSource"
+      );
+
+    if (storedSource) {
+      try {
+        const parsedSource =
+          JSON.parse(storedSource) as {
+            followUpId?: number;
+          };
+
+        if (
+          parsedSource.followUpId ===
+          followUp.id
+        ) {
+          localStorage.removeItem(
+            "dermisFollowUpSource"
+          );
+        }
+      } catch {
+        // Leave unrelated analysis handoff data untouched if it cannot be parsed.
+      }
+    }
+
+    setUpdateConfirmed(
+      `Follow-up for ${followUp.patient} deleted.`
+    );
+
+    window.setTimeout(
+      () => {
+        setUpdateConfirmed("");
+      },
+      2200
+    );
+  };
+
+  const openFollowUpAppointment = (
+    appointment: Appointment
+  ) => {
+    const followUp =
+      getFollowUpForAppointment(
+        appointment.id
+      );
+
+    const patient =
+      patients.find(
+        (item) =>
+          item.id ===
+            appointment.patientId ||
+          item.name ===
+            appointment.patient
+      );
+
+    if (patient) {
+      localStorage.setItem(
+        "dermisSelectedPatient",
+        JSON.stringify(patient)
+      );
+    }
+
+    setBookingConfirmed(false);
+    setUpdateConfirmed("");
+    setEditingAppointmentId(null);
+    setConflictMessage("");
+    setTreatmentPlan(null);
+
+    setFormPatient(
+      patient?.name ||
+        appointment.patient
+    );
+
+    setFormTreatment(
+      "Skin analysis"
+    );
+
+    setFormDuration(
+      "45 min"
+    );
+
+    setFormNotes(
+      `Follow-up after ${appointment.treatment} completed on ${appointment.date}.`
+    );
+
+    const practitioner =
+      practitionersAvailableOnDate.find(
+        (item) =>
+          item.id ===
+          appointment.practitionerId
+      ) ||
+      practitionersAvailableOnDate[0];
+
+    setFormPractitionerId(
+      practitioner?.id ?? null
+    );
+
+    /*
+     * Do NOT mark Scheduled here.
+     * We only do that after saveAppointment successfully creates
+     * the actual follow-up appointment.
+     */
+    setSchedulingFollowUpId(
+      followUp?.id ?? null
+    );
+
+    setShowForm(true);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const openFollowUpAnalysis = (
+    appointment: Appointment
+  ) => {
+    const patient =
+      patients.find(
+        (item) =>
+          item.id === appointment.patientId ||
+          item.name === appointment.patient
+      );
+
+    if (patient) {
+      localStorage.setItem(
+        "dermisSelectedPatient",
+        JSON.stringify(patient)
+      );
+    }
+
+    const followUp =
+      getFollowUpForAppointment(
+        appointment.id
+      );
+
+    if (followUp) {
+      const updatedFollowUps =
+        followUps.map((record) =>
+          record.id === followUp.id
+            ? {
+                ...record,
+                status:
+                  "Analysis started" as FollowUpStatus,
+              }
+            : record
+        );
+
+      saveFollowUps(updatedFollowUps);
+    }
+
+    localStorage.setItem(
+      "dermisFollowUpSource",
+      JSON.stringify({
+        appointmentId: appointment.id,
+        patientId:
+          appointment.patientId,
+        patient: appointment.patient,
+        treatment:
+          appointment.treatment,
+        completedDate:
+          appointment.date,
+      })
+    );
+
+    window.location.href = "/analysis";
+  };
+
+  /*
+   * COMPLETE TREATMENT WORKFLOW
+   *
+   * A completed appointment becomes part of the patient's
+   * treatment history, updates their last visit, closes the
+   * matching active treatment plan and adds a patient timeline
+   * entry. appointmentId is used to prevent duplicate records.
+   */
+  const recordCompletedTreatment = (appointment: Appointment) => {
+    const patientId =
+      appointment.patientId ??
+      patients.find((item) => item.name === appointment.patient)?.id;
+
+    const historyKey = "dermisTreatmentHistory";
+    let history: TreatmentHistoryEntry[] = [];
+
+    const storedHistory = localStorage.getItem(historyKey);
+    if (storedHistory) {
+      try {
+        const parsed = JSON.parse(storedHistory);
+        if (Array.isArray(parsed)) history = parsed;
+      } catch (error) {
+        console.error("Could not load treatment history:", error);
+      }
+    }
+
+    if (!history.some((entry) => entry.appointmentId === appointment.id)) {
+      const entry: TreatmentHistoryEntry = {
+        id: Date.now(),
+        appointmentId: appointment.id,
+        patientId,
+        patient: appointment.patient,
+        treatment: appointment.treatment,
+        date: appointment.date,
+        rawDate: appointment.rawDate,
+        time: appointment.time,
+        duration: appointment.duration,
+        practitioner: appointment.practitioner,
+        practitionerId: appointment.practitionerId,
+        notes: appointment.notes || "",
+        completedAt: new Date().toISOString(),
+      };
+
+      localStorage.setItem(historyKey, JSON.stringify([entry, ...history]));
+    }
+
+    if (patientId !== undefined) {
+      const updatedPatients = patients.map((item) =>
+        item.id === patientId
+          ? { ...item, lastVisit: appointment.date }
+          : item
+      );
+
+      setPatients(updatedPatients);
+      localStorage.setItem("dermisPatients", JSON.stringify(updatedPatients));
+
+      const selectedPatientRaw = localStorage.getItem("dermisSelectedPatient");
+      if (selectedPatientRaw) {
+        try {
+          const selectedPatient: Patient = JSON.parse(selectedPatientRaw);
+          if (selectedPatient.id === patientId) {
+            localStorage.setItem(
+              "dermisSelectedPatient",
+              JSON.stringify({ ...selectedPatient, lastVisit: appointment.date })
+            );
+          }
+        } catch (error) {
+          console.error("Could not update selected patient:", error);
+        }
+      }
+
+      const storedPlans = localStorage.getItem("dermisTreatmentPlans");
+      if (storedPlans) {
+        try {
+          const plansByPatient = JSON.parse(storedPlans);
+          if (plansByPatient && !Array.isArray(plansByPatient)) {
+            const patientPlans = Array.isArray(plansByPatient[patientId])
+              ? plansByPatient[patientId]
+              : [];
+
+            let completedOne = false;
+            plansByPatient[patientId] = patientPlans.map(
+              (plan: { treatment?: string; status?: string }) => {
+                if (
+                  !completedOne &&
+                  plan.treatment === appointment.treatment &&
+                  plan.status === "Active"
+                ) {
+                  completedOne = true;
+                  return { ...plan, status: "Completed" };
+                }
+                return plan;
+              }
+            );
+
+            localStorage.setItem(
+              "dermisTreatmentPlans",
+              JSON.stringify(plansByPatient)
+            );
+          }
+        } catch (error) {
+          console.error("Could not update treatment plans:", error);
+        }
+      }
+
+      const storedProfiles = localStorage.getItem("dermisClinicalProfiles");
+      if (storedProfiles) {
+        try {
+          const profiles = JSON.parse(storedProfiles);
+          const profile = profiles?.[patientId];
+
+          if (profile) {
+            const timeline = Array.isArray(profile.timeline) ? profile.timeline : [];
+            const marker = `Appointment #${appointment.id}`;
+
+            if (
+              !timeline.some(
+                (item: { description?: string }) =>
+                  item.description?.includes(marker)
+              )
+            ) {
+              profiles[patientId] = {
+                ...profile,
+                timeline: [
+                  {
+                    date: appointment.date,
+                    title: `${appointment.treatment} completed`,
+                    description: `${marker} · ${appointment.practitioner}${
+                      appointment.notes ? ` · ${appointment.notes}` : ""
+                    }`,
+                    type: "Treatment",
+                  },
+                  ...timeline,
+                ],
+              };
+
+              localStorage.setItem(
+                "dermisClinicalProfiles",
+                JSON.stringify(profiles)
+              );
+            }
+          }
+        } catch (error) {
+          console.error("Could not update patient timeline:", error);
+        }
+      }
+    }
+  };
+
+  /*
+   * STATUS UPDATE
+   */
+  const updateAppointmentStatus = (
+    appointmentId: number,
+    status: AppointmentStatus
+  ) => {
+    const appointment = appointments.find((item) => item.id === appointmentId);
+
+    if (!appointment) return;
+
+    const wasAlreadyCompleted = appointment.status === "Completed";
+
+    const updatedAppointments = appointments.map((item) =>
+      item.id === appointmentId ? { ...item, status } : item
+    );
+
+    saveAppointments(updatedAppointments);
+
+    if (status === "Completed") {
+      if (!wasAlreadyCompleted) {
+        recordCompletedTreatment(appointment);
+        createFollowUpRecord(appointment);
+      }
+
+      setUpdateConfirmed(
+        `${appointment.patient}'s appointment has been completed, added to treatment history, and marked due for follow-up.`
+      );
+    }
+
+    if (status === "Cancelled") {
+      setUpdateConfirmed(
+        `${appointment.patient}'s appointment has been cancelled.`
+      );
+    }
+
+    if (status === "Confirmed") {
+      setUpdateConfirmed(
+        `${appointment.patient}'s appointment has been restored.`
+      );
+    }
+  };
+
+  /*
+   * COUNTS
+   */
+  const appointmentsForSelectedDate =
+    appointments.filter(
+      (appointment) =>
+        appointment.rawDate ===
+        `2026-08-${selectedDate.padStart(
+          2,
+          "0"
+        )}`
+    );
+
+  const confirmedCount =
+    appointments.filter(
+      (appointment) =>
+        appointment.status ===
+        "Confirmed"
+    ).length;
+
+  const completedCount =
+    appointments.filter(
+      (appointment) =>
+        appointment.status ===
+        "Completed"
+    ).length;
+
+  const todayAppointments =
+    appointments.filter(
+      (appointment) =>
+        appointment.rawDate ===
+          new Date().toISOString().slice(0, 10) &&
+        appointment.status !==
+          "Cancelled"
+    ).length;
+
+  return (
+    <main className="min-h-screen bg-[#F5F4F0] text-[#171717]">
+
+      <div className="flex min-h-screen">
+
+        <Sidebar activePage="Appointments" />
+
+        <section className="min-w-0 flex-1">
+
+          {/* HEADER */}
+          <header className="flex items-center justify-between border-b border-[#DDDCD6] bg-white px-6 py-5 lg:px-10">
+
+            <div>
+
+              <p className="text-xs text-[#96958E]">
+                {clinicSettings.clinicName}
+              </p>
+
+              <h1 className="mt-1 text-xl font-semibold tracking-[-0.03em]">
+                Appointments
+              </h1>
+
+            </div>
+
+            <div className="flex items-center gap-3">
+
+              <button
+                type="button"
+                onClick={
+                  openNewAppointment
+                }
+                className="rounded-xl bg-[#171717] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#333]"
+              >
+                + New appointment
+              </button>
+
+              <a
+                href="/settings"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-medium transition hover:bg-[#DCD9D0]"
+              >
+                {clinicSettings.initials ||
+                  getInitials(
+                    clinicSettings.practitionerName
+                  )}
+              </a>
+
+            </div>
+
+          </header>
+
+          {/* CONTENT */}
+          <div className="p-6 lg:p-10">
+
+            {/* TITLE */}
+            <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+
+              <div>
+
+                <p className="text-sm text-[#77766F]">
+                  Clinic schedule
+                </p>
+
+                <h2 className="mt-1 text-3xl font-medium tracking-[-0.04em]">
+                  Appointments
+                </h2>
+
+                <p className="mt-2 max-w-xl text-xs leading-5 text-[#999890]">
+                  Manage bookings, practitioner availability and patient follow-ups from one schedule.
+                </p>
+
+              </div>
+
+              <button
+                type="button"
+                onClick={
+                  openNewAppointment
+                }
+                className="w-fit rounded-xl bg-[#171717] px-5 py-3 text-sm font-medium text-white hover:bg-[#333]"
+              >
+                + New appointment
+              </button>
+
+            </div>
+
+            {/* SUCCESS */}
+            {(bookingConfirmed ||
+              updateConfirmed) && (
+
+              <div className="mt-6 flex items-start justify-between gap-4 rounded-2xl border border-[#D7DDD4] bg-[#F0F3EE] p-5">
+
+                <div className="flex items-start gap-3">
+
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[#62715D]">
+
+                    <Check
+                      size={17}
+                      strokeWidth={2}
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <p className="text-sm font-semibold">
+                      {bookingConfirmed
+                        ? "Booking confirmed"
+                        : "Appointment updated"}
+                    </p>
+
+                    <p className="mt-1 text-xs text-[#62715D]">
+                      {bookingConfirmed
+                        ? `${formPatient} has been booked for ${formTreatment} on ${formatDate(
+                            formDate
+                          )} at ${formatTime(
+                            formTime
+                          )}.`
+                        : updateConfirmed}
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBookingConfirmed(
+                      false
+                    );
+                    setUpdateConfirmed(
+                      ""
+                    );
+                  }}
+                >
+                  <X
+                    size={17}
+                    strokeWidth={1.7}
+                  />
+                </button>
+
+              </div>
+
+            )}
+
+            {/* FORM */}
+            {showForm && (
+
+              <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-6">
+
+                <div className="flex items-center justify-between">
+
+                  <div>
+
+                    <p className="text-sm text-[#77766F]">
+                      Appointment management
+                    </p>
+
+                    <h3 className="mt-1 text-xl font-semibold">
+                      {editingAppointmentId !==
+                      null
+                        ? "Edit appointment"
+                        : "New appointment"}
+                    </h3>
+
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForm(
+                        false
+                      );
+                      resetAppointmentForm();
+                    }}
+                    className="rounded-lg border border-[#DDDCD6] px-3 py-2 text-xs text-[#77766F] hover:bg-[#F7F6F2]"
+                  >
+                    Close
+                  </button>
+
+                </div>
+
+                <div className="mt-6 grid gap-5 md:grid-cols-2">
+
+                  {/* PATIENT */}
+                  <div>
+
+                    <label className="text-xs font-medium text-[#77766F]">
+                      Patient
+                    </label>
+
+                    <select
+                      value={
+                        formPatient
+                      }
+                      onChange={(event) =>
+                        setFormPatient(
+                          event.target.value
+                        )
+                      }
+                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                    >
+
+                      {patients.map(
+                        (patient) => (
+                          <option
+                            key={
+                              patient.id
+                            }
+                          >
+                            {
+                              patient.name
+                            }
+                          </option>
+                        )
+                      )}
+
+                    </select>
+
+                  </div>
+
+                  {/* TREATMENT */}
+                  <div>
+
+                    <label className="text-xs font-medium text-[#77766F]">
+                      Treatment
+                    </label>
+
+                    <select
+                      value={
+                        formTreatment
+                      }
+                      onChange={(event) =>
+                        changeTreatment(
+                          event.target.value
+                        )
+                      }
+                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                    >
+
+                      {treatmentOptions.map(
+                        (treatment) => (
+                          <option
+                            key={
+                              treatment.name
+                            }
+                          >
+                            {
+                              treatment.name
+                            }
+                          </option>
+                        )
+                      )}
+
+                    </select>
+
+                  </div>
+
+                  {/* DATE */}
+                  <div>
+
+                    <label className="text-xs font-medium text-[#77766F]">
+                      Date
+                    </label>
+
+                    <input
+                      type="date"
+                      value={
+                        formDate
+                      }
+                      onChange={(event) =>
+                        setFormDate(
+                          event.target.value
+                        )
+                      }
+                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                    />
+
+                  </div>
+
+                  {/* PRACTITIONER */}
+                  <div>
+
+                    <label className="text-xs font-medium text-[#77766F]">
+                      Practitioner
+                    </label>
+
+                    {practitionersAvailableOnDate.length >
+                    0 ? (
+
+                      <select
+                        value={
+                          formPractitionerId ??
+                          ""
+                        }
+                        onChange={(event) =>
+                          setFormPractitionerId(
+                            Number(
+                              event.target.value
+                            )
+                          )
+                        }
+                        className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                      >
+
+                        {practitionersAvailableOnDate.map(
+                          (
+                            practitioner
+                          ) => (
+                            <option
+                              key={
+                                practitioner.id
+                              }
+                              value={
+                                practitioner.id
+                              }
+                            >
+                              {
+                                practitioner.name
+                              }
+                              {" — "}
+                              {
+                                practitioner.role
+                              }
+                            </option>
+                          )
+                        )}
+
+                      </select>
+
+                    ) : (
+
+                      <div className="mt-2 rounded-xl bg-[#F7EEEE] px-4 py-3 text-sm text-[#8A6666]">
+                        No practitioner available on this day.
+                      </div>
+
+                    )}
+
+                  </div>
+
+                  {/* TIME */}
+                  <div>
+
+                    <label className="text-xs font-medium text-[#77766F]">
+                      Available time
+                    </label>
+
+                    {availableTimeSlots.length >
+                    0 ? (
+
+                      <select
+                        value={
+                          formTime
+                        }
+                        onChange={(event) =>
+                          setFormTime(
+                            event.target.value
+                          )
+                        }
+                        className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                      >
+
+                        {availableTimeSlots.map(
+                          (time) => (
+                            <option
+                              key={time}
+                              value={time}
+                            >
+                              {
+                                formatTime(
+                                  time
+                                )
+                              }
+                            </option>
+                          )
+                        )}
+
+                      </select>
+
+                    ) : (
+
+                      <div className="mt-2 rounded-xl bg-[#F7EEEE] px-4 py-3 text-sm text-[#8A6666]">
+                        No available time slots.
+                      </div>
+
+                    )}
+
+                  </div>
+
+                  {/* DURATION */}
+                  <div>
+
+                    <label className="text-xs font-medium text-[#77766F]">
+                      Duration
+                    </label>
+
+                    <select
+                      value={
+                        formDuration
+                      }
+                      onChange={(event) =>
+                        setFormDuration(
+                          event.target.value
+                        )
+                      }
+                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                    >
+                      <option>
+                        30 min
+                      </option>
+                      <option>
+                        45 min
+                      </option>
+                      <option>
+                        50 min
+                      </option>
+                      <option>
+                        60 min
+                      </option>
+                      <option>
+                        75 min
+                      </option>
+                      <option>
+                        90 min
+                      </option>
+                    </select>
+
+                  </div>
+
+                </div>
+
+                {/* AVAILABILITY */}
+                {selectedPractitioner && (
+
+                  <div className="mt-5 rounded-xl bg-[#F7F6F2] p-5">
+
+                    <div className="flex items-start justify-between">
+
+                      <div>
+
+                        <p className="text-[10px] uppercase tracking-[0.12em] text-[#999890]">
+                          Practitioner availability
+                        </p>
+
+                        <p className="mt-2 text-sm font-semibold">
+                          {
+                            selectedPractitioner.name
+                          }
+                        </p>
+
+                        <p className="mt-1 text-xs text-[#77766F]">
+                          {
+                            selectedPractitioner.role
+                          }
+                        </p>
+
+                      </div>
+
+                      <span className="rounded-full bg-[#E8EEE5] px-3 py-1 text-[9px] font-medium text-[#62715D]">
+                        {
+                          availableTimeSlots.length
+                        }{" "}
+                        slots available
+                      </span>
+
+                    </div>
+
+                    <div className="mt-5 grid gap-4 sm:grid-cols-3">
+
+                      <SummaryItem
+                        label="Day"
+                        value={
+                          getWeekday(
+                            formDate
+                          )
+                        }
+                      />
+
+                      <SummaryItem
+                        label="Working hours"
+                        value={`${selectedPractitioner.startTime} – ${selectedPractitioner.endTime}`}
+                      />
+
+                      <SummaryItem
+                        label="Duration"
+                        value={
+                          formDuration
+                        }
+                      />
+
+                    </div>
+
+                  </div>
+
+                )}
+
+                {/* CONFLICT */}
+                {(conflictMessage ||
+                  bookingHasConflict) && (
+
+                  <div className="mt-5 flex items-start gap-3 rounded-xl border border-[#E4D4D4] bg-[#F7EEEE] p-4">
+
+                    <AlertTriangle
+                      size={18}
+                      className="shrink-0 text-[#8A6666]"
+                    />
+
+                    <div>
+
+                      <p className="text-sm font-semibold text-[#755555]">
+                        Appointment conflict
+                      </p>
+
+                      <p className="mt-1 text-xs text-[#8A6666]">
+                        {conflictMessage ||
+                          "The selected appointment overlaps another booking."}
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                )}
+
+                {/* NOTES */}
+                <div className="mt-5">
+
+                  <label className="text-xs font-medium text-[#77766F]">
+                    Notes
+                  </label>
+
+                  <textarea
+                    rows={3}
+                    value={
+                      formNotes
+                    }
+                    onChange={(event) =>
+                      setFormNotes(
+                        event.target.value
+                      )
+                    }
+                    className="mt-2 w-full resize-none rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                  />
+
+                </div>
+
+                {/* SUMMARY */}
+                <div className="mt-6 rounded-xl bg-[#F7F6F2] p-5">
+
+                  <div className="flex items-center gap-2">
+
+                    <CalendarDays
+                      size={16}
+                      className="text-[#77766F]"
+                    />
+
+                    <p className="text-xs font-medium text-[#77766F]">
+                      Appointment summary
+                    </p>
+
+                  </div>
+
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+                    <SummaryItem
+                      label="Patient"
+                      value={
+                        formPatient
+                      }
+                    />
+
+                    <SummaryItem
+                      label="Treatment"
+                      value={
+                        formTreatment
+                      }
+                    />
+
+                    <SummaryItem
+                      label="Date"
+                      value={
+                        formatDate(
+                          formDate
+                        )
+                      }
+                    />
+
+                    <SummaryItem
+                      label="Time"
+                      value={
+                        formatTime(
+                          formTime
+                        )
+                      }
+                    />
+
+                  </div>
+
+                </div>
+
+                {/* ACTIONS */}
+                <div className="mt-6 flex justify-end gap-3">
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForm(
+                        false
+                      );
+                      resetAppointmentForm();
+                    }}
+                    className="rounded-xl border border-[#DDDCD6] px-5 py-3 text-sm font-medium hover:bg-[#F7F6F2]"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={
+                      !selectedPractitioner ||
+                      availableTimeSlots.length ===
+                        0 ||
+                      bookingHasConflict
+                    }
+                    onClick={
+                      saveAppointment
+                    }
+                    className={`rounded-xl px-5 py-3 text-sm font-medium ${
+                      selectedPractitioner &&
+                      availableTimeSlots.length >
+                        0 &&
+                      !bookingHasConflict
+                        ? "bg-[#171717] text-white hover:bg-[#333]"
+                        : "cursor-not-allowed bg-[#DDDCD6] text-[#999890]"
+                    }`}
+                  >
+                    {editingAppointmentId !==
+                    null
+                      ? "Save changes"
+                      : "Confirm appointment"}
+                  </button>
+
+                </div>
+
+              </div>
+
+            )}
+
+            {/* STATS */}
+            <div className="mt-8 grid gap-4 sm:grid-cols-4">
+
+              <StatBox
+                label="Today's appointments"
+                value={String(
+                  todayAppointments
+                )}
+                detail="Current schedule"
+              />
+
+              <StatBox
+                label="Confirmed"
+                value={String(
+                  confirmedCount
+                )}
+                detail="Confirmed bookings"
+              />
+
+              <StatBox
+                label="Completed"
+                value={String(
+                  completedCount
+                )}
+                detail="Finished appointments"
+              />
+
+              <StatBox
+                label="Total appointments"
+                value={String(
+                  appointments.length
+                )}
+                detail="Saved clinic bookings"
+              />
+
+            </div>
+
+            {/* CALENDAR */}
+            <div className="mt-8 rounded-2xl border border-[#DDDCD6] bg-white p-5">
+
+              <div>
+
+                <p className="text-xs text-[#999890]">
+                  Selected date
+                </p>
+
+                <h3 className="mt-1 text-lg font-semibold">
+                  {
+                    dateLabels[
+                      selectedDate
+                    ]
+                  }
+                </h3>
+
+              </div>
+
+              <div className="mt-5 grid grid-cols-7 gap-2">
+
+                {[
+                  ["Mon", "25"],
+                  ["Tue", "26"],
+                  ["Wed", "27"],
+                  ["Thu", "28"],
+                  ["Fri", "29"],
+                  ["Sat", "30"],
+                  ["Sun", "31"],
+                ].map(
+                  ([day, date]) => (
+
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() =>
+                        setSelectedDate(
+                          date
+                        )
+                      }
+                      className={`rounded-xl px-2 py-3 text-center ${
+                        selectedDate ===
+                        date
+                          ? "bg-[#171717] text-white"
+                          : "bg-[#F7F6F2] text-[#77766F]"
+                      }`}
+                    >
+                      <p className="text-[10px]">
+                        {day}
+                      </p>
+
+                      <p className="mt-1 text-sm font-semibold">
+                        {date}
+                      </p>
+                    </button>
+
+                  )
+                )}
+
+              </div>
+
+              {appointmentsForSelectedDate.length >
+                0 && (
+
+                <div className="mt-5 space-y-3 border-t border-[#ECEBE6] pt-5">
+
+                  {appointmentsForSelectedDate.map(
+                    (appointment) => (
+
+                      <div
+                        key={
+                          appointment.id
+                        }
+                        className="flex items-center gap-3 rounded-xl bg-[#F7F6F2] p-4"
+                      >
+
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[10px] font-medium">
+                          {
+                            appointment.initials
+                          }
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+
+                          <p className="truncate text-sm font-medium">
+                            {
+                              appointment.patient
+                            }
+                          </p>
+
+                          <p className="mt-1 text-xs text-[#999890]">
+                            {
+                              appointment.treatment
+                            }
+                          </p>
+
+                        </div>
+
+                        <div className="text-right">
+
+                          <p className="text-xs font-medium">
+                            {
+                              appointment.time
+                            }
+                          </p>
+
+                          <StatusBadge
+                            status={
+                              appointment.status
+                            }
+                          />
+
+                        </div>
+
+                      </div>
+
+                    )
+                  )}
+
+                </div>
+
+              )}
+
+            </div>
+
+            {/* SEARCH */}
+            <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-4">
+
+              <div className="flex flex-col gap-3 md:flex-row">
+
+                <input
+                  value={
+                    search
+                  }
+                  onChange={(event) =>
+                    setSearch(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Search appointments..."
+                  className="flex-1 rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                />
+
+                <select
+                  value={
+                    filter
+                  }
+                  onChange={(event) =>
+                    setFilter(
+                      event.target.value
+                    )
+                  }
+                  className="rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                >
+                  <option>
+                    All
+                  </option>
+                  <option>
+                    Confirmed
+                  </option>
+                  <option>
+                    Upcoming
+                  </option>
+                  <option>
+                    Completed
+                  </option>
+                  <option>
+                    Cancelled
+                  </option>
+                </select>
+
+              </div>
+
+            </div>
+
+            {/* APPOINTMENT LIST */}
+            <div className="mt-4 overflow-hidden rounded-2xl border border-[#DDDCD6] bg-white">
+
+              <div className="border-b border-[#ECEBE6] px-6 py-5">
+
+                <p className="text-sm text-[#77766F]">
+                  Schedule
+                </p>
+
+                <h3 className="mt-1 text-lg font-semibold">
+                  All Appointments
+                </h3>
+
+              </div>
+
+              <div className="divide-y divide-[#F0EFEA]">
+
+                {filteredAppointments.map(
+                  (appointment) => (
+
+                    <div
+                      key={
+                        appointment.id
+                      }
+                      className={`p-6 ${
+                        appointment.status ===
+                        "Cancelled"
+                          ? "opacity-60"
+                          : ""
+                      }`}
+                    >
+
+                      <div className="flex flex-col gap-5 xl:flex-row xl:items-center">
+
+                        {/* PATIENT */}
+                        <div className="flex min-w-0 flex-1 items-center gap-3">
+
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8E5DD] text-xs font-medium">
+                            {
+                              appointment.initials
+                            }
+                          </div>
+
+                          <div className="min-w-0">
+
+                            <p className="truncate text-sm font-medium">
+                              {
+                                appointment.patient
+                              }
+                            </p>
+
+                            <p className="mt-1 text-xs text-[#96958E]">
+                              {
+                                appointment.treatment
+                              }
+                            </p>
+
+                          </div>
+
+                        </div>
+
+                        <InfoColumn
+                          label="Date"
+                          value={
+                            appointment.date
+                          }
+                        />
+
+                        <InfoColumn
+                          label="Time"
+                          value={
+                            appointment.time
+                          }
+                        />
+
+                        <InfoColumn
+                          label="Duration"
+                          value={
+                            appointment.duration
+                          }
+                        />
+
+                        <InfoColumn
+                          label="Practitioner"
+                          value={
+                            appointment.practitioner
+                          }
+                        />
+
+                        <StatusBadge
+                          status={
+                            appointment.status
+                          }
+                        />
+
+                      </div>
+
+                      {/* ACTIONS */}
+                      <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-[#ECEBE6] pt-4">
+
+                        {appointment.status !==
+                          "Cancelled" &&
+                          appointment.status !==
+                            "Completed" && (
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              editAppointment(
+                                appointment
+                              )
+                            }
+                            className="flex items-center gap-2 rounded-lg border border-[#DDDCD6] px-3 py-2 text-xs font-medium hover:bg-[#F7F6F2]"
+                          >
+                            <Pencil
+                              size={13}
+                            />
+                            Edit / reschedule
+                          </button>
+
+                        )}
+
+                        {appointment.status !==
+                          "Completed" &&
+                          appointment.status !==
+                            "Cancelled" && (
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateAppointmentStatus(
+                                appointment.id,
+                                "Completed"
+                              )
+                            }
+                            className="flex items-center gap-2 rounded-lg border border-[#D7DDD4] bg-[#F0F3EE] px-3 py-2 text-xs font-medium text-[#62715D]"
+                          >
+                            <CheckCircle2
+                              size={13}
+                            />
+                            Mark completed
+                          </button>
+
+                        )}
+
+                        {appointment.status !==
+                          "Cancelled" &&
+                          appointment.status !==
+                            "Completed" && (
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateAppointmentStatus(
+                                appointment.id,
+                                "Cancelled"
+                              )
+                            }
+                            className="flex items-center gap-2 rounded-lg border border-[#E5D7D7] px-3 py-2 text-xs font-medium text-[#8A6666] hover:bg-[#F7EEEE]"
+                          >
+                            <XCircle
+                              size={13}
+                            />
+                            Cancel
+                          </button>
+
+                        )}
+
+                        {appointment.status ===
+                          "Cancelled" && (
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              updateAppointmentStatus(
+                                appointment.id,
+                                "Confirmed"
+                              )
+                            }
+                            className="flex items-center gap-2 rounded-lg border border-[#DDDCD6] px-3 py-2 text-xs font-medium hover:bg-[#F7F6F2]"
+                          >
+                            <RotateCcw
+                              size={13}
+                            />
+                            Restore booking
+                          </button>
+
+                        )}
+
+                        {appointment.status ===
+                          "Completed" && (
+
+                          <div className="flex flex-wrap items-center gap-2">
+
+                            <span className="flex items-center gap-2 text-xs font-medium text-[#62715D]">
+                              <CheckCircle2
+                                size={14}
+                              />
+                              Appointment completed
+                            </span>
+
+                            {getFollowUpForAppointment(
+                              appointment.id
+                            ) && (
+                              <>
+                                <span className="rounded-full bg-[#F5F0E7] px-3 py-1 text-[10px] font-medium text-[#806E52]">
+                                  Follow-up{" "}
+                                  {getFollowUpForAppointment(
+                                    appointment.id
+                                  )?.status.toLowerCase()}
+                                </span>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    deleteFollowUp(
+                                      appointment
+                                    )
+                                  }
+                                  className="flex items-center gap-2 rounded-lg border border-[#E5D7D7] bg-white px-3 py-2 text-xs font-medium text-[#8A6666] hover:bg-[#F7EEEE]"
+                                  title="Delete follow-up"
+                                >
+                                  <Trash2
+                                    size={13}
+                                  />
+                                  Delete follow-up
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    openFollowUpAppointment(
+                                      appointment
+                                    )
+                                  }
+                                  className="flex items-center gap-2 rounded-lg border border-[#DDDCD6] bg-white px-3 py-2 text-xs font-medium hover:bg-[#F7F6F2]"
+                                >
+                                  <CalendarDays
+                                    size={13}
+                                  />
+                                  Book follow-up
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    openFollowUpAnalysis(
+                                      appointment
+                                    )
+                                  }
+                                  className="flex items-center gap-2 rounded-lg border border-[#D7DDD4] bg-[#F0F3EE] px-3 py-2 text-xs font-medium text-[#62715D]"
+                                >
+                                  <CheckCircle2
+                                    size={13}
+                                  />
+                                  New skin analysis
+                                </button>
+                              </>
+                            )}
+
+                          </div>
+
+                        )}
+
+                      </div>
+
+                    </div>
+
+                  )
+                )}
+
+                {filteredAppointments.length ===
+                  0 && (
+
+                  <div className="px-6 py-12 text-center">
+
+                    <p className="text-sm font-medium">
+                      No appointments found
+                    </p>
+
+                    <p className="mt-2 text-xs text-[#999890]">
+                      Try changing the search or status filter.
+                    </p>
+
+                  </div>
+
+                )}
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+  );
+}
+
+function SummaryItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div>
+
+      <p className="text-[10px] uppercase tracking-[0.1em] text-[#999890]">
+        {label}
+      </p>
+
+      <p className="mt-1 break-words text-sm font-medium">
+        {value}
+      </p>
+
+    </div>
+  );
+}
+
+function InfoColumn({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="min-w-[110px]">
+
+      <p className="text-[10px] text-[#999890]">
+        {label}
+      </p>
+
+      <p className="mt-1 text-sm font-medium">
+        {value}
+      </p>
+
+    </div>
+  );
+}
+
+function StatBox({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
+
+      <p className="text-xs text-[#77766F]">
+        {label}
+      </p>
+
+      <p className="mt-3 text-2xl font-semibold">
+        {value}
+      </p>
+
+      <p className="mt-2 text-xs text-[#71806C]">
+        {detail}
+      </p>
+
+    </div>
+  );
+}
+
+function StatusBadge({
+  status,
+}: {
+  status: AppointmentStatus;
+}) {
+  let classes =
+    "bg-[#F1F0EB] text-[#77766F]";
+
+  if (
+    status === "Confirmed"
+  ) {
+    classes =
+      "bg-[#E8EEE5] text-[#62715D]";
+  }
+
+  if (
+    status === "Completed"
+  ) {
+    classes =
+      "bg-[#E8EEE5] text-[#51614C]";
+  }
+
+  if (
+    status === "Cancelled"
+  ) {
+    classes =
+      "bg-[#F3EAEA] text-[#8A6666]";
+  }
+
+  return (
+    <span
+      className={`inline-flex w-fit rounded-full px-3 py-1 text-[10px] font-medium ${classes}`}
+    >
+      {status}
+    </span>
+  );
+}
