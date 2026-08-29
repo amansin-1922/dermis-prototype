@@ -1892,7 +1892,7 @@ export default function AnalysisPage() {
                     </h3>
 
                     <p className="mt-2 text-xs leading-5 text-[#71806C]">
-                      Dermis prepares simulated skin metrics, priority concerns
+                      Velyquo prepares simulated skin metrics, priority concerns
                       and treatment recommendations for the selected patient.
                     </p>
 

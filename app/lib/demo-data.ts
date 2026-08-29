@@ -1,5 +1,5 @@
 /*
- * Dermis prototype — coherent master demo dataset.
+ * Velyquo prototype — coherent master demo dataset.
  *
  * Keep demo records here instead of maintaining different fallback data on
  * every page. The dates intentionally sit around 28 Aug 2026 because the

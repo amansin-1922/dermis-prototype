@@ -160,15 +160,25 @@ export default function Sidebar({
 
   return (
     <aside className="hidden w-[250px] shrink-0 border-r border-[#DDDCD6] bg-white lg:flex lg:flex-col">
-      {/* LOGO */}
+      {/* BRAND */}
       <div className="px-7 py-7">
         <a
           href="/dashboard"
-          className="inline-block text-xl font-semibold tracking-[-0.04em]"
+          className="inline-flex items-center gap-2"
         >
-          dermis
-          <span className="text-[#8A8A84]">.</span>
+          <span className="text-xl font-semibold tracking-[-0.04em] text-[#171717]">
+            velyquo
+            <span className="text-[#8A8A84]">.</span>
+          </span>
+
+          <span className="rounded-full border border-[#DDDCD6] bg-[#F8F7F4] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#8A8982]">
+            Clinic
+          </span>
         </a>
+
+        <p className="mt-2 text-[11px] leading-4 text-[#9A9992]">
+          Intelligent aesthetic clinic platform
+        </p>
       </div>
 
       {/* NAVIGATION */}
@@ -180,7 +190,6 @@ export default function Sidebar({
         <div className="space-y-1">
           {navigation.map((item) => {
             const Icon = item.icon;
-
             const isActive =
               activePage === item.name;
 
@@ -191,7 +200,7 @@ export default function Sidebar({
                 className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm transition ${
                   isActive
                     ? "bg-[#F0EFEA] font-medium text-[#171717]"
-                    : "text-[#77766F] hover:bg-[#F7F6F2]"
+                    : "text-[#77766F] hover:bg-[#F7F6F2] hover:text-[#171717]"
                 }`}
               >
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center">
@@ -210,7 +219,7 @@ export default function Sidebar({
         </div>
       </nav>
 
-      {/* ACCOUNT / CLINIC */}
+      {/* CLINIC ACCOUNT */}
       <div className="mt-auto border-t border-[#ECEBE6] p-5">
         <a
           href="/settings"
@@ -220,12 +229,12 @@ export default function Sidebar({
               : "hover:bg-[#F7F6F2]"
           }`}
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-medium">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-medium text-[#171717]">
             {initials}
           </div>
 
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">
+            <p className="truncate text-sm font-medium text-[#171717]">
               {clinicSettings.practitionerName}
             </p>
 
@@ -234,6 +243,10 @@ export default function Sidebar({
             </p>
           </div>
         </a>
+
+        <p className="mt-3 px-2 text-[10px] leading-4 text-[#AAA9A2]">
+          Powered by Velyquo
+        </p>
       </div>
     </aside>
   );

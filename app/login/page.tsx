@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -14,14 +14,14 @@ import {
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("demo@dermis.app");
+  const [email, setEmail] = useState("demo@velyquo.app");
   const [password, setPassword] = useState("demo123");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
@@ -46,9 +46,15 @@ export default function LoginPage() {
   };
 
   const useDemoAccount = () => {
-    setEmail("demo@dermis.app");
+    setEmail("demo@velyquo.app");
     setPassword("demo123");
     setError("");
+  };
+
+  const handleForgotPassword = () => {
+    setError(
+      "Password recovery is disabled in this demo prototype."
+    );
   };
 
   return (
@@ -60,6 +66,7 @@ export default function LoginPage() {
             aria-hidden="true"
             className="absolute -right-32 -top-32 h-96 w-96 rounded-full border border-white/10"
           />
+
           <div
             aria-hidden="true"
             className="absolute -right-12 -top-12 h-64 w-64 rounded-full border border-white/10"
@@ -67,7 +74,7 @@ export default function LoginPage() {
 
           <div className="relative z-10 flex items-center gap-2">
             <div className="text-xl font-semibold tracking-[-0.04em]">
-              dermis<span className="text-[#777770]">.</span>
+              velyquo<span className="text-[#777770]">.</span>
             </div>
 
             <span className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-[#B8B8B0]">
@@ -81,7 +88,7 @@ export default function LoginPage() {
             </div>
 
             <p className="text-sm font-medium text-[#A8A8A0]">
-              Skin intelligence for modern clinics
+              Intelligence for modern aesthetic clinics
             </p>
 
             <h1 className="mt-5 max-w-lg text-5xl font-medium leading-[1.04] tracking-[-0.055em] xl:text-[58px]">
@@ -110,14 +117,17 @@ export default function LoginPage() {
                   <p className="text-lg font-medium tracking-[-0.03em]">
                     {value}
                   </p>
-                  <p className="mt-1 text-xs text-[#888881]">{label}</p>
+
+                  <p className="mt-1 text-xs text-[#888881]">
+                    {label}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="relative z-10 flex items-center justify-between text-xs text-[#777770]">
-            <span>© 2026 Dermis prototype</span>
+            <span>© 2026 Velyquo</span>
             <span>Built for aesthetic clinics</span>
           </div>
         </section>
@@ -125,9 +135,10 @@ export default function LoginPage() {
         {/* Login panel */}
         <section className="flex min-h-screen items-center justify-center px-6 py-10 sm:px-10 lg:px-12">
           <div className="w-full max-w-[430px]">
+            {/* Mobile branding */}
             <div className="mb-12 flex items-center justify-between lg:hidden">
               <div className="text-xl font-semibold tracking-[-0.04em]">
-                dermis<span className="text-[#8A8A84]">.</span>
+                velyquo<span className="text-[#8A8A84]">.</span>
               </div>
 
               <span className="rounded-full border border-[#DDDCD6] bg-white px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-[#77766F]">
@@ -135,6 +146,7 @@ export default function LoginPage() {
               </span>
             </div>
 
+            {/* Heading */}
             <div className="mb-9">
               <p className="text-sm font-medium text-[#77766F]">
                 Welcome back
@@ -150,6 +162,7 @@ export default function LoginPage() {
               </p>
             </div>
 
+            {/* Demo access card */}
             <div className="mb-6 rounded-2xl border border-[#DCDCD5] bg-[#F1F1EC] p-4">
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white">
@@ -157,16 +170,19 @@ export default function LoginPage() {
                 </div>
 
                 <div className="min-w-0">
-                  <p className="text-sm font-medium">Demo clinic access</p>
+                  <p className="text-sm font-medium">
+                    Demo clinic access
+                  </p>
+
                   <p className="mt-1 text-xs leading-5 text-[#77766F]">
                     The demo credentials are already filled in. Sign in to
-                    explore the complete clinic workflow.
+                    explore the complete Velyquo clinic workflow.
                   </p>
 
                   <button
                     type="button"
                     onClick={useDemoAccount}
-                    className="mt-2 text-xs font-medium underline underline-offset-4"
+                    className="mt-2 text-xs font-medium underline underline-offset-4 transition hover:text-[#555]"
                   >
                     Restore demo credentials
                   </button>
@@ -174,6 +190,7 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Login form */}
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label
@@ -205,11 +222,7 @@ export default function LoginPage() {
 
                   <button
                     type="button"
-                    onClick={() =>
-                      setError(
-                        "Password recovery is disabled in this demo prototype."
-                      )
-                    }
+                    onClick={handleForgotPassword}
                     className="text-xs text-[#77766F] transition hover:text-black"
                   >
                     Forgot password?
@@ -234,9 +247,13 @@ export default function LoginPage() {
 
                   <button
                     type="button"
-                    onClick={() => setShowPassword((current) => !current)}
+                    onClick={() =>
+                      setShowPassword((current) => !current)
+                    }
                     aria-label={
-                      showPassword ? "Hide password" : "Show password"
+                      showPassword
+                        ? "Hide password"
+                        : "Show password"
                     }
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-[#77766F] transition hover:text-black"
                   >
@@ -249,11 +266,14 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {/* Remember me */}
               <div className="flex items-center justify-between">
                 <label className="flex cursor-pointer items-center gap-2.5 text-sm text-[#66665F]">
                   <button
                     type="button"
-                    onClick={() => setRememberMe((current) => !current)}
+                    onClick={() =>
+                      setRememberMe((current) => !current)
+                    }
                     className={`flex h-4 w-4 items-center justify-center rounded border transition ${
                       rememberMe
                         ? "border-[#171717] bg-[#171717] text-white"
@@ -261,8 +281,11 @@ export default function LoginPage() {
                     }`}
                     aria-pressed={rememberMe}
                   >
-                    {rememberMe && <Check size={11} strokeWidth={3} />}
+                    {rememberMe && (
+                      <Check size={11} strokeWidth={3} />
+                    )}
                   </button>
+
                   Remember me
                 </label>
 
@@ -271,12 +294,14 @@ export default function LoginPage() {
                 </span>
               </div>
 
+              {/* Error / information message */}
               {error && (
                 <div className="rounded-xl border border-[#E4D8D3] bg-[#F8F1EE] px-4 py-3 text-xs leading-5 text-[#7A5144]">
                   {error}
                 </div>
               )}
 
+              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}
@@ -287,6 +312,7 @@ export default function LoginPage() {
                 ) : (
                   <>
                     Sign in
+
                     <ArrowRight
                       size={16}
                       className="transition-transform group-hover:translate-x-0.5"
@@ -298,7 +324,8 @@ export default function LoginPage() {
 
             <div className="mt-8 border-t border-[#DDDCD6] pt-6">
               <p className="text-center text-xs leading-5 text-[#999890]">
-                Demo environment · No real patient information is stored
+                Velyquo demo environment · No real patient information is
+                stored
               </p>
             </div>
           </div>

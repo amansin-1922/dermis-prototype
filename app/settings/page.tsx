@@ -743,7 +743,7 @@ export default function SettingsPage() {
    */
   const resetDemoData = () => {
     const confirmed = window.confirm(
-      "Restore the Dermis master demo dataset?\n\nThis will replace patients, analyses, appointments, treatment plans, completed treatments, follow-ups and reports currently saved in this browser. This cannot be undone."
+      "Restore the Velyquo master demo dataset?\n\nThis will replace patients, analyses, appointments, treatment plans, completed treatments, follow-ups and reports currently saved in this browser. This cannot be undone."
     );
 
     if (!confirmed) {
@@ -1570,7 +1570,7 @@ export default function SettingsPage() {
                     </p>
 
                     <p className="mt-1 text-xs leading-5 text-[#999890]">
-                      Only Dermis prototype data is replaced. Your clinic team, patients, appointments, analyses, treatments, follow-ups and reports are restored together, while unrelated browser storage is left untouched.
+                      Only Velyquo prototype data is replaced. Your clinic team, patients, appointments, analyses, treatments, follow-ups and reports are restored together, while unrelated browser storage is left untouched.
                     </p>
                   </div>
 

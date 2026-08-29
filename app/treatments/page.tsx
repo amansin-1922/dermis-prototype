@@ -259,7 +259,7 @@ export default function TreatmentsPage() {
 
   const [clinicSettings, setClinicSettings] =
     useState<ClinicSettings>({
-      clinicName: "Dermis Aesthetics",
+      clinicName: "Velyquo Aesthetics",
       practitionerName: "Sarah Williams",
       initials: "SW",
     });
@@ -1371,7 +1371,7 @@ export default function TreatmentsPage() {
               </h1>
 
               <p className="mt-1 text-[10px] text-[#999890]">
-                {clinicSettings.clinicName || "Dermis Aesthetics"}
+                {clinicSettings.clinicName || "Velyquo Aesthetics"}
               </p>
 
             </div>

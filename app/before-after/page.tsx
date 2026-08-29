@@ -264,7 +264,7 @@ export default function BeforeAfterPage() {
 
   const [clinicSettings, setClinicSettings] =
     useState<ClinicSettings>({
-      clinicName: "Dermis Clinic",
+      clinicName: "Velyquo Clinic",
       practitionerName: "Sarah Williams",
       initials: "SW",
     });

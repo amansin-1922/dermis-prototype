@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dermis | Aesthetic Clinic Platform",
+  title: "Velyquo | Intelligent Aesthetic Clinic Platform",
   description:
-    "AI-powered skin analysis, patient management and treatment planning for aesthetic clinics.",
+    "Velyquo helps aesthetic clinics manage patients, analyse skin, personalise treatments, track progress and run their clinic from one intelligent workspace.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
