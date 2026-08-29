@@ -307,7 +307,7 @@ export default function PatientsPage() {
     concern.trim() !== "";
 
   return (
-    <main className="min-h-screen bg-[#F5F4F0] text-[#171717]">
+    <main className="min-h-screen bg-[#F7F7F4] text-[#1C211D]">
 
       <div className="flex min-h-screen">
 
@@ -318,7 +318,7 @@ export default function PatientsPage() {
         <section className="min-w-0 flex-1">
 
           {/* HEADER */}
-          <header className="flex items-center justify-between border-b border-[#DDDCD6] bg-white px-6 py-5 lg:px-10">
+          <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[#E8E8E2] bg-[#FDFDFC]/95 px-6 py-4 backdrop-blur-xl lg:px-10">
 
             <div>
 
@@ -342,7 +342,7 @@ export default function PatientsPage() {
               <button
                 type="button"
                 onClick={openAddPatient}
-                className="hidden rounded-xl bg-[#171717] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#333] sm:block"
+                className="hidden rounded-[11px] bg-[#263A2D] px-4 py-2.5 text-[12px] font-semibold text-white shadow-[0_8px_24px_rgba(38,58,45,0.14)] transition hover:-translate-y-px hover:bg-[#1E3025] sm:block"
               >
                 + Add patient
               </button>
@@ -350,7 +350,7 @@ export default function PatientsPage() {
               <a
                 href="/settings"
                 title="Clinic settings"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-medium transition hover:bg-[#DCD8CE]"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#DDE5DC] bg-[#EEF3ED] text-[10px] font-semibold text-[#526658] transition hover:bg-[#E6EDE5]"
               >
                 {practitionerInitials}
               </a>
@@ -360,23 +360,23 @@ export default function PatientsPage() {
           </header>
 
           {/* CONTENT */}
-          <div className="p-6 lg:p-10">
+          <div className="mx-auto w-full max-w-[1480px] p-6 lg:px-10 lg:py-9">
 
             {/* HEADING */}
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
 
               <div>
 
-                <p className="text-sm text-[#77766F]">
-                  Patient management
+                <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#7C8D80]">
+                  Patient intelligence
                 </p>
 
-                <h2 className="mt-1 text-3xl font-medium tracking-[-0.04em]">
+                <h2 className="mt-2 text-[34px] font-semibold leading-none tracking-[-0.05em] text-[#1E241F]">
                   All patients
                 </h2>
 
-                <p className="mt-2 max-w-xl text-xs leading-5 text-[#999890]">
-                  View patient records, skin concerns and analysis history from one place.
+                <p className="mt-3 max-w-2xl text-[12px] leading-5 text-[#8B918A]">
+                  A unified clinical view of every patient, their skin journey, analysis history and ongoing care.
                 </p>
 
               </div>
@@ -384,7 +384,7 @@ export default function PatientsPage() {
               <button
                 type="button"
                 onClick={openAddPatient}
-                className="w-fit rounded-xl bg-[#171717] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#333]"
+                className="w-fit rounded-[12px] bg-[#263A2D] px-5 py-3 text-[12px] font-semibold text-white shadow-[0_10px_28px_rgba(38,58,45,0.14)] transition hover:-translate-y-px hover:bg-[#1E3025]"
               >
                 + Add patient
               </button>
@@ -393,11 +393,11 @@ export default function PatientsPage() {
 
             {/* SUCCESS MESSAGE */}
             {patientAdded && (
-              <div className="mt-6 flex items-start justify-between gap-4 rounded-2xl border border-[#D7DDD4] bg-[#F0F3EE] p-5">
+              <div className="mt-6 flex items-start justify-between gap-4 rounded-[18px] border border-[#D8E2D7] bg-[#F0F5EF] p-5 shadow-[0_8px_30px_rgba(37,51,40,0.035)]">
 
                 <div className="flex items-start gap-3">
 
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[#62715D]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#DFE7DE] bg-white text-[#526A57] shadow-[0_4px_12px_rgba(37,51,40,0.05)]">
 
                     <Check
                       size={17}
@@ -439,18 +439,18 @@ export default function PatientsPage() {
 
             {/* ADD PATIENT FORM */}
             {showForm && (
-              <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-6">
+              <div className="mt-6 rounded-[22px] border border-[#E4E4DE] bg-[#FEFEFC] p-6 shadow-[0_12px_38px_rgba(29,34,30,0.045)]">
 
                 {/* FORM HEADER */}
                 <div className="flex items-start justify-between gap-4">
 
                   <div>
 
-                    <p className="text-sm text-[#77766F]">
-                      Patient management
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#879087]">
+                      New clinical record
                     </p>
 
-                    <h3 className="mt-1 text-xl font-semibold">
+                    <h3 className="mt-2 text-[22px] font-semibold tracking-[-0.035em] text-[#222822]">
                       Add new patient
                     </h3>
 
@@ -464,7 +464,7 @@ export default function PatientsPage() {
                     type="button"
                     aria-label="Close patient form"
                     onClick={closeForm}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#DDDCD6] text-[#77766F] transition hover:bg-[#F7F6F2]"
+                    className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-[#E3E3DD] bg-white text-[#7F857F] transition hover:bg-[#F5F6F2] hover:text-[#263A2D]"
                   >
                     <X
                       size={16}
@@ -491,7 +491,7 @@ export default function PatientsPage() {
                         setName(e.target.value)
                       }
                       placeholder="e.g. Charlotte Wilson"
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#99978F]"
+                      className="mt-2 w-full rounded-[12px] border border-[#E4E4DE] bg-[#FAFAF7] px-4 py-3 text-sm text-[#272D28] outline-none transition focus:border-[#879A8A] focus:bg-white focus:shadow-[0_0_0_3px_rgba(102,126,108,0.07)]"
                     />
 
                   </div>
@@ -510,7 +510,7 @@ export default function PatientsPage() {
                         setEmail(e.target.value)
                       }
                       placeholder="patient@email.com"
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#99978F]"
+                      className="mt-2 w-full rounded-[12px] border border-[#E4E4DE] bg-[#FAFAF7] px-4 py-3 text-sm text-[#272D28] outline-none transition focus:border-[#879A8A] focus:bg-white focus:shadow-[0_0_0_3px_rgba(102,126,108,0.07)]"
                     />
 
                   </div>
@@ -529,7 +529,7 @@ export default function PatientsPage() {
                         setPhone(e.target.value)
                       }
                       placeholder="+44 7700 900000"
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#99978F]"
+                      className="mt-2 w-full rounded-[12px] border border-[#E4E4DE] bg-[#FAFAF7] px-4 py-3 text-sm text-[#272D28] outline-none transition focus:border-[#879A8A] focus:bg-white focus:shadow-[0_0_0_3px_rgba(102,126,108,0.07)]"
                     />
 
                   </div>
@@ -550,7 +550,7 @@ export default function PatientsPage() {
                         setAge(e.target.value)
                       }
                       placeholder="Age"
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#99978F]"
+                      className="mt-2 w-full rounded-[12px] border border-[#E4E4DE] bg-[#FAFAF7] px-4 py-3 text-sm text-[#272D28] outline-none transition focus:border-[#879A8A] focus:bg-white focus:shadow-[0_0_0_3px_rgba(102,126,108,0.07)]"
                     />
 
                   </div>
@@ -567,7 +567,7 @@ export default function PatientsPage() {
                       onChange={(e) =>
                         setConcern(e.target.value)
                       }
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#99978F]"
+                      className="mt-2 w-full rounded-[12px] border border-[#E4E4DE] bg-[#FAFAF7] px-4 py-3 text-sm text-[#272D28] outline-none transition focus:border-[#879A8A] focus:bg-white focus:shadow-[0_0_0_3px_rgba(102,126,108,0.07)]"
                     >
 
                       <option value="">
@@ -630,7 +630,7 @@ export default function PatientsPage() {
                             | "Inactive"
                         )
                       }
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#99978F]"
+                      className="mt-2 w-full rounded-[12px] border border-[#E4E4DE] bg-[#FAFAF7] px-4 py-3 text-sm text-[#272D28] outline-none transition focus:border-[#879A8A] focus:bg-white focus:shadow-[0_0_0_3px_rgba(102,126,108,0.07)]"
                     >
 
                       <option value="Active">
@@ -649,7 +649,7 @@ export default function PatientsPage() {
 
                 {/* PATIENT PREVIEW */}
                 {name.trim() && (
-                  <div className="mt-6 rounded-xl bg-[#F7F6F2] p-5">
+                  <div className="mt-6 rounded-[16px] border border-[#E8E8E2] bg-[#F8F9F6] p-5">
 
                     <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#999890]">
                       Patient preview
@@ -657,7 +657,7 @@ export default function PatientsPage() {
 
                     <div className="mt-4 flex items-center gap-3">
 
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-medium">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#DCE5DB] bg-[#EAF0E9] text-[10px] font-semibold text-[#536657]">
 
                         {getInitials(name)}
 
@@ -687,7 +687,7 @@ export default function PatientsPage() {
                   <button
                     type="button"
                     onClick={closeForm}
-                    className="rounded-xl border border-[#DDDCD6] px-5 py-3 text-sm font-medium transition hover:bg-[#F7F6F2]"
+                    className="rounded-[12px] border border-[#E0E1DB] bg-white px-5 py-3 text-[12px] font-semibold text-[#5E645E] transition hover:bg-[#F6F7F3]"
                   >
                     Cancel
                   </button>
@@ -698,8 +698,8 @@ export default function PatientsPage() {
                     onClick={addPatient}
                     className={`rounded-xl px-5 py-3 text-sm font-medium transition ${
                       formIsValid
-                        ? "bg-[#171717] text-white hover:bg-[#333]"
-                        : "cursor-not-allowed bg-[#DDDCD6] text-[#999890]"
+                        ? "bg-[#263A2D] text-white shadow-[0_8px_22px_rgba(38,58,45,0.12)] hover:bg-[#1E3025]"
+                        : "cursor-not-allowed bg-[#E7E7E2] text-[#A3A6A0]"
                     }`}
                   >
                     Add patient
@@ -713,49 +713,49 @@ export default function PatientsPage() {
             {/* STATS */}
             <div className="mt-8 grid gap-4 sm:grid-cols-3">
 
-              <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
+              <div className="rounded-[20px] border border-[#E5E5DF] bg-[#FEFEFC] p-5 shadow-[0_8px_28px_rgba(29,34,30,0.03)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_34px_rgba(29,34,30,0.05)]">
 
                 <p className="text-xs text-[#77766F]">
                   Total patients
                 </p>
 
-                <p className="mt-3 text-2xl font-semibold">
+                <p className="mt-3 text-[30px] font-semibold tracking-[-0.05em] text-[#202620]">
                   {patients.length}
                 </p>
 
-                <p className="mt-2 text-xs text-[#71806C]">
+                <p className="mt-2 text-[10px] font-medium text-[#71806C]">
                   Clinic records
                 </p>
 
               </div>
 
-              <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
+              <div className="rounded-[20px] border border-[#E5E5DF] bg-[#FEFEFC] p-5 shadow-[0_8px_28px_rgba(29,34,30,0.03)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_34px_rgba(29,34,30,0.05)]">
 
                 <p className="text-xs text-[#77766F]">
                   Active patients
                 </p>
 
-                <p className="mt-3 text-2xl font-semibold">
+                <p className="mt-3 text-[30px] font-semibold tracking-[-0.05em] text-[#202620]">
                   {activePatients}
                 </p>
 
-                <p className="mt-2 text-xs text-[#71806C]">
+                <p className="mt-2 text-[10px] font-medium text-[#71806C]">
                   Currently active
                 </p>
 
               </div>
 
-              <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
+              <div className="rounded-[20px] border border-[#E5E5DF] bg-[#FEFEFC] p-5 shadow-[0_8px_28px_rgba(29,34,30,0.03)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_34px_rgba(29,34,30,0.05)]">
 
                 <p className="text-xs text-[#77766F]">
                   Skin analyses
                 </p>
 
-                <p className="mt-3 text-2xl font-semibold">
+                <p className="mt-3 text-[30px] font-semibold tracking-[-0.05em] text-[#202620]">
                   {totalAnalyses}
                 </p>
 
-                <p className="mt-2 text-xs text-[#71806C]">
+                <p className="mt-2 text-[10px] font-medium text-[#71806C]">
                   Across all patients
                 </p>
 
@@ -782,7 +782,7 @@ export default function PatientsPage() {
                       setSearch(e.target.value)
                     }
                     placeholder="Search patients by name, email, phone or concern"
-                    className="w-full rounded-xl border border-[#E1E0DA] bg-[#FAF9F6] py-3 pl-10 pr-4 text-sm outline-none transition focus:border-[#99978F]"
+                    className="w-full rounded-[12px] border border-transparent bg-[#F5F6F2] py-3 pl-10 pr-4 text-[12px] text-[#303630] outline-none transition placeholder:text-[#A2A69F] focus:border-[#CBD6CB] focus:bg-white focus:shadow-[0_0_0_3px_rgba(102,126,108,0.06)]"
                   />
 
                 </div>
@@ -793,7 +793,7 @@ export default function PatientsPage() {
                   onChange={(e) =>
                     setFilter(e.target.value)
                   }
-                  className="rounded-xl border border-[#E1E0DA] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                  className="rounded-[12px] border border-transparent bg-[#F5F6F2] px-4 py-3 text-[12px] font-medium text-[#555C56] outline-none transition focus:border-[#CBD6CB] focus:bg-white"
                 >
 
                   <option value="All">
@@ -815,7 +815,7 @@ export default function PatientsPage() {
             </div>
 
             {/* PATIENT TABLE */}
-            <div className="mt-4 overflow-hidden rounded-2xl border border-[#DDDCD6] bg-white">
+            <div className="mt-4 overflow-hidden rounded-[22px] border border-[#E5E5DF] bg-[#FEFEFC] shadow-[0_10px_34px_rgba(29,34,30,0.035)]">
 
               <div className="overflow-x-auto">
 
@@ -823,7 +823,7 @@ export default function PatientsPage() {
 
                   <thead>
 
-                    <tr className="border-b border-[#ECEBE6] bg-[#FAF9F6] text-left text-[10px] uppercase tracking-[0.12em] text-[#9A9992]">
+                    <tr className="border-b border-[#ECEDE8] bg-[#F8F9F6] text-left text-[9px] uppercase tracking-[0.16em] text-[#999E98]">
 
                       <th className="px-6 py-4 font-medium">
                         Patient
@@ -867,14 +867,14 @@ export default function PatientsPage() {
                             window.location.href =
                               "/patient";
                           }}
-                          className="cursor-pointer border-b border-[#F0EFEA] transition hover:bg-[#FAF9F6] last:border-0"
+                          className="group cursor-pointer border-b border-[#F0F1EC] transition duration-200 hover:bg-[#F7FAF6] last:border-0"
                         >
 
                           <td className="px-6 py-5">
 
                             <div className="flex items-center gap-3">
 
-                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E8E5DD] text-xs font-medium">
+                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#DCE5DB] bg-[#ECF1EB] text-[10px] font-semibold text-[#536657] transition group-hover:bg-white">
 
                                 {getInitials(
                                   patient.name
@@ -884,11 +884,11 @@ export default function PatientsPage() {
 
                               <div className="min-w-0">
 
-                                <p className="truncate text-sm font-medium">
+                                <p className="truncate text-[13px] font-semibold tracking-[-0.015em] text-[#282E29]">
                                   {patient.name}
                                 </p>
 
-                                <p className="mt-0.5 truncate text-xs text-[#96958E]">
+                                <p className="mt-1 truncate text-[10px] text-[#969B95]">
                                   {patient.email}
                                 </p>
 
@@ -898,15 +898,15 @@ export default function PatientsPage() {
 
                           </td>
 
-                          <td className="px-6 py-5 text-sm text-[#77766F]">
+                          <td className="px-6 py-5 text-[12px] text-[#686F69]">
                             {patient.concern}
                           </td>
 
-                          <td className="px-6 py-5 text-sm text-[#77766F]">
+                          <td className="px-6 py-5 text-[12px] text-[#686F69]">
                             {patient.lastVisit}
                           </td>
 
-                          <td className="px-6 py-5 text-sm text-[#77766F]">
+                          <td className="px-6 py-5 text-[12px] text-[#686F69]">
                             {patient.analyses}
                           </td>
 
@@ -916,8 +916,8 @@ export default function PatientsPage() {
                               className={`rounded-full px-3 py-1 text-[10px] font-medium ${
                                 patient.status ===
                                 "Active"
-                                  ? "bg-[#E8EEE5] text-[#62715D]"
-                                  : "bg-[#F1F0EB] text-[#77766F]"
+                                  ? "border border-[#DCE6DA] bg-[#EDF3EB] text-[#536A57]"
+                                  : "border border-[#E5E5DF] bg-[#F3F3EF] text-[#777C77]"
                               }`}
                             >
                               {patient.status}
