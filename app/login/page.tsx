@@ -58,40 +58,40 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F8F7F4] text-[#171717]">
+    <main className="min-h-screen bg-[#F3F6F3] text-[#182019]">
       <div className="grid min-h-screen lg:grid-cols-2">
         {/* Left panel */}
-        <section className="relative hidden overflow-hidden bg-[#171717] p-10 text-white lg:flex lg:flex-col lg:justify-between xl:p-14">
+        <section className="relative hidden overflow-hidden bg-[#14271B] p-10 text-white lg:flex lg:flex-col lg:justify-between xl:p-14">
           <div
             aria-hidden="true"
-            className="absolute -right-32 -top-32 h-96 w-96 rounded-full border border-white/10"
+            className="absolute -right-32 -top-32 h-96 w-96 rounded-full border border-white/[0.07]"
           />
 
           <div
             aria-hidden="true"
-            className="absolute -right-12 -top-12 h-64 w-64 rounded-full border border-white/10"
+            className="absolute -right-12 -top-12 h-64 w-64 rounded-full border border-white/[0.07]"
           />
 
           <div className="relative z-10 flex items-center gap-2">
             <div className="text-xl font-semibold tracking-[-0.04em]">
-              velyquo<span className="text-[#777770]">.</span>
+              velyquo<span className="text-[#718276]">.</span>
             </div>
 
-            <span className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-[#B8B8B0]">
+            <span className="rounded-full border border-white/[0.09] bg-white/[0.045] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-[#B9C6BC]">
               Clinic intelligence
             </span>
           </div>
 
           <div className="relative z-10 max-w-xl">
-            <div className="mb-7 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06]">
+            <div className="mb-7 flex h-11 w-11 items-center justify-center rounded-[14px] border border-white/[0.10] bg-white/[0.055] text-[#DCE8DE] shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
               <Sparkles size={18} />
             </div>
 
-            <p className="text-sm font-medium text-[#A8A8A0]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#A9BAAE]">
               Intelligence for modern aesthetic clinics
             </p>
 
-            <h1 className="mt-5 max-w-lg text-5xl font-medium leading-[1.04] tracking-[-0.055em] xl:text-[58px]">
+            <h1 className="mt-6 max-w-xl text-5xl font-semibold leading-[1.015] tracking-[-0.06em] xl:text-[60px]">
               Better consultations.
               <br />
               Smarter treatments.
@@ -99,7 +99,7 @@ export default function LoginPage() {
               Clearer progress.
             </h1>
 
-            <p className="mt-7 max-w-md text-sm leading-6 text-[#A8A8A0]">
+            <p className="mt-7 max-w-md text-[13px] leading-6 text-[#AAB9AE]">
               Manage patients, analyse skin, personalise treatment plans and
               track clinical progress from one intelligent workspace.
             </p>
@@ -112,13 +112,13 @@ export default function LoginPage() {
               ].map(([value, label]) => (
                 <div
                   key={label}
-                  className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
+                  className="rounded-[18px] border border-white/[0.08] bg-white/[0.035] p-4 shadow-[0_12px_34px_rgba(0,0,0,0.05)]"
                 >
                   <p className="text-lg font-medium tracking-[-0.03em]">
                     {value}
                   </p>
 
-                  <p className="mt-1 text-xs text-[#888881]">
+                  <p className="mt-1 text-[10px] text-[#8FA096]">
                     {label}
                   </p>
                 </div>
@@ -126,55 +126,55 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="relative z-10 flex items-center justify-between text-xs text-[#777770]">
+          <div className="relative z-10 flex items-center justify-between text-xs text-[#718276]">
             <span>© 2026 Velyquo</span>
             <span>Built for aesthetic clinics</span>
           </div>
         </section>
 
         {/* Login panel */}
-        <section className="flex min-h-screen items-center justify-center px-6 py-10 sm:px-10 lg:px-12">
-          <div className="w-full max-w-[430px]">
+        <section className="flex min-h-screen items-center justify-center bg-[#F5F7F4] px-6 py-10 sm:px-10 lg:px-12">
+          <div className="w-full max-w-[440px]">
             {/* Mobile branding */}
             <div className="mb-12 flex items-center justify-between lg:hidden">
               <div className="text-xl font-semibold tracking-[-0.04em]">
                 velyquo<span className="text-[#8A8A84]">.</span>
               </div>
 
-              <span className="rounded-full border border-[#DDDCD6] bg-white px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-[#77766F]">
+              <span className="rounded-full border border-[#DCE5DC] bg-[#FFFFFE] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#607066]">
                 Clinic intelligence
               </span>
             </div>
 
             {/* Heading */}
             <div className="mb-9">
-              <p className="text-sm font-medium text-[#77766F]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6E8375]">
                 Welcome back
               </p>
 
-              <h2 className="mt-2 text-[38px] font-medium leading-tight tracking-[-0.05em] sm:text-[42px]">
+              <h2 className="mt-3 text-[40px] font-semibold leading-[1.02] tracking-[-0.06em] text-[#19231B] sm:text-[44px]">
                 Sign in to your clinic
               </h2>
 
-              <p className="mt-4 max-w-sm text-sm leading-6 text-[#77766F]">
+              <p className="mt-4 max-w-sm text-[12px] leading-6 text-[#748078]">
                 Access your patients, skin analyses, treatment plans and clinic
                 dashboard.
               </p>
             </div>
 
             {/* Demo access card */}
-            <div className="mb-6 rounded-2xl border border-[#DCDCD5] bg-[#F1F1EC] p-4">
+            <div className="mb-6 rounded-[20px] border border-[#D7E3D7] bg-[#EDF4ED] p-4 shadow-[0_12px_34px_rgba(35,62,44,0.04)]">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white">
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border border-[#D8E4D8] bg-[#FFFFFE] text-[#45634D]">
                   <Sparkles size={14} />
                 </div>
 
                 <div className="min-w-0">
-                  <p className="text-sm font-medium">
+                  <p className="text-[11px] font-semibold text-[#39473E]">
                     Demo clinic access
                   </p>
 
-                  <p className="mt-1 text-xs leading-5 text-[#77766F]">
+                  <p className="mt-1 text-[11px] leading-5 text-[#657269]">
                     The demo credentials are already filled in. Sign in to
                     explore the complete Velyquo clinic workflow.
                   </p>
@@ -182,7 +182,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={useDemoAccount}
-                    className="mt-2 text-xs font-medium underline underline-offset-4 transition hover:text-[#555]"
+                    className="mt-2 text-[10px] font-semibold text-[#42694D] underline decoration-[#A8B9AB] underline-offset-4 transition hover:text-[#173725]"
                   >
                     Restore demo credentials
                   </button>
@@ -195,7 +195,7 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="email"
-                  className="mb-2 block text-sm font-medium"
+                  className="mb-2 block text-[11px] font-semibold text-[#39473E]"
                 >
                   Email address
                 </label>
@@ -207,7 +207,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="you@clinic.com"
-                  className="w-full rounded-xl border border-[#D9D8D2] bg-white px-4 py-3.5 text-sm outline-none transition placeholder:text-[#AAA9A2] focus:border-[#77766F] focus:ring-2 focus:ring-black/[0.04]"
+                  className="w-full rounded-[14px] border border-[#DCE5DC] bg-[#FFFFFE] px-4 py-3.5 text-[12px] outline-none transition placeholder:text-[#A0AAA2] focus:border-[#6E8A75] focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)]"
                 />
               </div>
 
@@ -215,7 +215,7 @@ export default function LoginPage() {
                 <div className="mb-2 flex items-center justify-between">
                   <label
                     htmlFor="password"
-                    className="text-sm font-medium"
+                    className="text-[11px] font-semibold text-[#39473E]"
                   >
                     Password
                   </label>
@@ -223,7 +223,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-xs text-[#77766F] transition hover:text-black"
+                    className="text-[10px] font-medium text-[#6D7A71] transition hover:text-[#173725]"
                   >
                     Forgot password?
                   </button>
@@ -232,7 +232,7 @@ export default function LoginPage() {
                 <div className="relative">
                   <LockKeyhole
                     size={16}
-                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#999890]"
+                    className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8B978F]"
                   />
 
                   <input
@@ -242,7 +242,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     placeholder="Enter your password"
-                    className="w-full rounded-xl border border-[#D9D8D2] bg-white py-3.5 pl-11 pr-12 text-sm outline-none transition placeholder:text-[#AAA9A2] focus:border-[#77766F] focus:ring-2 focus:ring-black/[0.04]"
+                    className="w-full rounded-[14px] border border-[#DCE5DC] bg-[#FFFFFE] py-3.5 pl-11 pr-12 text-[12px] outline-none transition placeholder:text-[#A0AAA2] focus:border-[#6E8A75] focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)]"
                   />
 
                   <button
@@ -255,7 +255,7 @@ export default function LoginPage() {
                         ? "Hide password"
                         : "Show password"
                     }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#77766F] transition hover:text-black"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#758179] transition hover:text-[#173725]"
                   >
                     {showPassword ? (
                       <EyeOff size={17} />
@@ -268,7 +268,7 @@ export default function LoginPage() {
 
               {/* Remember me */}
               <div className="flex items-center justify-between">
-                <label className="flex cursor-pointer items-center gap-2.5 text-sm text-[#66665F]">
+                <label className="flex cursor-pointer items-center gap-2.5 text-[11px] font-medium text-[#5E6B62]">
                   <button
                     type="button"
                     onClick={() =>
@@ -276,8 +276,8 @@ export default function LoginPage() {
                     }
                     className={`flex h-4 w-4 items-center justify-center rounded border transition ${
                       rememberMe
-                        ? "border-[#171717] bg-[#171717] text-white"
-                        : "border-[#C8C7C0] bg-white"
+                        ? "border-[#173725] bg-[#173725] text-white"
+                        : "border-[#C9D4CB] bg-[#FFFFFE]"
                     }`}
                     aria-pressed={rememberMe}
                   >
@@ -289,14 +289,14 @@ export default function LoginPage() {
                   Remember me
                 </label>
 
-                <span className="text-xs text-[#999890]">
+                <span className="text-xs text-[#8B978F]">
                   Secure demo access
                 </span>
               </div>
 
               {/* Error / information message */}
               {error && (
-                <div className="rounded-xl border border-[#E4D8D3] bg-[#F8F1EE] px-4 py-3 text-xs leading-5 text-[#7A5144]">
+                <div className="rounded-[13px] border border-[#E4D7D1] bg-[#FAF3F0] px-4 py-3 text-[11px] leading-5 text-[#7A5144]">
                   {error}
                 </div>
               )}
@@ -305,7 +305,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#171717] py-4 text-sm font-medium text-white transition hover:bg-[#30302E] disabled:cursor-wait disabled:opacity-70"
+                className="group flex w-full items-center justify-center gap-2 rounded-[14px] bg-[#173725] py-4 text-[12px] font-semibold text-white shadow-[0_14px_34px_rgba(23,55,37,0.20)] transition hover:-translate-y-px hover:bg-[#102D1C] disabled:cursor-wait disabled:translate-y-0 disabled:opacity-70"
               >
                 {loading ? (
                   "Opening clinic..."
@@ -322,8 +322,8 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-8 border-t border-[#DDDCD6] pt-6">
-              <p className="text-center text-xs leading-5 text-[#999890]">
+            <div className="mt-8 border-t border-[#DEE5DE] pt-6">
+              <p className="text-center text-xs leading-5 text-[#8B978F]">
                 Velyquo demo environment · No real patient information is
                 stored
               </p>

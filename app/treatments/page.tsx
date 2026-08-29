@@ -1347,7 +1347,7 @@ export default function TreatmentsPage() {
     };
 
   return (
-    <main className="min-h-screen bg-[#F5F4F0] text-[#171717]">
+    <main className="min-h-screen bg-[#F3F6F3] text-[#182019]">
 
       <div className="flex min-h-screen">
 
@@ -1358,19 +1358,19 @@ export default function TreatmentsPage() {
         <section className="min-w-0 flex-1">
 
           {/* HEADER */}
-          <header className="flex items-center justify-between border-b border-[#DDDCD6] bg-white px-6 py-5 lg:px-10">
+          <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[#E3E8E2] bg-[#FCFDFC]/95 px-6 py-4 backdrop-blur-xl lg:px-10">
 
             <div>
 
-              <p className="text-xs text-[#96958E]">
-                Clinic management
+              <p className="text-[9px] font-semibold uppercase tracking-[0.19em] text-[#7E9182]">
+                Velyquo treatment intelligence
               </p>
 
-              <h1 className="mt-1 text-xl font-semibold tracking-[-0.03em]">
+              <h1 className="mt-1.5 text-[20px] font-semibold tracking-[-0.045em] text-[#202922]">
                 Treatments
               </h1>
 
-              <p className="mt-1 text-[10px] text-[#999890]">
+              <p className="mt-1 text-[10px] text-[#929B93]">
                 {clinicSettings.clinicName || "Velyquo Aesthetics"}
               </p>
 
@@ -1381,7 +1381,7 @@ export default function TreatmentsPage() {
               <button
                 type="button"
                 onClick={openAddTreatment}
-                className="flex items-center gap-2 rounded-xl bg-[#171717] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#333]"
+                className="flex items-center gap-2 rounded-[12px] bg-[#1F3A2B] px-4 py-2.5 text-[12px] font-semibold text-white shadow-[0_10px_28px_rgba(31,58,43,0.16)] transition hover:-translate-y-px hover:bg-[#183023]"
               >
                 <Plus size={15} strokeWidth={2} />
                 Add treatment
@@ -1394,7 +1394,7 @@ export default function TreatmentsPage() {
                   clinicSettings.clinicName ||
                   "Clinic settings"
                 }
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-medium transition hover:bg-[#DCD8CE]"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#D7E1D7] bg-[#EAF1EA] text-[10px] font-semibold text-[#4A6150] transition hover:bg-[#E3ECE3]"
               >
                 {(
                   clinicSettings.initials ||
@@ -1413,37 +1413,37 @@ export default function TreatmentsPage() {
           </header>
 
           {/* CONTENT */}
-          <div className="p-6 lg:p-10">
+          <div className="mx-auto w-full max-w-[1520px] p-6 lg:px-10 lg:py-9">
 
             {/* TITLE */}
             <div>
 
-              <p className="text-sm text-[#71806C]">
-                Treatment intelligence
+              <p className="text-[10px] font-semibold uppercase tracking-[0.19em] text-[#688171]">
+                Intelligent treatment planning
               </p>
 
-              <h2 className="mt-2 text-4xl font-medium tracking-[-0.05em]">
+              <h2 className="mt-2 text-[38px] font-semibold leading-[1.02] tracking-[-0.06em] text-[#1A241C]">
                 Treatment plans
               </h2>
 
-              <p className="mt-3 max-w-xl text-sm leading-6 text-[#77766F]">
+              <p className="mt-4 max-w-2xl text-[12px] leading-6 text-[#7B857D]">
                 Turn skin analysis insights into personalised treatment recommendations, complete the clinical review and move directly into booking.
               </p>
 
             </div>
 
             {/* PATIENT */}
-            <div className="mt-8 flex flex-col justify-between gap-5 rounded-2xl border border-[#DDDCD6] bg-white p-5 sm:flex-row sm:items-center">
+            <div className="mt-8 flex flex-col justify-between gap-5 rounded-[24px] border border-[#DEE5DD] bg-[#FEFFFD] p-5 shadow-[0_14px_42px_rgba(26,42,31,0.04)] sm:flex-row sm:items-center">
 
               <div className="flex items-center gap-4">
 
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#E5E2D9] text-sm font-medium">
+                <div className="flex h-13 w-13 shrink-0 items-center justify-center rounded-full border border-[#D3DFD3] bg-[#EAF2EA] text-[11px] font-semibold text-[#46604D] shadow-[inset_0_0_0_4px_rgba(255,255,255,0.55)]">
                   {initials}
                 </div>
 
                 <div>
 
-                  <p className="text-xs text-[#999890]">
+                  <p className="text-xs text-[#929A93]">
                     Current patient
                   </p>
 
@@ -1451,7 +1451,7 @@ export default function TreatmentsPage() {
                     {patient.name}
                   </p>
 
-                  <p className="mt-1 text-xs text-[#77766F]">
+                  <p className="mt-1 text-xs text-[#667068]">
                     {patient.concern}
                     {" · "}
                     {clinicalProfile?.skinType ||
@@ -1468,7 +1468,7 @@ export default function TreatmentsPage() {
                   clinicalProfile.score >
                     0 && (
 
-                  <div className="rounded-full bg-[#F0F3EE] px-3 py-1 text-[10px] font-medium text-[#62715D]">
+                  <div className="rounded-full border border-[#D7E3D5] bg-[#EDF5ED] px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.07em] text-[#4E6855]">
                     Skin score{" "}
                     {
                       clinicalProfile.score
@@ -1483,7 +1483,7 @@ export default function TreatmentsPage() {
                   onClick={
                     openConsultation
                   }
-                  className="rounded-xl border border-[#DDDCD6] px-4 py-3 text-xs font-medium hover:bg-[#F7F6F2]"
+                  className="rounded-[12px] border border-[#DAE2DA] bg-white px-4 py-3 text-[11px] font-semibold text-[#566159] shadow-[0_4px_14px_rgba(27,43,32,0.025)] transition hover:-translate-y-px hover:bg-[#F6F9F6]"
                 >
                   View patient →
                 </button>
@@ -1495,7 +1495,7 @@ export default function TreatmentsPage() {
             {/* CONSULTATION / SAFETY REVIEW */}
             {!latestConsultation ? (
 
-              <div className="mt-6 rounded-2xl border border-[#E2D6C8] bg-[#F8F3EC] p-6">
+              <div className="mt-6 rounded-[22px] border border-[#E9DCCB] bg-[#FAF6F0] p-6 shadow-[0_10px_30px_rgba(86,66,40,0.035)]">
 
                 <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
 
@@ -1554,7 +1554,7 @@ export default function TreatmentsPage() {
               0 ||
               !latestConsultation.consentGiven ? (
 
-              <div className="mt-6 rounded-2xl border border-[#E3D2D2] bg-[#F8F1F1] p-6">
+              <div className="mt-6 rounded-[22px] border border-[#E8D7D7] bg-[#FAF4F4] p-6 shadow-[0_10px_30px_rgba(93,55,55,0.035)]">
 
                 <div className="flex items-start gap-4">
 
@@ -1670,7 +1670,7 @@ export default function TreatmentsPage() {
 
             ) : (
 
-              <div className="mt-6 rounded-2xl border border-[#D7DDD4] bg-[#F0F3EE] p-5">
+              <div className="mt-6 rounded-[22px] border border-[#D5E2D4] bg-[#ECF4EC] p-5 shadow-[0_10px_30px_rgba(35,62,44,0.04)]">
 
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 
@@ -1724,7 +1724,7 @@ export default function TreatmentsPage() {
             )}
 
             {/* AI RECOMMENDATION */}
-            <div className="mt-6 rounded-2xl border border-[#D7DDD4] bg-[#F0F3EE] p-6">
+            <div className="mt-6 rounded-[24px] border border-[#D5E2D4] bg-[#EAF3EA] p-6 shadow-[0_14px_38px_rgba(35,62,44,0.05)]">
 
               <div className="flex items-start gap-4">
 
@@ -1767,9 +1767,9 @@ export default function TreatmentsPage() {
               clinicalProfile.metrics
                 .length > 0 && (
 
-              <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-6">
+              <div className="mt-6 rounded-[24px] border border-[#DEE5DD] bg-[#FEFFFD] p-6 shadow-[0_12px_36px_rgba(26,42,31,0.04)]">
 
-                <p className="text-sm text-[#77766F]">
+                <p className="text-sm text-[#667068]">
                   Latest skin analysis
                 </p>
 
@@ -1793,7 +1793,7 @@ export default function TreatmentsPage() {
 
                           <div className="flex items-center justify-between">
 
-                            <p className="text-xs text-[#77766F]">
+                            <p className="text-xs text-[#667068]">
                               {
                                 metric.label
                               }
@@ -1810,7 +1810,7 @@ export default function TreatmentsPage() {
                           <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#ECEBE6]">
 
                             <div
-                              className="h-full rounded-full bg-[#7D8977]"
+                              className="h-full rounded-full bg-[#52705A]"
                               style={{
                                 width: `${metric.value}%`,
                               }}
@@ -1842,7 +1842,7 @@ export default function TreatmentsPage() {
                 "Active"
             ).length > 0 && (
 
-              <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-6">
+              <div className="mt-6 rounded-[24px] border border-[#DEE5DD] bg-[#FEFFFD] p-6 shadow-[0_12px_36px_rgba(26,42,31,0.04)]">
 
                 <div className="flex items-center gap-3">
 
@@ -1857,7 +1857,7 @@ export default function TreatmentsPage() {
 
                   <div>
 
-                    <p className="text-sm text-[#77766F]">
+                    <p className="text-sm text-[#667068]">
                       Patient treatment
                     </p>
 
@@ -1881,7 +1881,7 @@ export default function TreatmentsPage() {
 
                       <div
                         key={plan.id}
-                        className="flex flex-col justify-between gap-4 rounded-xl bg-[#F7F6F2] p-4 sm:flex-row sm:items-center"
+                        className="flex flex-col justify-between gap-4 rounded-xl bg-[#F5F8F4] p-4 sm:flex-row sm:items-center"
                       >
 
                         <div>
@@ -1916,7 +1916,7 @@ export default function TreatmentsPage() {
 
                           </div>
 
-                          <p className="mt-1 text-xs text-[#999890]">
+                          <p className="mt-1 text-xs text-[#929A93]">
                             {
                               plan.duration
                             }{" "}
@@ -1943,20 +1943,20 @@ export default function TreatmentsPage() {
             )}
 
             {/* TREATMENT CATALOGUE */}
-            <div className="mt-8 rounded-2xl border border-[#DDDCD6] bg-white p-6">
+            <div className="mt-8 rounded-[26px] border border-[#DDE4DC] bg-[#FEFFFD] p-6 shadow-[0_14px_42px_rgba(26,42,31,0.045)]">
 
               <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
 
                 <div>
-                  <p className="text-sm text-[#77766F]">
+                  <p className="text-sm text-[#667068]">
                     Clinic catalogue
                   </p>
 
-                  <h3 className="mt-1 text-xl font-semibold">
+                  <h3 className="mt-2 text-[24px] font-semibold tracking-[-0.045em] text-[#202922]">
                     Treatment catalogue
                   </h3>
 
-                  <p className="mt-2 max-w-2xl text-xs leading-5 text-[#999890]">
+                  <p className="mt-2 max-w-2xl text-[11px] leading-5 text-[#8D978F]">
                     Manage the treatments available for recommendations, treatment planning and booking. Inactive treatments stay in your catalogue but are removed from new recommendations.
                   </p>
                 </div>
@@ -1964,7 +1964,7 @@ export default function TreatmentsPage() {
                 <button
                   type="button"
                   onClick={openAddTreatment}
-                  className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#171717] px-4 py-3 text-xs font-medium text-white hover:bg-[#333]"
+                  className="flex shrink-0 items-center justify-center gap-2 rounded-[12px] bg-[#1F3A2B] px-4 py-3 text-[11px] font-semibold text-white shadow-[0_9px_24px_rgba(31,58,43,0.14)] transition hover:-translate-y-px hover:bg-[#183023]"
                 >
                   <Plus size={14} />
                   Add treatment
@@ -1977,7 +1977,7 @@ export default function TreatmentsPage() {
                 <div className="relative">
                   <Search
                     size={16}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#999890]"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#929A93]"
                   />
 
                   <input
@@ -1986,7 +1986,7 @@ export default function TreatmentsPage() {
                       setCatalogueSearch(event.target.value)
                     }
                     placeholder="Search treatments, categories or keywords..."
-                    className="w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] py-3 pl-11 pr-4 text-sm outline-none focus:border-[#99978F]"
+                    className="w-full rounded-[13px] border border-[#DEE5DD] bg-[#F7FAF7] py-3 pl-11 pr-4 text-[12px] outline-none transition focus:border-[#7E9984] focus:bg-white focus:shadow-[0_0_0_3px_rgba(74,111,82,0.07)]"
                   />
                 </div>
 
@@ -1995,7 +1995,7 @@ export default function TreatmentsPage() {
                   onChange={(event) =>
                     setCatalogueCategory(event.target.value)
                   }
-                  className="rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none focus:border-[#99978F]"
+                  className="rounded-[13px] border border-[#DEE5DD] bg-[#F7FAF7] px-4 py-3 text-[12px] outline-none transition focus:border-[#7E9984] focus:bg-white focus:shadow-[0_0_0_3px_rgba(74,111,82,0.07)]"
                 >
                   {catalogueCategories.map((category) => (
                     <option key={category} value={category}>
@@ -2009,7 +2009,7 @@ export default function TreatmentsPage() {
               </div>
 
               {catalogueMessage && (
-                <div className="mt-4 rounded-xl bg-[#F7F6F2] px-4 py-3 text-xs text-[#77766F]">
+                <div className="mt-4 rounded-xl bg-[#F5F8F4] px-4 py-3 text-xs text-[#667068]">
                   {catalogueMessage}
                 </div>
               )}
@@ -2020,14 +2020,14 @@ export default function TreatmentsPage() {
                     key={treatment.id}
                     className={`rounded-xl border p-5 ${
                       treatment.active
-                        ? "border-[#E4E2DC] bg-[#FAF9F6]"
-                        : "border-[#E5E3DE] bg-[#F4F3F0] opacity-75"
+                        ? "border-[#DFE6DE] bg-[#F8FAF7] shadow-[0_6px_20px_rgba(27,43,32,0.025)]"
+                        : "border-[#E5E9E4] bg-[#F3F5F2] opacity-65"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-white px-2.5 py-1 text-[9px] text-[#77766F]">
+                          <span className="rounded-full border border-[#E4E9E3] bg-white px-2.5 py-1 text-[9px] font-medium text-[#67726A]">
                             {treatment.category}
                           </span>
 
@@ -2035,7 +2035,7 @@ export default function TreatmentsPage() {
                             className={`rounded-full px-2.5 py-1 text-[9px] font-medium ${
                               treatment.active
                                 ? "bg-[#E8EEE5] text-[#62715D]"
-                                : "bg-[#E8E6E1] text-[#77766F]"
+                                : "bg-[#E8E6E1] text-[#667068]"
                             }`}
                           >
                             {treatment.active ? "Active" : "Inactive"}
@@ -2046,7 +2046,7 @@ export default function TreatmentsPage() {
                           {treatment.name}
                         </p>
 
-                        <p className="mt-2 line-clamp-2 text-xs leading-5 text-[#77766F]">
+                        <p className="mt-2 line-clamp-2 text-xs leading-5 text-[#667068]">
                           {treatment.description}
                         </p>
                       </div>
@@ -2055,7 +2055,7 @@ export default function TreatmentsPage() {
                         <p className="text-sm font-semibold">
                           {treatment.price}
                         </p>
-                        <p className="mt-1 text-[10px] text-[#999890]">
+                        <p className="mt-1 text-[10px] text-[#929B93]">
                           {treatment.duration}
                         </p>
                       </div>
@@ -2065,14 +2065,14 @@ export default function TreatmentsPage() {
                       {treatment.keywords.slice(0, 4).map((keyword) => (
                         <span
                           key={keyword}
-                          className="rounded-lg bg-white px-2.5 py-1.5 text-[9px] text-[#77766F]"
+                          className="rounded-[8px] border border-[#E5EAE4] bg-white px-2.5 py-1.5 text-[9px] text-[#67726A]"
                         >
                           {keyword}
                         </span>
                       ))}
 
                       {treatment.keywords.length > 4 && (
-                        <span className="rounded-lg bg-white px-2.5 py-1.5 text-[9px] text-[#999890]">
+                        <span className="rounded-[8px] border border-[#E5EAE4] bg-white px-2.5 py-1.5 text-[9px] text-[#929A93]">
                           +{treatment.keywords.length - 4} more
                         </span>
                       )}
@@ -2080,7 +2080,7 @@ export default function TreatmentsPage() {
 
                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#E8E6E0] pt-4">
                       <div>
-                        <p className="text-[9px] uppercase tracking-[0.12em] text-[#999890]">
+                        <p className="text-[9px] uppercase tracking-[0.12em] text-[#929A93]">
                           Recommendation match
                         </p>
                         <p className="mt-1 text-xs font-semibold text-[#62715D]">
@@ -2092,7 +2092,7 @@ export default function TreatmentsPage() {
                         <button
                           type="button"
                           onClick={() => openEditTreatment(treatment)}
-                          className="flex items-center gap-1.5 rounded-lg border border-[#DDDCD6] bg-white px-3 py-2 text-[10px] font-medium hover:bg-[#F7F6F2]"
+                          className="flex items-center gap-1.5 rounded-lg border border-[#DEE5DD] bg-white px-3 py-2 text-[10px] font-medium hover:bg-[#F5F8F4]"
                         >
                           <Pencil size={12} />
                           Edit
@@ -2103,7 +2103,7 @@ export default function TreatmentsPage() {
                           onClick={() =>
                             toggleTreatmentActive(treatment.id)
                           }
-                          className="flex items-center gap-1.5 rounded-lg border border-[#DDDCD6] bg-white px-3 py-2 text-[10px] font-medium hover:bg-[#F7F6F2]"
+                          className="flex items-center gap-1.5 rounded-lg border border-[#DEE5DD] bg-white px-3 py-2 text-[10px] font-medium hover:bg-[#F5F8F4]"
                         >
                           <Power size={12} />
                           {treatment.active
@@ -2126,11 +2126,11 @@ export default function TreatmentsPage() {
               </div>
 
               {filteredCatalogue.length === 0 && (
-                <div className="mt-5 rounded-xl border border-dashed border-[#DDDCD6] p-8 text-center">
+                <div className="mt-5 rounded-xl border border-dashed border-[#DEE5DD] p-8 text-center">
                   <p className="text-sm font-medium">
                     No treatments found
                   </p>
-                  <p className="mt-1 text-xs text-[#999890]">
+                  <p className="mt-1 text-xs text-[#929A93]">
                     Try a different search or category filter.
                   </p>
                 </div>
@@ -2145,17 +2145,17 @@ export default function TreatmentsPage() {
 
                 <div>
 
-                  <p className="text-sm text-[#77766F]">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#728479]">
                     Recommended treatments
                   </p>
 
-                  <h3 className="mt-1 text-xl font-semibold">
+                  <h3 className="mt-2 text-[24px] font-semibold tracking-[-0.045em] text-[#202922]">
                     Best matches
                   </h3>
 
                 </div>
 
-                <span className="text-xs text-[#999890]">
+                <span className="text-xs text-[#929A93]">
                   {
                     recommendedTreatments.length
                   }{" "}
@@ -2167,11 +2167,11 @@ export default function TreatmentsPage() {
               <div className="mt-5 grid gap-5 md:grid-cols-2">
 
                 {recommendedTreatments.length === 0 && (
-                  <div className="rounded-2xl border border-dashed border-[#DDDCD6] bg-white p-8 md:col-span-2">
+                  <div className="rounded-2xl border border-dashed border-[#DEE5DD] bg-white p-8 md:col-span-2">
                     <p className="text-sm font-medium">
                       No active treatments available
                     </p>
-                    <p className="mt-2 text-xs leading-5 text-[#999890]">
+                    <p className="mt-2 text-xs leading-5 text-[#929A93]">
                       Reactivate a catalogue treatment or add a new treatment to restore recommendations.
                     </p>
                   </div>
@@ -2214,14 +2214,14 @@ export default function TreatmentsPage() {
                         key={
                           treatment.name
                         }
-                        className="rounded-2xl border border-[#DDDCD6] bg-white p-6 transition hover:-translate-y-0.5 hover:shadow-sm"
+                        className="rounded-[24px] border border-[#DEE5DD] bg-[#FEFFFD] shadow-[0_12px_36px_rgba(26,42,31,0.04)] p-6 transition hover:-translate-y-0.5 hover:shadow-sm"
                       >
 
                         <div className="flex items-start justify-between gap-4">
 
                           <div>
 
-                            <span className="rounded-full bg-[#F0EFEA] px-3 py-1 text-[10px] text-[#77766F]">
+                            <span className="rounded-full bg-[#F0EFEA] px-3 py-1 text-[10px] text-[#667068]">
                               {
                                 treatment.category
                               }
@@ -2243,7 +2243,7 @@ export default function TreatmentsPage() {
                               }
                             </p>
 
-                            <p className="mt-1 text-[10px] text-[#999890]">
+                            <p className="mt-1 text-[10px] text-[#929B93]">
                               {
                                 treatment.duration
                               }
@@ -2253,7 +2253,7 @@ export default function TreatmentsPage() {
 
                         </div>
 
-                        <p className="mt-4 text-sm leading-6 text-[#77766F]">
+                        <p className="mt-4 text-sm leading-6 text-[#667068]">
                           {
                             treatment.description
                           }
@@ -2263,7 +2263,7 @@ export default function TreatmentsPage() {
 
                           <div>
 
-                            <p className="text-[9px] uppercase tracking-[0.12em] text-[#999890]">
+                            <p className="text-[9px] uppercase tracking-[0.12em] text-[#929A93]">
                               AI match
                             </p>
 
@@ -2283,7 +2283,7 @@ export default function TreatmentsPage() {
                             className={`rounded-xl px-4 py-2.5 text-xs font-medium transition ${
                               alreadyActive
                                 ? "border border-[#D7DDD4] bg-[#F0F3EE] text-[#62715D]"
-                                : "bg-[#171717] text-white hover:bg-[#333]"
+                                : "bg-[#1F3A2B] text-white shadow-[0_9px_24px_rgba(31,58,43,0.14)] transition hover:-translate-y-px hover:bg-[#183023]"
                             }`}
                           >
                             {alreadyActive
@@ -2309,7 +2309,7 @@ export default function TreatmentsPage() {
 
               <div
                 id="treatment-plan-builder"
-                className="mt-8 scroll-mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-6"
+                className="mt-8 scroll-mt-6 rounded-[24px] border border-[#DEE5DD] bg-[#FEFFFD] shadow-[0_12px_36px_rgba(26,42,31,0.04)] p-6"
               >
 
                 <div className="flex items-start justify-between gap-4">
@@ -2324,7 +2324,7 @@ export default function TreatmentsPage() {
                       Treatment plan
                     </h3>
 
-                    <p className="mt-2 text-sm text-[#77766F]">
+                    <p className="mt-2 text-sm text-[#667068]">
                       Create a personalised
                       treatment plan for{" "}
                       {patient.name}.
@@ -2336,7 +2336,7 @@ export default function TreatmentsPage() {
                     className={`rounded-full px-3 py-1 text-[10px] font-medium ${
                       planSaved
                         ? "bg-[#E8EEE5] text-[#62715D]"
-                        : "bg-[#F1F0EB] text-[#77766F]"
+                        : "bg-[#F1F0EB] text-[#667068]"
                     }`}
                   >
                     {planSaved
@@ -2348,9 +2348,9 @@ export default function TreatmentsPage() {
 
                 <div className="mt-6 grid gap-5 md:grid-cols-2">
 
-                  <div className="rounded-xl border border-[#ECEBE6] bg-[#FAF9F6] p-5">
+                  <div className="rounded-xl border border-[#ECEBE6] bg-[#F7FAF7] p-5">
 
-                    <p className="text-[10px] uppercase tracking-[0.12em] text-[#999890]">
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-[#929A93]">
                       Patient
                     </p>
 
@@ -2358,7 +2358,7 @@ export default function TreatmentsPage() {
                       {patient.name}
                     </p>
 
-                    <p className="mt-1 text-xs text-[#77766F]">
+                    <p className="mt-1 text-xs text-[#667068]">
                       {patient.concern}
                       {" · "}
                       {clinicalProfile?.skinType ||
@@ -2367,9 +2367,9 @@ export default function TreatmentsPage() {
 
                   </div>
 
-                  <div className="rounded-xl border border-[#ECEBE6] bg-[#FAF9F6] p-5">
+                  <div className="rounded-xl border border-[#ECEBE6] bg-[#F7FAF7] p-5">
 
-                    <p className="text-[10px] uppercase tracking-[0.12em] text-[#999890]">
+                    <p className="text-[10px] uppercase tracking-[0.12em] text-[#929A93]">
                       Selected treatment
                     </p>
 
@@ -2377,7 +2377,7 @@ export default function TreatmentsPage() {
                       {selected}
                     </p>
 
-                    <p className="mt-1 text-xs text-[#77766F]">
+                    <p className="mt-1 text-xs text-[#667068]">
                       Recommended based
                       on the patient&apos;s
                       latest recorded
@@ -2431,7 +2431,7 @@ export default function TreatmentsPage() {
 
                         <>
 
-                          <p className="mt-2 text-xs leading-5 text-[#77766F]">
+                          <p className="mt-2 text-xs leading-5 text-[#667068]">
                             No consultation is
                             currently recorded for
                             this patient. The
@@ -2518,7 +2518,7 @@ export default function TreatmentsPage() {
 
                             <div className="mt-3 rounded-lg bg-white p-4">
 
-                              <p className="text-[9px] uppercase tracking-[0.12em] text-[#999890]">
+                              <p className="text-[9px] uppercase tracking-[0.12em] text-[#929A93]">
                                 Relevant medical history
                               </p>
 
@@ -2538,7 +2538,7 @@ export default function TreatmentsPage() {
 
                             <div className="mt-3 rounded-lg bg-white p-4">
 
-                              <p className="text-[9px] uppercase tracking-[0.12em] text-[#999890]">
+                              <p className="text-[9px] uppercase tracking-[0.12em] text-[#929A93]">
                                 Consultation notes
                               </p>
 
@@ -2591,7 +2591,7 @@ export default function TreatmentsPage() {
                           Practitioner acknowledgement
                         </p>
 
-                        <p className="mt-1 max-w-3xl text-xs leading-5 text-[#77766F]">
+                        <p className="mt-1 max-w-3xl text-xs leading-5 text-[#667068]">
                           I have reviewed the
                           patient&apos;s recorded
                           consultation and clinical
@@ -2615,9 +2615,9 @@ export default function TreatmentsPage() {
 
                   <div className="mt-5 grid gap-4 sm:grid-cols-3">
 
-                    <div className="rounded-xl bg-[#F7F6F2] p-4">
+                    <div className="rounded-xl bg-[#F5F8F4] p-4">
 
-                      <p className="text-[10px] uppercase tracking-[0.12em] text-[#999890]">
+                      <p className="text-[10px] uppercase tracking-[0.12em] text-[#929A93]">
                         Skin score
                       </p>
 
@@ -2630,9 +2630,9 @@ export default function TreatmentsPage() {
 
                     </div>
 
-                    <div className="rounded-xl bg-[#F7F6F2] p-4">
+                    <div className="rounded-xl bg-[#F5F8F4] p-4">
 
-                      <p className="text-[10px] uppercase tracking-[0.12em] text-[#999890]">
+                      <p className="text-[10px] uppercase tracking-[0.12em] text-[#929A93]">
                         Skin type
                       </p>
 
@@ -2644,9 +2644,9 @@ export default function TreatmentsPage() {
 
                     </div>
 
-                    <div className="rounded-xl bg-[#F7F6F2] p-4">
+                    <div className="rounded-xl bg-[#F5F8F4] p-4">
 
-                      <p className="text-[10px] uppercase tracking-[0.12em] text-[#999890]">
+                      <p className="text-[10px] uppercase tracking-[0.12em] text-[#929A93]">
                         Priority
                       </p>
 
@@ -2663,7 +2663,7 @@ export default function TreatmentsPage() {
 
                 <div className="mt-5">
 
-                  <label className="text-xs font-medium text-[#77766F]">
+                  <label className="text-xs font-medium text-[#667068]">
                     Treatment plan notes
                   </label>
 
@@ -2683,7 +2683,7 @@ export default function TreatmentsPage() {
                         ""
                       );
                     }}
-                    className="mt-2 w-full resize-none rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none focus:border-[#99978F]"
+                    className="mt-2 w-full resize-none rounded-[13px] border border-[#DEE5DD] bg-[#F7FAF7] px-4 py-3 text-sm outline-none focus:border-[#99978F]"
                   />
 
                 </div>
@@ -2746,7 +2746,7 @@ export default function TreatmentsPage() {
                         ""
                       );
                     }}
-                    className="rounded-xl border border-[#DDDCD6] px-5 py-3 text-sm font-medium hover:bg-[#F7F6F2]"
+                    className="rounded-xl border border-[#DEE5DD] px-5 py-3 text-sm font-medium hover:bg-[#F5F8F4]"
                   >
                     Cancel
                   </button>
@@ -2756,7 +2756,7 @@ export default function TreatmentsPage() {
                     onClick={
                       saveTreatmentPlan
                     }
-                    className="flex items-center justify-center gap-2 rounded-xl border border-[#DDDCD6] bg-white px-5 py-3 text-sm font-medium hover:bg-[#F7F6F2]"
+                    className="flex items-center justify-center gap-2 rounded-[12px] border border-[#DEE5DD] bg-white px-5 py-3 text-sm font-medium hover:bg-[#F5F8F4]"
                   >
 
                     {planSaved && (
@@ -2792,7 +2792,7 @@ export default function TreatmentsPage() {
                 {clinicalReviewRequired &&
                   !clinicalReviewAcknowledged && (
 
-                  <p className="mt-3 text-right text-[10px] text-[#999890]">
+                  <p className="mt-3 text-right text-[10px] text-[#929A93]">
                     Practitioner acknowledgement
                     is required before continuing.
                   </p>
@@ -2812,7 +2812,7 @@ export default function TreatmentsPage() {
       {/* ADD / EDIT TREATMENT MODAL */}
       {showTreatmentModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[#DDDCD6] bg-white shadow-xl">
+          <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-[24px] border border-[#DEE5DD] bg-[#FEFFFD] shadow-[0_12px_36px_rgba(26,42,31,0.04)] shadow-xl">
 
             <div className="sticky top-0 z-10 flex items-start justify-between border-b border-[#ECEBE6] bg-white px-6 py-5">
               <div>
@@ -2829,7 +2829,7 @@ export default function TreatmentsPage() {
               <button
                 type="button"
                 onClick={closeTreatmentModal}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#DDDCD6] hover:bg-[#F7F6F2]"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#DEE5DD] hover:bg-[#F5F8F4]"
               >
                 <X size={16} />
               </button>
@@ -2893,7 +2893,7 @@ export default function TreatmentsPage() {
               </div>
 
               <div className="mt-4">
-                <label className="text-xs font-medium text-[#77766F]">
+                <label className="text-xs font-medium text-[#667068]">
                   Description
                 </label>
 
@@ -2907,15 +2907,15 @@ export default function TreatmentsPage() {
                     )
                   }
                   placeholder="Describe what the treatment is designed to address..."
-                  className="mt-2 w-full resize-none rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none focus:border-[#99978F]"
+                  className="mt-2 w-full resize-none rounded-[13px] border border-[#DEE5DD] bg-[#F7FAF7] px-4 py-3 text-sm outline-none focus:border-[#99978F]"
                 />
               </div>
 
-              <div className="mt-4 rounded-xl bg-[#F7F6F2] p-4">
-                <p className="text-[10px] uppercase tracking-[0.12em] text-[#999890]">
+              <div className="mt-4 rounded-xl bg-[#F5F8F4] p-4">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-[#929A93]">
                   AI matching keywords
                 </p>
-                <p className="mt-2 text-xs leading-5 text-[#77766F]">
+                <p className="mt-2 text-xs leading-5 text-[#667068]">
                   Separate keywords with commas. These keywords help the prototype rank treatments against a patient&apos;s recorded concern. They do not determine clinical suitability.
                 </p>
               </div>
@@ -2930,7 +2930,7 @@ export default function TreatmentsPage() {
                 <button
                   type="button"
                   onClick={closeTreatmentModal}
-                  className="rounded-xl border border-[#DDDCD6] px-5 py-3 text-sm font-medium hover:bg-[#F7F6F2]"
+                  className="rounded-xl border border-[#DEE5DD] px-5 py-3 text-sm font-medium hover:bg-[#F5F8F4]"
                 >
                   Cancel
                 </button>
@@ -2968,7 +2968,7 @@ function CatalogueField({
 }) {
   return (
     <div>
-      <label className="text-xs font-medium text-[#77766F]">
+      <label className="text-xs font-medium text-[#667068]">
         {label}
       </label>
 
@@ -2978,7 +2978,7 @@ function CatalogueField({
           onChange(event.target.value)
         }
         placeholder={placeholder}
-        className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none focus:border-[#99978F]"
+        className="mt-2 w-full rounded-[13px] border border-[#DEE5DD] bg-[#F7FAF7] px-4 py-3 text-sm outline-none focus:border-[#99978F]"
       />
     </div>
   );
@@ -2994,7 +2994,7 @@ function ReviewItem({
   return (
     <div className="rounded-lg bg-white p-4">
 
-      <p className="text-[9px] uppercase tracking-[0.12em] text-[#999890]">
+      <p className="text-[9px] uppercase tracking-[0.12em] text-[#929A93]">
         {label}
       </p>
 

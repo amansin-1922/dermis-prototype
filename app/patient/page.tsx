@@ -2024,7 +2024,7 @@ export default function PatientProfile() {
     };
 
   return (
-    <main className="min-h-screen bg-[#F5F4F0] text-[#171717]">
+    <main className="min-h-screen bg-[#F4F6F3] text-[#172019]">
 
       <div className="flex min-h-screen">
 
@@ -2033,44 +2033,44 @@ export default function PatientProfile() {
         <section className="min-w-0 flex-1">
 
           {/* HEADER */}
-          <header className="flex items-center justify-between border-b border-[#DDDCD6] bg-white px-6 py-5 lg:px-10">
+          <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[#E4E8E2] bg-[#FCFDFC]/95 px-6 py-4 backdrop-blur-xl lg:px-10">
 
             <div className="flex items-center gap-3">
 
               <a
                 href="/patients"
-                className="text-sm text-[#999890] hover:text-black"
+                className="text-[11px] font-medium text-[#8B948C] transition hover:text-[#24402F]"
               >
                 Patients
               </a>
 
-              <span className="text-[#C1C0B9]">
+              <span className="text-[#C8CDC7]">
                 /
               </span>
 
-              <span className="text-sm font-medium">
+              <span className="text-[11px] font-semibold text-[#2C352E]">
                 {patient.name}
               </span>
 
             </div>
 
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-medium">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#D6E0D6] bg-[#EAF0EA] text-[10px] font-semibold text-[#486151] shadow-[0_4px_14px_rgba(31,56,39,0.06)]">
               {initials}
             </div>
 
           </header>
 
           {/* CONTENT */}
-          <div className="p-6 lg:p-10">
+          <div className="mx-auto w-full max-w-[1520px] p-6 lg:px-10 lg:py-9">
 
             {/* PATIENT HEADER */}
-            <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+            <div className="relative overflow-hidden rounded-[26px] border border-[#DFE5DE] bg-[#FEFFFD] p-6 shadow-[0_16px_50px_rgba(28,44,33,0.05)] lg:p-7">
 
               <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
 
                 <div className="flex items-center gap-5">
 
-                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#E5E2D9] text-lg font-medium">
+                  <div className="flex h-[78px] w-[78px] shrink-0 items-center justify-center rounded-full border border-[#D5E1D5] bg-[#E9F0E9] text-[16px] font-semibold tracking-[-0.02em] text-[#496050] shadow-[inset_0_0_0_6px_#F8FBF8]">
                     {initials}
                   </div>
 
@@ -2078,16 +2078,16 @@ export default function PatientProfile() {
 
                     <div className="flex flex-wrap items-center gap-3">
 
-                      <h1 className="text-2xl font-semibold tracking-[-0.04em]">
+                      <h1 className="text-[30px] font-semibold tracking-[-0.05em] text-[#1C261F]">
                         {patient.name}
                       </h1>
 
                       <span
-                        className={`rounded-full px-3 py-1 text-[10px] font-medium ${
+                        className={`rounded-full px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] ${
                           patient.status ===
                           "Active"
-                            ? "bg-[#E8EEE5] text-[#62715D]"
-                            : "bg-[#F1F0EB] text-[#77766F]"
+                            ? "border border-[#D6E3D4] bg-[#EDF5EC] text-[#4F6B54]"
+                            : "border border-[#E4E6E1] bg-[#F4F5F2] text-[#737B74]"
                         }`}
                       >
                         {patient.status}
@@ -2095,11 +2095,11 @@ export default function PatientProfile() {
 
                     </div>
 
-                    <p className="mt-2 text-sm text-[#77766F]">
+                    <p className="mt-2 text-[12px] font-medium text-[#626D65]">
                       {patient.email}
                     </p>
 
-                    <p className="mt-1 text-xs text-[#999890]">
+                    <p className="mt-1.5 text-[10px] text-[#929A93]">
                       {patient.age} years old ·{" "}
                       {patient.analyses} analyses
                     </p>
@@ -2115,7 +2115,7 @@ export default function PatientProfile() {
                     onClick={
                       openEditPatient
                     }
-                    className="rounded-xl border border-[#DDDCD6] px-4 py-3 text-sm font-medium hover:bg-[#F7F6F2]"
+                    className="rounded-[12px] border border-[#DCE2DC] bg-white px-4 py-3 text-[12px] font-semibold text-[#58635B] shadow-[0_4px_14px_rgba(31,56,39,0.03)] transition hover:-translate-y-px hover:bg-[#F6F9F6] hover:text-[#294333]"
                   >
                     Edit Patient
                   </button>
@@ -2125,7 +2125,7 @@ export default function PatientProfile() {
                     onClick={
                       startNewAnalysis
                     }
-                    className="rounded-xl bg-[#171717] px-4 py-3 text-sm font-medium text-white hover:bg-[#333]"
+                    className="rounded-[12px] bg-[#24402F] px-4 py-3 text-[12px] font-semibold text-white shadow-[0_10px_28px_rgba(36,64,47,0.18)] transition hover:-translate-y-px hover:bg-[#1B3325]"
                   >
                     + New Analysis
                   </button>
@@ -2135,7 +2135,7 @@ export default function PatientProfile() {
               </div>
 
               {/* TABS */}
-              <div className="mt-7 flex gap-6 overflow-x-auto border-t border-[#ECEBE6] pt-5">
+              <div className="mt-7 flex gap-1 overflow-x-auto border-t border-[#ECEFEB] pt-4">
 
                 {tabs.map(
                   (tab) => (
@@ -2148,11 +2148,11 @@ export default function PatientProfile() {
                           tab
                         )
                       }
-                      className={`whitespace-nowrap pb-2 text-sm ${
+                      className={`whitespace-nowrap rounded-[11px] px-3.5 py-2.5 text-[11px] font-medium transition ${
                         activeTab ===
                         tab
-                          ? "border-b-2 border-[#171717] font-medium"
-                          : "text-[#88877F]"
+                          ? "bg-[#E9F1E9] text-[#294333] shadow-[inset_0_0_0_1px_#D6E2D6]"
+                          : "text-[#7F8981] hover:bg-[#F4F7F3] hover:text-[#374239]"
                       }`}
                     >
                       {tab}
@@ -2168,13 +2168,13 @@ export default function PatientProfile() {
             {/* EDIT PATIENT */}
             {showEditPatient && (
 
-              <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-6">
+              <div className="mt-6 rounded-[22px] border border-[#E1E6E0] bg-[#FEFFFD] shadow-[0_10px_34px_rgba(28,44,33,0.035)] p-6">
 
                 <div className="flex items-start justify-between gap-4">
 
                   <div>
 
-                    <p className="text-sm text-[#77766F]">
+                    <p className="text-sm text-[#667068]">
                       Patient Management
                     </p>
 
@@ -2182,7 +2182,7 @@ export default function PatientProfile() {
                       Edit Patient
                     </h2>
 
-                    <p className="mt-2 text-xs leading-5 text-[#999890]">
+                    <p className="mt-2 text-xs leading-5 text-[#929A93]">
                       Update the patient record. Changes are saved across the prototype.
                     </p>
 
@@ -2193,7 +2193,7 @@ export default function PatientProfile() {
                     onClick={
                       closeEditPatient
                     }
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#DDDCD6] text-[#77766F] hover:bg-[#F7F6F2]"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#E1E6E0] text-[#667068] hover:bg-[#F5F8F4]"
                     aria-label="Close patient editor"
                   >
                     <X
@@ -2252,7 +2252,7 @@ export default function PatientProfile() {
 
                   <div>
 
-                    <label className="text-xs font-medium text-[#77766F]">
+                    <label className="text-xs font-medium text-[#667068]">
                       Age
                     </label>
 
@@ -2271,14 +2271,14 @@ export default function PatientProfile() {
                           )
                         )
                       }
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#99978F]"
+                      className="mt-2 w-full rounded-[12px] border border-[#E0E5DF] bg-[#F8FAF7] px-4 py-3 text-sm outline-none transition focus:border-[#829A87] focus:bg-white focus:shadow-[0_0_0_3px_rgba(77,112,83,0.07)]"
                     />
 
                   </div>
 
                   <div>
 
-                    <label className="text-xs font-medium text-[#77766F]">
+                    <label className="text-xs font-medium text-[#667068]">
                       Primary Skin Concern
                     </label>
 
@@ -2292,7 +2292,7 @@ export default function PatientProfile() {
                           event.target.value
                         )
                       }
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#99978F]"
+                      className="mt-2 w-full rounded-[12px] border border-[#E0E5DF] bg-[#F8FAF7] px-4 py-3 text-sm outline-none transition focus:border-[#829A87] focus:bg-white focus:shadow-[0_0_0_3px_rgba(77,112,83,0.07)]"
                     >
 
                       <option value="Acne">
@@ -2361,7 +2361,7 @@ export default function PatientProfile() {
 
                   <div>
 
-                    <label className="text-xs font-medium text-[#77766F]">
+                    <label className="text-xs font-medium text-[#667068]">
                       Patient status
                     </label>
 
@@ -2375,7 +2375,7 @@ export default function PatientProfile() {
                           event.target.value
                         )
                       }
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#99978F]"
+                      className="mt-2 w-full rounded-[12px] border border-[#E0E5DF] bg-[#F8FAF7] px-4 py-3 text-sm outline-none transition focus:border-[#829A87] focus:bg-white focus:shadow-[0_0_0_3px_rgba(77,112,83,0.07)]"
                     >
 
                       <option value="Active">
@@ -2392,15 +2392,15 @@ export default function PatientProfile() {
 
                 </div>
 
-                <div className="mt-6 rounded-xl bg-[#F7F6F2] p-5">
+                <div className="mt-6 rounded-xl bg-[#F5F8F4] p-5">
 
-                  <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#999890]">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#929A93]">
                     Patient preview
                   </p>
 
                   <div className="mt-4 flex items-center gap-3">
 
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-medium">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#EAF0EA] text-xs font-medium">
                       {editPatient.name
                         .split(" ")
                         .filter(Boolean)
@@ -2421,7 +2421,7 @@ export default function PatientProfile() {
                           "Patient name"}
                       </p>
 
-                      <p className="mt-1 text-xs text-[#77766F]">
+                      <p className="mt-1 text-xs text-[#667068]">
                         {editPatient.concern ||
                           "No concern"}
                         {" · "}
@@ -2443,7 +2443,7 @@ export default function PatientProfile() {
                     onClick={
                       closeEditPatient
                     }
-                    className="rounded-xl border border-[#DDDCD6] px-5 py-3 text-sm font-medium hover:bg-[#F7F6F2]"
+                    className="rounded-xl border border-[#E1E6E0] px-5 py-3 text-sm font-medium hover:bg-[#F5F8F4]"
                   >
                     Cancel
                   </button>
@@ -2466,8 +2466,8 @@ export default function PatientProfile() {
                       editPatient.phone.trim() &&
                       editPatient.concern.trim() &&
                       editPatient.age > 0
-                        ? "bg-[#171717] text-white hover:bg-[#333]"
-                        : "cursor-not-allowed bg-[#DDDCD6] text-[#999890]"
+                        ? "bg-[#24402F] text-white shadow-[0_8px_22px_rgba(36,64,47,0.14)] hover:bg-[#1B3325]"
+                        : "cursor-not-allowed bg-[#DDDCD6] text-[#929A93]"
                     }`}
                   >
                     {patientSaved ? (
@@ -2520,11 +2520,11 @@ export default function PatientProfile() {
                             </p>
 
                             <span
-                              className={`rounded-full px-3 py-1 text-[10px] font-medium ${
+                              className={`rounded-full px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] ${
                                 currentFollowUp.status === "Due"
                                   ? "bg-[#F5F0E7] text-[#806E52]"
                                   : currentFollowUp.status === "Scheduled"
-                                    ? "bg-[#E8EEE5] text-[#62715D]"
+                                    ? "border border-[#D6E3D4] bg-[#EDF5EC] text-[#4F6B54]"
                                     : "bg-[#EEF0F5] text-[#667085]"
                               }`}
                             >
@@ -2544,7 +2544,7 @@ export default function PatientProfile() {
                             </span>
                           </p>
 
-                          <p className="mt-1 text-xs leading-5 text-[#999890]">
+                          <p className="mt-1 text-xs leading-5 text-[#929A93]">
                             Treatment completed{" "}
                             {currentFollowUp.completedDate}
                             {currentFollowUp.practitioner
@@ -2563,7 +2563,7 @@ export default function PatientProfile() {
                           onClick={() =>
                             bookPatientFollowUp(currentFollowUp)
                           }
-                          className="flex items-center gap-2 rounded-xl border border-[#DDDCD6] bg-white px-4 py-3 text-xs font-medium transition hover:bg-[#F7F6F2]"
+                          className="flex items-center gap-2 rounded-xl border border-[#E1E6E0] bg-white px-4 py-3 text-xs font-medium transition hover:bg-[#F5F8F4]"
                         >
                           <CalendarDays size={14} strokeWidth={1.7} />
                           Book Follow-up
@@ -2591,13 +2591,13 @@ export default function PatientProfile() {
                 <div className="grid gap-6 xl:grid-cols-[1.35fr_1fr]">
 
                 {/* SCORE */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="relative overflow-hidden rounded-[26px] border border-[#DFE5DE] bg-[#FEFFFD] p-6 shadow-[0_16px_50px_rgba(28,44,33,0.05)] lg:p-7">
 
                   <div className="flex items-start justify-between">
 
                     <div>
 
-                      <p className="text-sm text-[#77766F]">
+                      <p className="text-sm text-[#667068]">
                         Overall Skin Score
                       </p>
 
@@ -2609,7 +2609,7 @@ export default function PatientProfile() {
                           }
                         </span>
 
-                        <span className="mb-2 text-sm text-[#77766F]">
+                        <span className="mb-2 text-sm text-[#667068]">
                           / 100
                         </span>
 
@@ -2648,10 +2648,10 @@ export default function PatientProfile() {
                             key={
                               metric.label
                             }
-                            className="rounded-xl border border-[#ECEBE6] p-4"
+                            className="rounded-xl border border-[#EAEEEA] p-4"
                           >
 
-                            <p className="text-[10px] text-[#999890]">
+                            <p className="text-[10px] text-[#929A93]">
                               {
                                 metric.label
                               }
@@ -2693,7 +2693,7 @@ export default function PatientProfile() {
                 </div>
 
                 {/* DETAILS */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="relative overflow-hidden rounded-[26px] border border-[#DFE5DE] bg-[#FEFFFD] p-6 shadow-[0_16px_50px_rgba(28,44,33,0.05)] lg:p-7">
 
                   <h2 className="text-lg font-semibold">
                     Patient details
@@ -2746,7 +2746,7 @@ export default function PatientProfile() {
                 </div>
 
                 {/* CONSULTATION SUMMARY */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="relative overflow-hidden rounded-[26px] border border-[#DFE5DE] bg-[#FEFFFD] p-6 shadow-[0_16px_50px_rgba(28,44,33,0.05)] lg:p-7">
 
                   <div className="flex items-center gap-3">
 
@@ -2761,7 +2761,7 @@ export default function PatientProfile() {
 
                     <div>
 
-                      <p className="text-xs text-[#999890]">
+                      <p className="text-xs text-[#929A93]">
                         Clinical Intake
                       </p>
 
@@ -2825,7 +2825,7 @@ export default function PatientProfile() {
 
                   ) : (
 
-                    <p className="mt-5 text-xs leading-5 text-[#77766F]">
+                    <p className="mt-5 text-xs leading-5 text-[#667068]">
                       No consultation intake has
                       been saved for this patient.
                     </p>
@@ -2839,7 +2839,7 @@ export default function PatientProfile() {
                         "Consultation"
                       )
                     }
-                    className="mt-5 w-full rounded-xl border border-[#DDDCD6] px-5 py-3 text-sm font-medium hover:bg-[#F7F6F2]"
+                    className="mt-5 w-full rounded-xl border border-[#E1E6E0] px-5 py-3 text-sm font-medium hover:bg-[#F5F8F4]"
                   >
                     Open Consultation →
                   </button>
@@ -2847,11 +2847,11 @@ export default function PatientProfile() {
                 </div>
 
                 {/* TREATMENTS */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="relative overflow-hidden rounded-[26px] border border-[#DFE5DE] bg-[#FEFFFD] p-6 shadow-[0_16px_50px_rgba(28,44,33,0.05)] lg:p-7">
 
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-xs text-[#999890]">
+                      <p className="text-xs text-[#929A93]">
                         Current Treatment Plan
                       </p>
 
@@ -2860,7 +2860,7 @@ export default function PatientProfile() {
                       </h3>
                     </div>
 
-                    <span className="rounded-full bg-[#F1F0EB] px-3 py-1 text-[10px] font-medium text-[#77766F]">
+                    <span className="rounded-full bg-[#F1F0EB] px-3 py-1 text-[10px] font-medium text-[#667068]">
                       {activeTreatmentPlans.length} active
                     </span>
                   </div>
@@ -2874,7 +2874,7 @@ export default function PatientProfile() {
 
                           <div
                             key={plan.id}
-                            className="rounded-xl bg-[#F7F6F2] p-4"
+                            className="rounded-xl bg-[#F5F8F4] p-4"
                           >
 
                             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
@@ -2907,13 +2907,13 @@ export default function PatientProfile() {
 
                                 </div>
 
-                                <p className="mt-2 text-xs leading-5 text-[#77766F]">
+                                <p className="mt-2 text-xs leading-5 text-[#667068]">
                                   {plan.notes ||
                                     "Treatment plan saved from the Treatments workspace."}
                                 </p>
 
                                 {plan.createdAt && (
-                                  <p className="mt-2 text-[10px] text-[#999890]">
+                                  <p className="mt-2 text-[10px] text-[#929A93]">
                                     Created {plan.createdAt}
                                   </p>
                                 )}
@@ -2923,7 +2923,7 @@ export default function PatientProfile() {
                               <div className="grid shrink-0 grid-cols-2 gap-2 sm:min-w-[180px]">
 
                                 <div className="rounded-lg bg-white px-3 py-2.5 text-center">
-                                  <p className="text-[9px] uppercase tracking-[0.1em] text-[#999890]">
+                                  <p className="text-[9px] uppercase tracking-[0.1em] text-[#929A93]">
                                     Duration
                                   </p>
                                   <p className="mt-1 text-xs font-semibold tabular-nums">
@@ -2932,7 +2932,7 @@ export default function PatientProfile() {
                                 </div>
 
                                 <div className="rounded-lg bg-white px-3 py-2.5 text-center">
-                                  <p className="text-[9px] uppercase tracking-[0.1em] text-[#999890]">
+                                  <p className="text-[9px] uppercase tracking-[0.1em] text-[#929A93]">
                                     Price
                                   </p>
                                   <p className="mt-1 text-xs font-semibold tabular-nums">
@@ -2953,13 +2953,13 @@ export default function PatientProfile() {
 
                   ) : (
 
-                    <div className="mt-5 rounded-xl bg-[#F7F6F2] p-5">
+                    <div className="mt-5 rounded-xl bg-[#F5F8F4] p-5">
 
                       <p className="text-sm font-medium">
                         No active treatment plan
                       </p>
 
-                      <p className="mt-2 text-xs leading-5 text-[#999890]">
+                      <p className="mt-2 text-xs leading-5 text-[#929A93]">
                         Create or save a treatment plan from the Treatments workspace and it will appear here automatically.
                       </p>
 
@@ -2974,7 +2974,7 @@ export default function PatientProfile() {
                         <p className="text-xs font-medium">
                           Completed plans
                         </p>
-                        <p className="mt-1 text-[10px] text-[#999890]">
+                        <p className="mt-1 text-[10px] text-[#929A93]">
                           Historical plans are available in the Treatments tab.
                         </p>
                       </div>
@@ -3047,7 +3047,7 @@ export default function PatientProfile() {
                       key={
                         metric.label
                       }
-                      className="rounded-2xl border border-[#DDDCD6] bg-white p-6"
+                      className="rounded-[22px] border border-[#E1E6E0] bg-[#FEFFFD] shadow-[0_10px_34px_rgba(28,44,33,0.035)] p-6"
                     >
 
                       <div className="flex items-center justify-between">
@@ -3058,7 +3058,7 @@ export default function PatientProfile() {
                           }
                         </p>
 
-                        <span className="text-xl font-semibold">
+                        <span className="text-[21px] font-semibold tracking-[-0.035em] text-[#202A22]">
                           {
                             metric.value
                           }
@@ -3131,12 +3131,12 @@ export default function PatientProfile() {
                   />
                 </div>
 
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white">
-                  <div className="flex flex-col justify-between gap-4 border-b border-[#ECEBE6] px-6 py-5 sm:flex-row sm:items-center">
+                <div className="rounded-[22px] border border-[#E1E6E0] bg-[#FEFFFD] shadow-[0_10px_34px_rgba(28,44,33,0.035)]">
+                  <div className="flex flex-col justify-between gap-4 border-b border-[#EAEEEA] px-6 py-5 sm:flex-row sm:items-center">
                     <div>
-                      <p className="text-sm text-[#77766F]">Skin Intelligence</p>
+                      <p className="text-sm text-[#667068]">Skin Intelligence</p>
                       <h2 className="mt-1 text-lg font-semibold">Analysis History</h2>
-                      <p className="mt-2 text-xs text-[#999890]">
+                      <p className="mt-2 text-xs text-[#929A93]">
                         Saved AI skin analyses for this patient.
                       </p>
                     </div>
@@ -3146,7 +3146,7 @@ export default function PatientProfile() {
                         <button
                           type="button"
                           onClick={compareSavedAnalyses}
-                          className="rounded-xl border border-[#DDDCD6] px-4 py-2.5 text-xs font-medium hover:bg-[#F7F6F2]"
+                          className="rounded-xl border border-[#E1E6E0] px-4 py-2.5 text-xs font-medium hover:bg-[#F5F8F4]"
                         >
                           Compare analyses →
                         </button>
@@ -3180,7 +3180,7 @@ export default function PatientProfile() {
                             className="px-6 py-6"
                           >
                             <div className="grid gap-5 lg:grid-cols-[120px_minmax(0,1fr)_auto] lg:items-center">
-                              <div className="overflow-hidden rounded-xl border border-[#ECEBE6] bg-[#F7F6F2]">
+                              <div className="overflow-hidden rounded-xl border border-[#EAEEEA] bg-[#F5F8F4]">
                                 {image ? (
                                   <img
                                     src={image}
@@ -3192,7 +3192,7 @@ export default function PatientProfile() {
                                     <Images
                                       size={22}
                                       strokeWidth={1.6}
-                                      className="text-[#999890]"
+                                      className="text-[#929A93]"
                                     />
                                   </div>
                                 )}
@@ -3208,7 +3208,7 @@ export default function PatientProfile() {
                                   )}
                                 </div>
 
-                                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] text-[#999890]">
+                                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] text-[#929A93]">
                                   <span className="flex items-center gap-1.5">
                                     <CalendarDays size={12} strokeWidth={1.7} />
                                     {getAnalysisDate(analysis)}
@@ -3221,7 +3221,7 @@ export default function PatientProfile() {
                                           ? "text-[#62715D]"
                                           : change < 0
                                           ? "text-[#8A6666]"
-                                          : "text-[#77766F]"
+                                          : "text-[#667068]"
                                       }
                                     >
                                       {formatScoreChange(change)} vs previous
@@ -3229,7 +3229,7 @@ export default function PatientProfile() {
                                   )}
                                 </div>
 
-                                <p className="mt-3 max-w-2xl text-xs leading-5 text-[#77766F]">
+                                <p className="mt-3 max-w-2xl text-xs leading-5 text-[#667068]">
                                   {getAnalysisSummary(analysis, patient.concern)}
                                 </p>
 
@@ -3248,8 +3248,8 @@ export default function PatientProfile() {
                               </div>
 
                               <div className="flex items-center gap-3 lg:flex-col lg:items-end">
-                                <div className="min-w-[92px] rounded-xl bg-[#F7F6F2] px-4 py-3">
-                                  <p className="text-[9px] uppercase tracking-[0.1em] text-[#999890]">
+                                <div className="min-w-[92px] rounded-xl bg-[#F5F8F4] px-4 py-3">
+                                  <p className="text-[9px] uppercase tracking-[0.1em] text-[#929A93]">
                                     Skin score
                                   </p>
                                   <p className="mt-1 text-xl font-semibold">{score}</p>
@@ -3258,7 +3258,7 @@ export default function PatientProfile() {
                                 <button
                                   type="button"
                                   onClick={() => openSavedAnalysis(analysis)}
-                                  className="flex items-center gap-2 whitespace-nowrap rounded-xl border border-[#DDDCD6] px-4 py-2.5 text-xs font-medium hover:bg-[#F7F6F2]"
+                                  className="flex items-center gap-2 whitespace-nowrap rounded-xl border border-[#E1E6E0] px-4 py-2.5 text-xs font-medium hover:bg-[#F5F8F4]"
                                 >
                                   Open analysis
                                   <ArrowRight size={13} strokeWidth={1.8} />
@@ -3275,7 +3275,7 @@ export default function PatientProfile() {
                         <Activity size={19} strokeWidth={1.7} />
                       </div>
                       <p className="mt-4 text-sm font-medium">No saved analyses yet</p>
-                      <p className="mt-2 text-xs text-[#999890]">
+                      <p className="mt-2 text-xs text-[#929A93]">
                         Complete and save a skin analysis for this patient.
                       </p>
                       <button
@@ -3298,7 +3298,7 @@ export default function PatientProfile() {
               <div className="mt-6 space-y-6">
 
                 {/* CONSULTATION STATUS */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="relative overflow-hidden rounded-[26px] border border-[#DFE5DE] bg-[#FEFFFD] p-6 shadow-[0_16px_50px_rgba(28,44,33,0.05)] lg:p-7">
 
                   <div className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
 
@@ -3315,7 +3315,7 @@ export default function PatientProfile() {
 
                       <div>
 
-                        <p className="text-xs text-[#999890]">
+                        <p className="text-xs text-[#929A93]">
                           Patient safety
                         </p>
 
@@ -3323,7 +3323,7 @@ export default function PatientProfile() {
                           Consultation & intake
                         </h2>
 
-                        <p className="mt-1 text-xs text-[#77766F]">
+                        <p className="mt-1 text-xs text-[#667068]">
                           Record relevant clinical
                           information before
                           treatment.
@@ -3350,7 +3350,7 @@ export default function PatientProfile() {
                 </div>
 
                 {/* FORM */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="relative overflow-hidden rounded-[26px] border border-[#DFE5DE] bg-[#FEFFFD] p-6 shadow-[0_16px_50px_rgba(28,44,33,0.05)] lg:p-7">
 
                   <div className="grid gap-5 md:grid-cols-2">
 
@@ -3378,7 +3378,7 @@ export default function PatientProfile() {
 
                     <div>
 
-                      <label className="text-xs font-medium text-[#77766F]">
+                      <label className="text-xs font-medium text-[#667068]">
                         Pregnancy / Breastfeeding
                       </label>
 
@@ -3391,7 +3391,7 @@ export default function PatientProfile() {
                             event.target.value
                           )
                         }
-                        className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                        className="mt-2 w-full rounded-[12px] border border-[#E0E5DF] bg-[#F8FAF7] px-4 py-3 text-sm outline-none"
                       >
                         <option>
                           Not Applicable
@@ -3449,7 +3449,7 @@ export default function PatientProfile() {
 
                   {/* NOTES */}
                                     <div>
-                    <label className="text-xs font-medium text-[#77766F]">
+                    <label className="text-xs font-medium text-[#667068]">
                       Practitioner
                     </label>
 
@@ -3462,7 +3462,7 @@ export default function PatientProfile() {
                             : ""
                         )
                       }
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#99978F]"
+                      className="mt-2 w-full rounded-[12px] border border-[#E0E5DF] bg-[#F8FAF7] px-4 py-3 text-sm outline-none transition focus:border-[#829A87] focus:bg-white focus:shadow-[0_0_0_3px_rgba(77,112,83,0.07)]"
                     >
                       <option value="">
                         Select practitioner
@@ -3478,14 +3478,14 @@ export default function PatientProfile() {
                       ))}
                     </select>
 
-                    <p className="mt-2 text-[10px] leading-4 text-[#999890]">
+                    <p className="mt-2 text-[10px] leading-4 text-[#929A93]">
                       Active practitioners are loaded from Clinic Settings.
                     </p>
                   </div>
 
 <div className="mt-5">
 
-                    <label className="text-xs font-medium text-[#77766F]">
+                    <label className="text-xs font-medium text-[#667068]">
                       Practitioner Notes
                     </label>
 
@@ -3500,13 +3500,13 @@ export default function PatientProfile() {
                         )
                       }
                       placeholder="Add Consultation Notes, Observations Or Treatment Considerations..."
-                      className="mt-2 w-full resize-none rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                      className="mt-2 w-full resize-none rounded-[12px] border border-[#E0E5DF] bg-[#F8FAF7] px-4 py-3 text-sm outline-none"
                     />
 
                   </div>
 
                   {/* CONSENT */}
-                  <div className="mt-5 rounded-xl bg-[#F7F6F2] p-5">
+                  <div className="mt-5 rounded-xl bg-[#F5F8F4] p-5">
 
                     <label className="flex cursor-pointer items-start gap-3">
 
@@ -3529,7 +3529,7 @@ export default function PatientProfile() {
                           Patient Consent Recorded
                         </p>
 
-                        <p className="mt-1 text-xs leading-5 text-[#77766F]">
+                        <p className="mt-1 text-xs leading-5 text-[#667068]">
                           Confirm that the patient
                           has reviewed the relevant
                           consultation information
@@ -3579,7 +3579,7 @@ export default function PatientProfile() {
                           !selectedPractitioner ||
                           !consentGiven
                             ? "cursor-not-allowed bg-[#D8D7D1] text-[#8C8B84]"
-                            : "bg-[#171717] text-white hover:bg-[#333]"
+                            : "bg-[#24402F] text-white shadow-[0_8px_22px_rgba(36,64,47,0.14)] hover:bg-[#1B3325]"
                         }`}
                       >
 
@@ -3603,11 +3603,11 @@ export default function PatientProfile() {
                 </div>
 
                 {/* CONSULTATION HISTORY */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white">
+                <div className="rounded-[22px] border border-[#E1E6E0] bg-[#FEFFFD] shadow-[0_10px_34px_rgba(28,44,33,0.035)]">
 
-                  <div className="border-b border-[#ECEBE6] px-6 py-5">
+                  <div className="border-b border-[#EAEEEA] px-6 py-5">
 
-                    <p className="text-sm text-[#77766F]">
+                    <p className="text-sm text-[#667068]">
                       Clinical record
                     </p>
 
@@ -3642,7 +3642,7 @@ export default function PatientProfile() {
                                   Consultation
                                 </p>
 
-                                <p className="mt-1 text-xs text-[#999890]">
+                                <p className="mt-1.5 text-[10px] text-[#929A93]">
                                   {
                                     consultation.date
                                   }
@@ -3653,8 +3653,8 @@ export default function PatientProfile() {
                               <span
                                 className={`w-fit rounded-full px-3 py-1 text-[10px] font-medium ${
                                   consultation.consentGiven
-                                    ? "bg-[#E8EEE5] text-[#62715D]"
-                                    : "bg-[#F1F0EB] text-[#77766F]"
+                                    ? "border border-[#D6E3D4] bg-[#EDF5EC] text-[#4F6B54]"
+                                    : "border border-[#E4E6E1] bg-[#F4F5F2] text-[#737B74]"
                                 }`}
                               >
                                 {consultation.consentGiven
@@ -3714,7 +3714,7 @@ export default function PatientProfile() {
                         No consultations yet
                       </p>
 
-                      <p className="mt-2 text-xs text-[#999890]">
+                      <p className="mt-2 text-xs text-[#929A93]">
                         Save the first patient intake above.
                       </p>
 
@@ -3763,14 +3763,14 @@ export default function PatientProfile() {
                 </div>
 
                 {/* ACTIVE TREATMENT PLANS */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white">
-                  <div className="flex flex-col justify-between gap-4 border-b border-[#ECEBE6] px-6 py-5 sm:flex-row sm:items-center">
+                <div className="rounded-[22px] border border-[#E1E6E0] bg-[#FEFFFD] shadow-[0_10px_34px_rgba(28,44,33,0.035)]">
+                  <div className="flex flex-col justify-between gap-4 border-b border-[#EAEEEA] px-6 py-5 sm:flex-row sm:items-center">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F0EFEA]">
                         <ClipboardList size={19} strokeWidth={1.7} />
                       </div>
                       <div>
-                        <p className="text-sm text-[#77766F]">Treatment Management</p>
+                        <p className="text-sm text-[#667068]">Treatment Management</p>
                         <h2 className="mt-1 text-lg font-semibold">Active Treatment Plans</h2>
                       </div>
                     </div>
@@ -3796,23 +3796,23 @@ export default function PatientProfile() {
                                   Active
                                 </span>
                               </div>
-                              <p className="mt-2 text-xs text-[#77766F]">
+                              <p className="mt-2 text-xs text-[#667068]">
                                 {plan.notes || "Treatment plan recorded for this patient."}
                               </p>
                               {plan.createdAt && (
-                                <p className="mt-2 text-[10px] text-[#999890]">
+                                <p className="mt-2 text-[10px] text-[#929A93]">
                                   Created {plan.createdAt}
                                 </p>
                               )}
                             </div>
 
                             <div className="flex shrink-0 gap-3 text-xs">
-                              <div className="rounded-xl bg-[#F7F6F2] px-4 py-3">
-                                <p className="text-[9px] uppercase tracking-[0.1em] text-[#999890]">Duration</p>
+                              <div className="rounded-xl bg-[#F5F8F4] px-4 py-3">
+                                <p className="text-[9px] uppercase tracking-[0.1em] text-[#929A93]">Duration</p>
                                 <p className="mt-1 font-medium">{plan.duration}</p>
                               </div>
-                              <div className="rounded-xl bg-[#F7F6F2] px-4 py-3">
-                                <p className="text-[9px] uppercase tracking-[0.1em] text-[#999890]">Price</p>
+                              <div className="rounded-xl bg-[#F5F8F4] px-4 py-3">
+                                <p className="text-[9px] uppercase tracking-[0.1em] text-[#929A93]">Price</p>
                                 <p className="mt-1 font-medium">{plan.price}</p>
                               </div>
                             </div>
@@ -3823,17 +3823,17 @@ export default function PatientProfile() {
                   ) : (
                     <div className="px-6 py-10 text-center">
                       <p className="text-sm font-medium">No Active Treatment Plans</p>
-                      <p className="mt-2 text-xs text-[#999890]">Create a treatment plan from the Treatments workspace.</p>
+                      <p className="mt-2 text-xs text-[#929A93]">Create a treatment plan from the Treatments workspace.</p>
                     </div>
                   )}
                 </div>
 
                 {/* COMPLETED TREATMENT HISTORY */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white">
-                  <div className="border-b border-[#ECEBE6] px-6 py-5">
-                    <p className="text-sm text-[#77766F]">Clinical Record</p>
+                <div className="rounded-[22px] border border-[#E1E6E0] bg-[#FEFFFD] shadow-[0_10px_34px_rgba(28,44,33,0.035)]">
+                  <div className="border-b border-[#EAEEEA] px-6 py-5">
+                    <p className="text-sm text-[#667068]">Clinical Record</p>
                     <h2 className="mt-1 text-lg font-semibold">Completed Treatment History</h2>
-                    <p className="mt-2 text-xs text-[#999890]">
+                    <p className="mt-2 text-xs text-[#929A93]">
                       Treatments appear here automatically when an appointment is marked completed.
                     </p>
                   </div>
@@ -3851,7 +3851,7 @@ export default function PatientProfile() {
 
                                 <div className="min-w-0">
                                   <p className="truncate text-sm font-semibold">{entry.treatment}</p>
-                                  <p className="mt-1 text-[10px] text-[#999890]">Completed Treatment</p>
+                                  <p className="mt-1 text-[10px] text-[#929A93]">Completed Treatment</p>
                                 </div>
                               </div>
                             </div>
@@ -3865,9 +3865,9 @@ export default function PatientProfile() {
                           </div>
 
                           {entry.notes ? (
-                            <div className="mt-4 rounded-xl bg-[#F7F6F2] p-4">
-                              <p className="text-[9px] uppercase tracking-[0.1em] text-[#999890]">Appointment notes</p>
-                              <p className="mt-2 text-xs leading-5 text-[#77766F]">{entry.notes}</p>
+                            <div className="mt-4 rounded-xl bg-[#F5F8F4] p-4">
+                              <p className="text-[9px] uppercase tracking-[0.1em] text-[#929A93]">Appointment notes</p>
+                              <p className="mt-2 text-xs leading-5 text-[#667068]">{entry.notes}</p>
                             </div>
                           ) : null}
                         </div>
@@ -3879,7 +3879,7 @@ export default function PatientProfile() {
                         <ClipboardList size={18} strokeWidth={1.7} />
                       </div>
                       <p className="mt-4 text-sm font-medium">No Completed Treatments Yet</p>
-                      <p className="mt-2 text-xs text-[#999890]">
+                      <p className="mt-2 text-xs text-[#929A93]">
                         Complete an appointment to create the first treatment-history record.
                       </p>
                     </div>
@@ -3893,9 +3893,9 @@ export default function PatientProfile() {
             {activeTab ===
               "Appointments" && (
 
-              <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white">
+              <div className="mt-6 rounded-[22px] border border-[#E1E6E0] bg-[#FEFFFD] shadow-[0_10px_34px_rgba(28,44,33,0.035)]">
 
-                <div className="flex items-center justify-between border-b border-[#ECEBE6] px-6 py-5">
+                <div className="flex items-center justify-between border-b border-[#EAEEEA] px-6 py-5">
 
                   <div className="flex items-center gap-3">
 
@@ -3906,7 +3906,7 @@ export default function PatientProfile() {
 
                     <div>
 
-                      <p className="text-sm text-[#77766F]">
+                      <p className="text-sm text-[#667068]">
                         Clinic schedule
                       </p>
 
@@ -3955,7 +3955,7 @@ export default function PatientProfile() {
                               }
                             </p>
 
-                            <p className="mt-1 text-xs text-[#999890]">
+                            <p className="mt-1.5 text-[10px] text-[#929A93]">
                               {
                                 appointment.practitioner
                               }
@@ -3965,7 +3965,7 @@ export default function PatientProfile() {
 
                           <div>
 
-                            <p className="text-xs text-[#999890]">
+                            <p className="text-xs text-[#929A93]">
                               Date
                             </p>
 
@@ -3979,7 +3979,7 @@ export default function PatientProfile() {
 
                           <div className="md:w-[110px]">
 
-                            <p className="text-xs text-[#999890]">
+                            <p className="text-xs text-[#929A93]">
                               Time
                             </p>
 
@@ -4115,12 +4115,12 @@ function AnalysisSummaryCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
-      <p className="text-[10px] uppercase tracking-[0.1em] text-[#999890]">
+    <div className="rounded-[22px] border border-[#E1E6E0] bg-[#FEFFFD] shadow-[0_10px_34px_rgba(28,44,33,0.035)] p-5">
+      <p className="text-[10px] uppercase tracking-[0.1em] text-[#929A93]">
         {label}
       </p>
       <p className="mt-3 text-xl font-semibold">{value}</p>
-      <p className="mt-2 text-xs text-[#77766F]">{detail}</p>
+      <p className="mt-2 text-xs text-[#667068]">{detail}</p>
     </div>
   );
 }
@@ -4135,10 +4135,10 @@ function TreatmentSummaryCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
-      <p className="text-[10px] uppercase tracking-[0.1em] text-[#999890]">{label}</p>
+    <div className="rounded-[22px] border border-[#E1E6E0] bg-[#FEFFFD] shadow-[0_10px_34px_rgba(28,44,33,0.035)] p-5">
+      <p className="text-[10px] uppercase tracking-[0.1em] text-[#929A93]">{label}</p>
       <p className="mt-3 truncate text-xl font-semibold">{value}</p>
-      <p className="mt-2 text-xs text-[#77766F]">{detail}</p>
+      <p className="mt-2 text-xs text-[#667068]">{detail}</p>
     </div>
   );
 }
@@ -4151,8 +4151,8 @@ function TreatmentRecordDetail({
   value: string;
 }) {
   return (
-    <div className="flex min-h-[72px] flex-col justify-center rounded-xl bg-[#F7F6F2] px-4 py-3">
-      <p className="text-[9px] uppercase tracking-[0.1em] text-[#999890]">{label}</p>
+    <div className="flex min-h-[72px] flex-col justify-center rounded-xl bg-[#F5F8F4] px-4 py-3">
+      <p className="text-[9px] uppercase tracking-[0.1em] text-[#929A93]">{label}</p>
       <p className="mt-2 break-words text-xs font-medium leading-4">{value}</p>
     </div>
   );
@@ -4168,7 +4168,7 @@ function Detail({
   return (
     <div className="flex items-start justify-between gap-5 border-b border-[#F0EFEA] pb-4 last:border-0">
 
-      <span className="text-xs text-[#999890]">
+      <span className="text-xs text-[#929A93]">
         {label}
       </span>
 
@@ -4192,13 +4192,13 @@ function TabCard({
   description: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+    <div className="relative overflow-hidden rounded-[26px] border border-[#DFE5DE] bg-[#FEFFFD] p-6 shadow-[0_16px_50px_rgba(28,44,33,0.05)] lg:p-7">
 
       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F0EFEA]">
         {icon}
       </div>
 
-      <p className="mt-5 text-xs text-[#999890]">
+      <p className="mt-5 text-xs text-[#929A93]">
         {eyebrow}
       </p>
 
@@ -4206,7 +4206,7 @@ function TabCard({
         {title}
       </h2>
 
-      <p className="mt-3 text-sm leading-6 text-[#77766F]">
+      <p className="mt-3 text-sm leading-6 text-[#667068]">
         {description}
       </p>
 
@@ -4228,7 +4228,7 @@ function ConsultationField({
   return (
     <div>
 
-      <label className="text-xs font-medium text-[#77766F]">
+      <label className="text-xs font-medium text-[#667068]">
         {label}
       </label>
 
@@ -4241,7 +4241,7 @@ function ConsultationField({
           )
         }
         placeholder={placeholder}
-        className="mt-2 w-full resize-none rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+        className="mt-2 w-full resize-none rounded-[12px] border border-[#E0E5DF] bg-[#F8FAF7] px-4 py-3 text-sm outline-none"
       />
 
     </div>
@@ -4264,7 +4264,7 @@ function EditPatientField({
   return (
     <div>
 
-      <label className="text-xs font-medium text-[#77766F]">
+      <label className="text-xs font-medium text-[#667068]">
         {label}
       </label>
 
@@ -4277,7 +4277,7 @@ function EditPatientField({
           )
         }
         placeholder={placeholder}
-        className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#99978F]"
+        className="mt-2 w-full rounded-[12px] border border-[#E0E5DF] bg-[#F8FAF7] px-4 py-3 text-sm outline-none transition focus:border-[#829A87] focus:bg-white focus:shadow-[0_0_0_3px_rgba(77,112,83,0.07)]"
       />
 
     </div>
@@ -4292,9 +4292,9 @@ function MiniInfo({
   value: string;
 }) {
   return (
-    <div className="rounded-xl bg-[#F7F6F2] p-4">
+    <div className="rounded-xl bg-[#F5F8F4] p-4">
 
-      <p className="text-[9px] uppercase tracking-[0.1em] text-[#999890]">
+      <p className="text-[9px] uppercase tracking-[0.1em] text-[#929A93]">
         {label}
       </p>
 

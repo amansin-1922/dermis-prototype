@@ -1234,56 +1234,56 @@ export default function ReportsPage() {
     "SW";
 
   return (
-    <main className="min-h-screen bg-[#F5F4F0] text-[#171717]">
+    <main className="min-h-screen bg-[#F2F5F2] text-[#182019]">
       <div className="flex min-h-screen">
         <Sidebar activePage="Reports" />
 
         <section className="min-w-0 flex-1">
-          <header className="flex items-center justify-between border-b border-[#DDDCD6] bg-white px-6 py-5 lg:px-10">
+          <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[#E1E7E0] bg-[#FDFEFC]/96 px-6 py-4 backdrop-blur-xl lg:px-10">
             <div>
-              <p className="text-xs text-[#96958E]">
-                {clinicSettings.clinicName}
+              <p className="text-[9px] font-semibold uppercase tracking-[0.19em] text-[#74887A]">
+                Velyquo intelligence
               </p>
 
-              <h1 className="mt-1 text-xl font-semibold tracking-[-0.03em]">
+              <h1 className="mt-1.5 text-[20px] font-semibold tracking-[-0.045em] text-[#202922]">
                 Reports
               </h1>
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="hidden rounded-full bg-[#F0F3EE] px-3 py-1.5 text-[10px] font-medium text-[#62715D] sm:block">
+              <div className="hidden rounded-full border border-[#D7E3D7] bg-[#EDF4ED] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-[#45634D] sm:block">
                 Clinical reporting
               </div>
 
               <a
                 href="/settings"
                 title={clinicSettings.practitionerName}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-medium transition hover:bg-[#DCD9D0]"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#D4DFD4] bg-[#E8F0E8] text-[10px] font-semibold text-[#3F5A47] transition hover:bg-[#E1EBE1]"
               >
                 {practitionerInitials}
               </a>
             </div>
           </header>
 
-          <div className="p-6 lg:p-10">
+          <div className="mx-auto w-full max-w-[1520px] p-6 lg:px-10 lg:py-9">
             <div>
-              <p className="text-sm text-[#71806C]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6E8375]">
                 Patient intelligence
               </p>
 
-              <h2 className="mt-2 text-4xl font-medium tracking-[-0.05em]">
+              <h2 className="mt-2 text-[38px] font-semibold leading-[1.02] tracking-[-0.06em] text-[#19231B]">
                 Clinic reports
               </h2>
 
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-[#77766F]">
+              <p className="mt-4 max-w-3xl text-[12px] leading-6 text-[#77827A]">
                 Track analyses, completed treatments, appointment activity and measurable
                 patient progress across {clinicSettings.clinicName}.
               </p>
             </div>
 
-            <div className="mt-6 flex flex-col justify-between gap-4 rounded-2xl border border-[#DDDCD6] bg-white p-5 sm:flex-row sm:items-center">
+            <div className="mt-7 flex flex-col justify-between gap-4 rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] p-5 shadow-[0_14px_40px_rgba(27,43,32,0.045)] sm:flex-row sm:items-center">
               <div>
-                <p className="text-xs text-[#999890]">
+                <p className="text-xs text-[#8C978F]">
                   Reporting workspace
                 </p>
 
@@ -1291,13 +1291,13 @@ export default function ReportsPage() {
                   {clinicSettings.clinicName}
                 </p>
 
-                <p className="mt-1 text-xs text-[#77766F]">
+                <p className="mt-1 text-xs text-[#667169]">
                   Primary practitioner:{" "}
                   {clinicSettings.practitionerName}
                 </p>
               </div>
 
-              <span className="w-fit rounded-full bg-[#E8EEE5] px-3 py-1 text-[10px] font-medium text-[#62715D]">
+              <span className="w-fit rounded-full border border-[#D3E0D3] bg-[#EAF3EA] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-[#45634D]">
                 Live prototype data
               </span>
             </div>
@@ -1370,10 +1370,10 @@ export default function ReportsPage() {
             </div>
 
             <div className="mt-8 grid gap-6 xl:grid-cols-2">
-              <div className="rounded-2xl border border-[#DDDCD6] bg-white">
-                <div className="flex items-center justify-between border-b border-[#ECEBE6] px-6 py-5">
+              <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)]">
+                <div className="flex items-center justify-between border-b border-[#E7ECE6] px-6 py-5">
                   <div>
-                    <p className="text-sm text-[#77766F]">
+                    <p className="text-sm text-[#667169]">
                       Skin intelligence
                     </p>
                     <h3 className="mt-1 text-lg font-semibold">
@@ -1383,14 +1383,14 @@ export default function ReportsPage() {
 
                   <a
                     href="/analysis"
-                    className="text-xs font-medium text-[#62715D] hover:text-[#171717]"
+                    className="text-xs font-medium text-[#45634D] hover:text-[#171717]"
                   >
                     Open analysis →
                   </a>
                 </div>
 
                 {recentAnalyses.length > 0 ? (
-                  <div className="divide-y divide-[#F0EFEA]">
+                  <div className="divide-y divide-[#E9EEE8]">
                     {recentAnalyses.map((analysis, index) => {
                       const analysisPatient =
                         patients.find(
@@ -1414,10 +1414,10 @@ export default function ReportsPage() {
                           onClick={() =>
                             openAnalysisPatient(analysis)
                           }
-                          className="grid w-full gap-4 px-6 py-5 text-left transition hover:bg-[#FAF9F6] sm:grid-cols-[1fr_auto] sm:items-center"
+                          className="grid w-full gap-4 px-6 py-5 text-left transition hover:bg-[#F6F9F6] sm:grid-cols-[1fr_auto] sm:items-center"
                         >
                           <div className="flex min-w-0 items-center gap-3">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E5E2D9] text-[10px] font-medium">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#D4DFD4] bg-[#E8F0E8] text-[#3F5A47] text-[10px] font-medium">
                               {getInitials(
                                 analysisPatient?.name ||
                                   analysis.patient ||
@@ -1432,14 +1432,14 @@ export default function ReportsPage() {
                                   "Unknown patient"}
                               </p>
 
-                              <p className="mt-1 text-xs text-[#77766F]">
+                              <p className="mt-1 text-xs text-[#667169]">
                                 {getAnalysisDate(analysis)}
                               </p>
                             </div>
                           </div>
 
-                          <div className="flex min-h-[68px] min-w-[100px] flex-col items-center justify-center rounded-xl bg-[#F7F6F2] px-4 py-3 text-center">
-                            <p className="text-[9px] uppercase tracking-[0.1em] text-[#999890]">
+                          <div className="flex min-h-[68px] min-w-[100px] flex-col items-center justify-center rounded-[13px] border border-[#E4E9E3] bg-[#F6F8F5] px-4 py-3 text-center">
+                            <p className="text-[9px] uppercase tracking-[0.1em] text-[#8C978F]">
                               Skin score
                             </p>
                             <p className="mt-1 w-full text-center text-lg font-semibold tabular-nums leading-none">
@@ -1455,10 +1455,10 @@ export default function ReportsPage() {
                 )}
               </div>
 
-              <div className="rounded-2xl border border-[#DDDCD6] bg-white">
-                <div className="flex items-center justify-between border-b border-[#ECEBE6] px-6 py-5">
+              <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)]">
+                <div className="flex items-center justify-between border-b border-[#E7ECE6] px-6 py-5">
                   <div>
-                    <p className="text-sm text-[#77766F]">
+                    <p className="text-sm text-[#667169]">
                       Treatment activity
                     </p>
                     <h3 className="mt-1 text-lg font-semibold">
@@ -1468,14 +1468,14 @@ export default function ReportsPage() {
 
                   <a
                     href="/appointments"
-                    className="text-xs font-medium text-[#62715D] hover:text-[#171717]"
+                    className="text-xs font-medium text-[#45634D] hover:text-[#171717]"
                   >
                     Appointments →
                   </a>
                 </div>
 
                 {recentTreatments.length > 0 ? (
-                  <div className="divide-y divide-[#F0EFEA]">
+                  <div className="divide-y divide-[#E9EEE8]">
                     {recentTreatments.map((entry) => (
                       <button
                         type="button"
@@ -1483,10 +1483,10 @@ export default function ReportsPage() {
                         onClick={() =>
                           openPatientTreatmentHistory(entry)
                         }
-                        className="grid w-full gap-4 px-6 py-5 text-left transition hover:bg-[#FAF9F6] sm:grid-cols-[1.2fr_0.8fr_auto] sm:items-center"
+                        className="grid w-full gap-4 px-6 py-5 text-left transition hover:bg-[#F6F9F6] sm:grid-cols-[1.2fr_0.8fr_auto] sm:items-center"
                       >
                         <div className="flex min-w-0 items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E5E2D9] text-[10px] font-medium">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#D4DFD4] bg-[#E8F0E8] text-[#3F5A47] text-[10px] font-medium">
                             {getInitials(entry.patient)}
                           </div>
 
@@ -1494,7 +1494,7 @@ export default function ReportsPage() {
                             <p className="truncate text-sm font-semibold">
                               {entry.patient}
                             </p>
-                            <p className="mt-1 truncate text-xs text-[#77766F]">
+                            <p className="mt-1 truncate text-xs text-[#667169]">
                               {entry.treatment}
                             </p>
                           </div>
@@ -1505,7 +1505,7 @@ export default function ReportsPage() {
                           value={entry.date}
                         />
 
-                        <span className="w-fit rounded-full bg-[#E8EEE5] px-3 py-1 text-[9px] font-medium text-[#62715D]">
+                        <span className="w-fit rounded-full bg-[#EAF3EA] px-3 py-1 text-[9px] font-medium text-[#45634D]">
                           Completed
                         </span>
                       </button>
@@ -1517,9 +1517,9 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            <div className="mt-8 rounded-2xl border border-[#DDDCD6] bg-white">
-              <div className="border-b border-[#ECEBE6] px-6 py-5">
-                <p className="text-sm text-[#77766F]">
+            <div className="mt-8 rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)]">
+              <div className="border-b border-[#E7ECE6] px-6 py-5">
+                <p className="text-sm text-[#667169]">
                   Patient outcomes
                 </p>
 
@@ -1527,7 +1527,7 @@ export default function ReportsPage() {
                   Patient reporting overview
                 </h3>
 
-                <p className="mt-2 text-xs text-[#999890]">
+                <p className="mt-2 text-xs text-[#8C978F]">
                   Combined view of analyses, completed treatments and progress reports.
                 </p>
               </div>
@@ -1535,7 +1535,7 @@ export default function ReportsPage() {
               {patientOutcomeRows.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[760px] text-left">
-                    <thead className="bg-[#FAF9F6] text-[10px] uppercase tracking-[0.08em] text-[#999890]">
+                    <thead className="bg-[#F7F9F6] text-[10px] uppercase tracking-[0.08em] text-[#8C978F]">
                       <tr>
                         <th className="px-6 py-4 font-medium">
                           Patient
@@ -1561,19 +1561,19 @@ export default function ReportsPage() {
                       </tr>
                     </thead>
 
-                    <tbody className="divide-y divide-[#F0EFEA]">
+                    <tbody className="divide-y divide-[#E9EEE8]">
                       {patientOutcomeRows.map((row) => (
                         <tr key={row.patient.id}>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E5E2D9] text-[10px] font-medium">
+                              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D4DFD4] bg-[#E8F0E8] text-[#3F5A47] text-[10px] font-medium">
                                 {getInitials(row.patient.name)}
                               </div>
                               <div>
                                 <p className="text-sm font-semibold">
                                   {row.patient.name}
                                 </p>
-                                <p className="mt-1 text-[10px] text-[#999890]">
+                                <p className="mt-1 text-[10px] text-[#8C978F]">
                                   {row.patient.concern}
                                 </p>
                               </div>
@@ -1605,10 +1605,10 @@ export default function ReportsPage() {
                               <span
                                 className={`inline-flex min-w-[56px] justify-center rounded-full px-3 py-1 text-[10px] font-medium tabular-nums ${
                                   row.latestChange > 0
-                                    ? "bg-[#E8EEE5] text-[#62715D]"
+                                    ? "bg-[#EAF3EA] text-[#45634D]"
                                     : row.latestChange < 0
                                     ? "bg-[#F3EAEA] text-[#8A6666]"
-                                    : "bg-[#F1F0EB] text-[#77766F]"
+                                    : "bg-[#F3F5F2] text-[#667169]"
                                 }`}
                               >
                                 {row.latestChange > 0
@@ -1616,7 +1616,7 @@ export default function ReportsPage() {
                                   : row.latestChange}
                               </span>
                             ) : (
-                              <span className="inline-flex min-w-[56px] justify-center text-xs text-[#999890]">
+                              <span className="inline-flex min-w-[56px] justify-center text-xs text-[#8C978F]">
                                 —
                               </span>
                             )}
@@ -1628,7 +1628,7 @@ export default function ReportsPage() {
                               onClick={() =>
                                 openPatient(row.patient)
                               }
-                              className="rounded-xl border border-[#DDDCD6] px-4 py-2 text-xs font-medium hover:bg-[#F7F6F2]"
+                              className="rounded-[12px] border border-[#DCE4DB] bg-[#FFFFFE] px-4 py-2 text-[10px] font-semibold text-[#4D5A51] transition hover:-translate-y-px hover:bg-[#F5F8F5]"
                             >
                               Open patient →
                             </button>
@@ -1643,12 +1643,12 @@ export default function ReportsPage() {
               )}
             </div>
 
-            <div className="mt-8 rounded-2xl border border-[#DDDCD6] bg-white p-4">
+            <div className="mt-8 rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-4">
               <div className="relative">
                 <Search
                   size={17}
                   strokeWidth={1.7}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#999890]"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8C978F]"
                 />
 
                 <input
@@ -1658,7 +1658,7 @@ export default function ReportsPage() {
                     setSearch(event.target.value)
                   }
                   placeholder="Search by patient, concern, treatment or practitioner..."
-                  className="w-full rounded-xl border border-[#E1E0DA] bg-[#FAF9F6] py-3 pl-11 pr-4 text-sm outline-none transition focus:border-[#99978F]"
+                  className="w-full rounded-[14px] border border-[#DCE5DC] bg-[#F7F9F6] py-3.5 pl-11 pr-4 text-[12px] outline-none transition placeholder:text-[#A1AAA3] focus:border-[#6E8A75] focus:bg-white focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)]"
                 />
               </div>
             </div>
@@ -1666,7 +1666,7 @@ export default function ReportsPage() {
             <div className="mt-6">
               <div className="flex items-end justify-between gap-4">
                 <div>
-                  <p className="text-sm text-[#77766F]">
+                  <p className="text-sm text-[#667169]">
                     Clinical reporting
                   </p>
 
@@ -1675,7 +1675,7 @@ export default function ReportsPage() {
                   </h3>
                 </div>
 
-                <p className="text-xs text-[#999890]">
+                <p className="text-xs text-[#8C978F]">
                   {filteredReports.length}{" "}
                   {filteredReports.length === 1
                     ? "report"
@@ -1688,11 +1688,11 @@ export default function ReportsPage() {
                   {filteredReports.map((report) => (
                     <div
                       key={report.id}
-                      className="rounded-2xl border border-[#DDDCD6] bg-white p-6 transition hover:-translate-y-0.5 hover:shadow-sm"
+                      className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-6 transition hover:-translate-y-0.5 hover:shadow-sm"
                     >
                       <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
                         <div className="flex min-w-0 items-start gap-4">
-                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-medium">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#D4DFD4] bg-[#E8F0E8] text-[#3F5A47] text-xs font-medium">
                             {getInitials(report.patient)}
                           </div>
 
@@ -1702,12 +1702,12 @@ export default function ReportsPage() {
                                 {report.patient}
                               </h4>
 
-                              <span className="rounded-full bg-[#E8EEE5] px-3 py-1 text-[9px] font-medium text-[#62715D]">
+                              <span className="rounded-full bg-[#EAF3EA] px-3 py-1 text-[9px] font-medium text-[#45634D]">
                                 Progress report
                               </span>
 
                               {report.completedTreatments.length > 0 && (
-                                <span className="rounded-full bg-[#F1F0EB] px-3 py-1 text-[9px] text-[#77766F]">
+                                <span className="rounded-full bg-[#F3F5F2] px-3 py-1 text-[9px] text-[#667169]">
                                   {report.completedTreatments.length} completed{" "}
                                   {report.completedTreatments.length === 1
                                     ? "treatment"
@@ -1716,11 +1716,11 @@ export default function ReportsPage() {
                               )}
                             </div>
 
-                            <p className="mt-1 text-xs text-[#77766F]">
+                            <p className="mt-1 text-xs text-[#667169]">
                               {report.concern}
                             </p>
 
-                            <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] text-[#999890]">
+                            <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] text-[#8C978F]">
                               <span className="flex items-center gap-1.5">
                                 <CalendarDays
                                   size={12}
@@ -1747,7 +1747,7 @@ export default function ReportsPage() {
                           <ArrowRight
                             size={16}
                             strokeWidth={1.7}
-                            className="text-[#999890]"
+                            className="text-[#8C978F]"
                           />
 
                           <ScoreBox
@@ -1758,19 +1758,19 @@ export default function ReportsPage() {
                           <div
                             className={`min-w-[82px] rounded-xl px-4 py-3 ${
                               report.scoreChange > 0
-                                ? "bg-[#F0F3EE]"
+                                ? "bg-[#EDF4ED]"
                                 : report.scoreChange < 0
                                 ? "bg-[#F3EAEA]"
-                                : "bg-[#F1F0EB]"
+                                : "bg-[#F3F5F2]"
                             }`}
                           >
                             <p
                               className={`text-[9px] uppercase tracking-[0.1em] ${
                                 report.scoreChange > 0
-                                  ? "text-[#62715D]"
+                                  ? "text-[#45634D]"
                                   : report.scoreChange < 0
                                   ? "text-[#8A6666]"
-                                  : "text-[#77766F]"
+                                  : "text-[#667169]"
                               }`}
                             >
                               Change
@@ -1779,7 +1779,7 @@ export default function ReportsPage() {
                             <p
                               className={`mt-1 text-lg font-semibold ${
                                 report.scoreChange > 0
-                                  ? "text-[#62715D]"
+                                  ? "text-[#45634D]"
                                   : report.scoreChange < 0
                                   ? "text-[#8A6666]"
                                   : ""
@@ -1793,9 +1793,9 @@ export default function ReportsPage() {
                         </div>
                       </div>
 
-                      <div className="mt-6 grid gap-5 border-t border-[#ECEBE6] pt-5 lg:grid-cols-[1fr_1.2fr_auto] lg:items-end">
+                      <div className="mt-6 grid gap-5 border-t border-[#E7ECE6] pt-5 lg:grid-cols-[1fr_1.2fr_auto] lg:items-end">
                         <div>
-                          <p className="text-[9px] uppercase tracking-[0.12em] text-[#999890]">
+                          <p className="text-[9px] uppercase tracking-[0.12em] text-[#8C978F]">
                             Treatment programme
                           </p>
 
@@ -1804,7 +1804,7 @@ export default function ReportsPage() {
                           </p>
 
                           {report.completedTreatments.length > 0 && (
-                            <p className="mt-2 text-[10px] text-[#71806C]">
+                            <p className="mt-2 text-[10px] text-[#6E8375]">
                               Latest completed:{" "}
                               {report.completedTreatments[0].treatment}
                               {" · "}
@@ -1814,11 +1814,11 @@ export default function ReportsPage() {
                         </div>
 
                         <div>
-                          <p className="text-[9px] uppercase tracking-[0.12em] text-[#999890]">
+                          <p className="text-[9px] uppercase tracking-[0.12em] text-[#8C978F]">
                             Clinical summary
                           </p>
 
-                          <p className="mt-2 line-clamp-2 text-xs leading-5 text-[#77766F]">
+                          <p className="mt-2 line-clamp-2 text-xs leading-5 text-[#667169]">
                             {report.summary}
                           </p>
                         </div>
@@ -1828,7 +1828,7 @@ export default function ReportsPage() {
                           onClick={() =>
                             openReport(report)
                           }
-                          className="whitespace-nowrap rounded-xl bg-[#171717] px-5 py-3 text-xs font-medium text-white transition hover:bg-[#333]"
+                          className="whitespace-nowrap rounded-[13px] bg-[#173725] px-5 py-3 text-[11px] font-semibold text-white shadow-[0_10px_26px_rgba(23,55,37,0.16)] transition hover:-translate-y-px hover:bg-[#102D1C]"
                         >
                           View report →
                         </button>
@@ -1843,10 +1843,10 @@ export default function ReportsPage() {
                                 key={metric.label}
                                 className={`rounded-full px-3 py-1.5 text-[9px] font-medium ${
                                   metric.change > 0
-                                    ? "bg-[#E8EEE5] text-[#62715D]"
+                                    ? "bg-[#EAF3EA] text-[#45634D]"
                                     : metric.change < 0
                                     ? "bg-[#F3EAEA] text-[#8A6666]"
-                                    : "bg-[#F1F0EB] text-[#77766F]"
+                                    : "bg-[#F3F5F2] text-[#667169]"
                                 }`}
                               >
                                 {metric.label}{" "}
@@ -1861,9 +1861,9 @@ export default function ReportsPage() {
                   ))}
                 </div>
               ) : reports.length > 0 ? (
-                <div className="mt-5 flex min-h-[300px] items-center justify-center rounded-2xl border border-[#DDDCD6] bg-white p-8">
+                <div className="mt-5 flex min-h-[300px] items-center justify-center rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-8">
                   <div className="max-w-sm text-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#F0EFEA]">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-[13px] border border-[#DCE5DC] bg-[#EDF3ED] text-[#45634D]">
                       <Search size={19} strokeWidth={1.7} />
                     </div>
 
@@ -1871,7 +1871,7 @@ export default function ReportsPage() {
                       No reports found
                     </h3>
 
-                    <p className="mt-2 text-xs leading-5 text-[#77766F]">
+                    <p className="mt-2 text-xs leading-5 text-[#667169]">
                       Try searching for another patient,
                       concern, treatment or practitioner.
                     </p>
@@ -1879,20 +1879,20 @@ export default function ReportsPage() {
                     <button
                       type="button"
                       onClick={() => setSearch("")}
-                      className="mt-5 rounded-xl border border-[#DDDCD6] px-4 py-2.5 text-xs font-medium hover:bg-[#F7F6F2]"
+                      className="mt-5 rounded-xl border border-[#DDE5DC] px-4 py-2.5 text-xs font-medium hover:bg-[#F7F6F2]"
                     >
                       Clear search
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="mt-5 flex min-h-[380px] items-center justify-center rounded-2xl border border-[#DDDCD6] bg-white p-8">
+                <div className="mt-5 flex min-h-[380px] items-center justify-center rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-8">
                   <div className="max-w-md text-center">
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F0EFEA]">
                       <FileText
                         size={24}
                         strokeWidth={1.6}
-                        className="text-[#77766F]"
+                        className="text-[#667169]"
                       />
                     </div>
 
@@ -1900,7 +1900,7 @@ export default function ReportsPage() {
                       No progress reports yet
                     </h3>
 
-                    <p className="mt-3 text-sm leading-6 text-[#77766F]">
+                    <p className="mt-3 text-sm leading-6 text-[#667169]">
                       Generate a report from a patient&apos;s
                       Before &amp; After comparison and it
                       will appear here automatically.
@@ -1912,7 +1912,7 @@ export default function ReportsPage() {
                         window.location.href =
                           "/patients";
                       }}
-                      className="mt-6 rounded-xl bg-[#171717] px-5 py-3 text-sm font-medium text-white hover:bg-[#333]"
+                      className="mt-6 rounded-[13px] bg-[#173725] px-5 py-3 text-[11px] font-semibold text-white shadow-[0_12px_30px_rgba(23,55,37,0.18)] transition hover:-translate-y-px hover:bg-[#102D1C]"
                     >
                       Open patients →
                     </button>
@@ -1939,12 +1939,12 @@ function StatCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F0EFEA]">
+    <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-5">
+      <div className="flex h-9 w-9 items-center justify-center rounded-[13px] border border-[#DCE5DC] bg-[#EDF3ED] text-[#45634D]">
         {icon}
       </div>
 
-      <p className="mt-5 text-xs text-[#77766F]">
+      <p className="mt-5 text-xs text-[#667169]">
         {label}
       </p>
 
@@ -1952,7 +1952,7 @@ function StatCard({
         {value}
       </p>
 
-      <p className="mt-2 text-[10px] text-[#999890]">
+      <p className="mt-2 text-[10px] text-[#8C978F]">
         {detail}
       </p>
     </div>
@@ -1971,13 +1971,13 @@ function OutcomeCard({
   detail: string;
 }) {
   return (
-    <div className="flex items-start gap-4 rounded-2xl border border-[#DDDCD6] bg-white p-5">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F0EFEA]">
+    <div className="flex items-start gap-4 rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-5">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border border-[#DCE5DC] bg-[#EDF3ED] text-[#45634D]">
         {icon}
       </div>
 
       <div className="min-w-0">
-        <p className="text-xs text-[#77766F]">
+        <p className="text-xs text-[#667169]">
           {label}
         </p>
 
@@ -1985,7 +1985,7 @@ function OutcomeCard({
           {value}
         </p>
 
-        <p className="mt-1 text-[10px] leading-4 text-[#999890]">
+        <p className="mt-1 text-[10px] leading-4 text-[#8C978F]">
           {detail}
         </p>
       </div>
@@ -2002,7 +2002,7 @@ function TreatmentDetail({
 }) {
   return (
     <div className="min-w-0">
-      <p className="text-[9px] uppercase tracking-[0.1em] text-[#999890]">
+      <p className="text-[9px] uppercase tracking-[0.1em] text-[#8C978F]">
         {label}
       </p>
 
@@ -2021,8 +2021,8 @@ function ScoreBox({
   value: number;
 }) {
   return (
-    <div className="min-w-[82px] rounded-xl bg-[#F7F6F2] px-4 py-3">
-      <p className="text-[9px] uppercase tracking-[0.1em] text-[#999890]">
+    <div className="min-w-[82px] rounded-[13px] border border-[#E4E9E3] bg-[#F6F8F5] px-4 py-3">
+      <p className="text-[9px] uppercase tracking-[0.1em] text-[#8C978F]">
         {label}
       </p>
 

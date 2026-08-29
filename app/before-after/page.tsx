@@ -1018,7 +1018,7 @@ export default function BeforeAfterPage() {
     };
 
   return (
-    <main className="min-h-screen bg-[#F5F4F0] text-[#171717]">
+    <main className="min-h-screen bg-[#F2F5F2] text-[#182019]">
 
       <div className="flex min-h-screen">
 
@@ -1029,13 +1029,13 @@ export default function BeforeAfterPage() {
         <section className="min-w-0 flex-1">
 
           {/* HEADER */}
-          <header className="flex items-center justify-between border-b border-[#DDDCD6] bg-white px-6 py-5 lg:px-10">
+          <header className="flex items-center justify-between sticky top-0 z-30 border-b border-[#E1E7E0] bg-[#FDFEFC]/96 px-6 py-4 backdrop-blur-xl lg:px-10">
 
             <div className="flex items-center gap-3">
 
               <a
                 href="/patients"
-                className="text-sm text-[#999890] hover:text-black"
+                className="text-[11px] font-medium text-[#879189] transition hover:text-[#1E3024]"
               >
                 Patients
               </a>
@@ -1047,7 +1047,7 @@ export default function BeforeAfterPage() {
               <button
                 type="button"
                 onClick={backToPatient}
-                className="text-sm text-[#999890] hover:text-black"
+                className="text-[11px] font-medium text-[#879189] transition hover:text-[#1E3024]"
               >
                 {patient.name}
               </button>
@@ -1056,7 +1056,7 @@ export default function BeforeAfterPage() {
                 /
               </span>
 
-              <span className="text-sm font-medium">
+              <span className="text-[11px] font-semibold text-[#334239]">
                 Before & After
               </span>
 
@@ -1064,7 +1064,7 @@ export default function BeforeAfterPage() {
 
             <a
               href="/settings"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-medium transition hover:bg-[#DCD8CE]"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#D4DFD4] bg-[#E8F0E8] text-[10px] font-semibold text-[#3F5A47] transition hover:bg-[#E1EBE1]"
               title={
                 clinicSettings.practitionerName ||
                 clinicSettings.clinicName ||
@@ -1078,22 +1078,22 @@ export default function BeforeAfterPage() {
           </header>
 
           {/* CONTENT */}
-          <div className="p-6 lg:p-10">
+          <div className="mx-auto w-full max-w-[1520px] p-6 lg:px-10 lg:py-9">
 
             {/* TITLE */}
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
 
               <div>
 
-                <p className="text-sm text-[#71806C]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6E8375]">
                   Progress tracking
                 </p>
 
-                <h1 className="mt-1 text-3xl font-medium tracking-[-0.04em]">
+                <h1 className="mt-2 text-[38px] font-semibold leading-[1.02] tracking-[-0.06em] text-[#19231B]">
                   Before & After
                 </h1>
 
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-[#77766F]">
+                <p className="mt-4 max-w-2xl text-[12px] leading-6 text-[#77827A]">
                   Compare saved patient photography, skin scores and treatment activity
                   across assessments to review visible progress over time.
                 </p>
@@ -1103,7 +1103,7 @@ export default function BeforeAfterPage() {
               <button
                 type="button"
                 onClick={backToPatient}
-                className="w-fit rounded-xl border border-[#DDDCD6] bg-white px-5 py-3 text-sm font-medium hover:bg-[#F7F6F2]"
+                className="w-fit rounded-[13px] border border-[#DCE4DB] bg-[#FFFFFE] px-5 py-3 text-[11px] font-semibold text-[#4D5A51] shadow-[0_6px_18px_rgba(28,43,32,0.035)] transition hover:-translate-y-px hover:bg-[#F5F8F5]"
               >
                 ← Back to patient
               </button>
@@ -1111,17 +1111,17 @@ export default function BeforeAfterPage() {
             </div>
 
             {/* PATIENT CARD */}
-            <div className="mt-8 flex flex-col justify-between gap-5 rounded-2xl border border-[#DDDCD6] bg-white p-5 sm:flex-row sm:items-center">
+            <div className="mt-8 flex flex-col justify-between gap-5 rounded-[26px] border border-[#DDE5DC] bg-[#FFFFFE] p-5 shadow-[0_16px_44px_rgba(27,43,32,0.055)] sm:flex-row sm:items-center">
 
               <div className="flex items-center gap-4">
 
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#E5E2D9] text-sm font-medium">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#D2DED2] bg-[#E8F0E8] text-[11px] font-semibold text-[#3F5A47] shadow-[inset_0_0_0_4px_rgba(255,255,255,0.58)]">
                   {initials}
                 </div>
 
                 <div>
 
-                  <p className="text-xs text-[#999890]">
+                  <p className="text-xs text-[#8C978F]">
                     Current patient
                   </p>
 
@@ -1129,7 +1129,7 @@ export default function BeforeAfterPage() {
                     {patient.name}
                   </p>
 
-                  <p className="mt-1 text-xs text-[#77766F]">
+                  <p className="mt-1 text-xs text-[#667169]">
                     {patient.concern}
                   </p>
 
@@ -1139,7 +1139,7 @@ export default function BeforeAfterPage() {
 
               <div className="flex flex-wrap items-center gap-3">
 
-                <span className="rounded-full bg-[#F1F0EB] px-3 py-1 text-[10px] text-[#77766F]">
+                <span className="rounded-full border border-[#E2E7E1] bg-[#F5F7F4] px-3 py-1 text-[9px] font-medium text-[#69746C]">
                   {analysisHistory.length} saved{" "}
                   {analysisHistory.length === 1
                     ? "analysis"
@@ -1149,8 +1149,8 @@ export default function BeforeAfterPage() {
                 <span
                   className={`rounded-full px-3 py-1 text-[10px] font-medium ${
                     patient.status === "Active"
-                      ? "bg-[#E8EEE5] text-[#62715D]"
-                      : "bg-[#F1F0EB] text-[#77766F]"
+                      ? "border border-[#D3E0D3] bg-[#EAF3EA] text-[#45634D]"
+                      : "bg-[#F1F0EB] text-[#667169]"
                   }`}
                 >
                   {patient.status}
@@ -1163,11 +1163,11 @@ export default function BeforeAfterPage() {
             {/* NO ANALYSES */}
             {analysisHistory.length === 0 && (
 
-              <div className="mt-6 flex min-h-[480px] items-center justify-center rounded-2xl border border-[#DDDCD6] bg-white p-8">
+              <div className="mt-6 flex min-h-[480px] items-center justify-center rounded-[26px] border border-[#DDE5DC] bg-[#FFFFFE] p-8 shadow-[0_16px_44px_rgba(27,43,32,0.05)]">
 
                 <div className="max-w-md text-center">
 
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F0EFEA]">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[20px] border border-[#DDE6DD] bg-[#EDF3ED] text-[#45634D]">
                     <CameraPlaceholder />
                   </div>
 
@@ -1175,7 +1175,7 @@ export default function BeforeAfterPage() {
                     No saved analysis photos yet
                   </h2>
 
-                  <p className="mt-3 text-sm leading-6 text-[#77766F]">
+                  <p className="mt-3 text-sm leading-6 text-[#667169]">
                     Run and save a skin analysis
                     for {patient.name} before
                     creating a progress comparison.
@@ -1184,7 +1184,7 @@ export default function BeforeAfterPage() {
                   <button
                     type="button"
                     onClick={runNewAnalysis}
-                    className="mt-6 rounded-xl bg-[#171717] px-5 py-3 text-sm font-medium text-white hover:bg-[#333]"
+                    className="mt-6 rounded-[13px] bg-[#173725] px-5 py-3 text-[11px] font-semibold text-white shadow-[0_12px_30px_rgba(23,55,37,0.18)] transition hover:-translate-y-px hover:bg-[#102D1C]"
                   >
                     Run first analysis →
                   </button>
@@ -1202,9 +1202,9 @@ export default function BeforeAfterPage() {
               <div className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
 
                 {/* BASELINE IMAGE */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-6">
 
-                  <p className="text-sm text-[#77766F]">
+                  <p className="text-sm text-[#667169]">
                     Baseline photography
                   </p>
 
@@ -1222,7 +1222,7 @@ export default function BeforeAfterPage() {
 
                   </div>
 
-                  <div className="mt-4 flex items-center gap-2 text-xs text-[#77766F]">
+                  <div className="mt-4 flex items-center gap-2 text-xs text-[#667169]">
 
                     <CalendarDays
                       size={14}
@@ -1236,15 +1236,15 @@ export default function BeforeAfterPage() {
                 </div>
 
                 {/* SECOND ANALYSIS CTA */}
-                <div className="rounded-2xl border border-[#D7DDD4] bg-[#F0F3EE] p-6">
+                <div className="rounded-[24px] border border-[#D5E2D5] bg-[#EDF4ED] shadow-[0_12px_34px_rgba(35,62,44,0.04)] p-6">
 
                   <Sparkles
                     size={22}
                     strokeWidth={1.7}
-                    className="text-[#62715D]"
+                    className="text-[#45634D]"
                   />
 
-                  <p className="mt-5 text-xs font-medium text-[#62715D]">
+                  <p className="mt-5 text-xs font-medium text-[#45634D]">
                     Progress tracking
                   </p>
 
@@ -1269,7 +1269,7 @@ export default function BeforeAfterPage() {
                     <p className="mt-2 text-3xl font-semibold">
                       {beforeAnalysis.score}
 
-                      <span className="ml-1 text-sm font-normal text-[#77766F]">
+                      <span className="ml-1 text-sm font-normal text-[#667169]">
                         / 100
                       </span>
 
@@ -1301,9 +1301,9 @@ export default function BeforeAfterPage() {
                 {/* SCORE CARDS */}
                 <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
-                  <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
+                  <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-5">
 
-                    <p className="text-xs text-[#77766F]">
+                    <p className="text-xs text-[#667169]">
                       Baseline score
                     </p>
 
@@ -1311,15 +1311,15 @@ export default function BeforeAfterPage() {
                       {beforeAnalysis.score}
                     </p>
 
-                    <p className="mt-2 text-xs text-[#999890]">
+                    <p className="mt-2 text-xs text-[#8C978F]">
                       {beforeAnalysis.date}
                     </p>
 
                   </div>
 
-                  <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
+                  <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-5">
 
-                    <p className="text-xs text-[#77766F]">
+                    <p className="text-xs text-[#667169]">
                       Comparison score
                     </p>
 
@@ -1327,15 +1327,15 @@ export default function BeforeAfterPage() {
                       {afterAnalysis.score}
                     </p>
 
-                    <p className="mt-2 text-xs text-[#999890]">
+                    <p className="mt-2 text-xs text-[#8C978F]">
                       {afterAnalysis.date}
                     </p>
 
                   </div>
 
-                  <div className="rounded-2xl border border-[#D7DDD4] bg-[#F0F3EE] p-5">
+                  <div className="rounded-[24px] border border-[#D5E2D5] bg-[#EDF4ED] shadow-[0_12px_34px_rgba(35,62,44,0.04)] p-5">
 
-                    <p className="text-xs text-[#62715D]">
+                    <p className="text-xs text-[#45634D]">
                       Score change
                     </p>
 
@@ -1345,7 +1345,7 @@ export default function BeforeAfterPage() {
                         <TrendingUp
                           size={18}
                           strokeWidth={1.8}
-                          className="text-[#62715D]"
+                          className="text-[#45634D]"
                         />
                       ) : (
                         <TrendingDown
@@ -1363,15 +1363,15 @@ export default function BeforeAfterPage() {
 
                     </div>
 
-                    <p className="mt-2 text-xs text-[#62715D]">
+                    <p className="mt-2 text-xs text-[#45634D]">
                       Points from baseline
                     </p>
 
                   </div>
 
-                  <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
+                  <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-5">
 
-                    <p className="text-xs text-[#77766F]">
+                    <p className="text-xs text-[#667169]">
                       Relative change
                     </p>
 
@@ -1381,7 +1381,7 @@ export default function BeforeAfterPage() {
                         : `${scoreImprovementPercent}%`}
                     </p>
 
-                    <p className="mt-2 text-xs text-[#999890]">
+                    <p className="mt-2 text-xs text-[#8C978F]">
                       From baseline
                     </p>
 
@@ -1390,13 +1390,13 @@ export default function BeforeAfterPage() {
                 </div>
 
                 {/* IMAGE COMPARISON */}
-                <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="mt-6 rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-6">
 
                   <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 
                     <div>
 
-                      <p className="text-sm text-[#77766F]">
+                      <p className="text-sm text-[#667169]">
                         Photo comparison
                       </p>
 
@@ -1416,7 +1416,7 @@ export default function BeforeAfterPage() {
                           disabled={
                             comparisonIndex === 0
                           }
-                          className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#DDDCD6] transition hover:bg-[#F7F6F2] disabled:cursor-not-allowed disabled:opacity-40"
+                          className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#DDE5DC] transition hover:bg-[#F5F8F5] disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           <ChevronLeft
                             size={16}
@@ -1424,7 +1424,7 @@ export default function BeforeAfterPage() {
                           />
                         </button>
 
-                        <span className="min-w-[125px] text-center text-xs text-[#999890]">
+                        <span className="min-w-[125px] text-center text-xs text-[#8C978F]">
                           Comparison{" "}
                           {comparisonIndex + 1} of{" "}
                           {totalComparisons}
@@ -1437,7 +1437,7 @@ export default function BeforeAfterPage() {
                             comparisonIndex ===
                             totalComparisons - 1
                           }
-                          className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#DDDCD6] transition hover:bg-[#F7F6F2] disabled:cursor-not-allowed disabled:opacity-40"
+                          className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#DDE5DC] transition hover:bg-[#F5F8F5] disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           <ChevronRight
                             size={16}
@@ -1465,7 +1465,7 @@ export default function BeforeAfterPage() {
                       This fixes the stretching /
                       sliding mismatch issue.
                     */}
-                    <div className="relative h-[520px] overflow-hidden rounded-2xl bg-[#E8E5DD]">
+                    <div className="relative h-[540px] overflow-hidden rounded-[24px] bg-[#E7ECE7] shadow-[inset_0_0_0_1px_rgba(37,61,44,0.06)]">
 
                       {/* AFTER */}
                       <img
@@ -1485,12 +1485,12 @@ export default function BeforeAfterPage() {
                       />
 
                       {/* BEFORE LABEL */}
-                      <div className="absolute left-4 top-4 z-10 rounded-full bg-white/90 px-3 py-1 text-[10px] font-medium shadow-sm">
+                      <div className="absolute left-4 top-4 z-10 rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-[9px] font-semibold tracking-[0.08em] text-[#334239] shadow-[0_6px_18px_rgba(20,35,25,0.10)] backdrop-blur-md">
                         BEFORE
                       </div>
 
                       {/* AFTER LABEL */}
-                      <div className="absolute right-4 top-4 z-10 rounded-full bg-white/90 px-3 py-1 text-[10px] font-medium shadow-sm">
+                      <div className="absolute right-4 top-4 z-10 rounded-full border border-white/70 bg-white/90 px-3 py-1.5 text-[9px] font-semibold tracking-[0.08em] text-[#334239] shadow-[0_6px_18px_rgba(20,35,25,0.10)] backdrop-blur-md">
                         AFTER
                       </div>
 
@@ -1502,7 +1502,7 @@ export default function BeforeAfterPage() {
                         }}
                       >
 
-                        <div className="absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#DDDCD6] bg-white shadow-lg">
+                        <div className="absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#D7E0D7] bg-[#FFFFFE] text-[#36513E] shadow-[0_8px_24px_rgba(20,35,25,0.16)]">
 
                           <ArrowLeftRight
                             size={17}
@@ -1533,7 +1533,7 @@ export default function BeforeAfterPage() {
                     </div>
 
                     {/* DATES */}
-                    <div className="mt-4 flex items-center justify-between gap-4 text-xs text-[#77766F]">
+                    <div className="mt-4 flex items-center justify-between gap-4 text-xs text-[#667169]">
 
                       <div className="flex items-center gap-2">
 
@@ -1568,9 +1568,9 @@ export default function BeforeAfterPage() {
                 {/* PRIORITY SUMMARY */}
                 <div className="mt-6 grid gap-4 md:grid-cols-3">
 
-                  <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
+                  <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-5">
 
-                    <p className="text-xs text-[#77766F]">
+                    <p className="text-xs text-[#667169]">
                       Strongest improvement
                     </p>
 
@@ -1586,7 +1586,7 @@ export default function BeforeAfterPage() {
                           }
                         </p>
 
-                        <p className="mt-2 text-xs font-medium text-[#62715D]">
+                        <p className="mt-2 text-xs font-medium text-[#45634D]">
                           +
                           {
                             strongestImprovement.change
@@ -1606,9 +1606,9 @@ export default function BeforeAfterPage() {
 
                   </div>
 
-                  <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
+                  <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-5">
 
-                    <p className="text-xs text-[#77766F]">
+                    <p className="text-xs text-[#667169]">
                       Requires monitoring
                     </p>
 
@@ -1639,7 +1639,7 @@ export default function BeforeAfterPage() {
                           Stable progress
                         </p>
 
-                        <p className="mt-2 text-xs text-[#62715D]">
+                        <p className="mt-2 text-xs text-[#45634D]">
                           No declining recorded metrics
                         </p>
 
@@ -1649,9 +1649,9 @@ export default function BeforeAfterPage() {
 
                   </div>
 
-                  <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
+                  <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-5">
 
-                    <p className="text-xs text-[#77766F]">
+                    <p className="text-xs text-[#667169]">
                       Primary concern
                     </p>
 
@@ -1659,7 +1659,7 @@ export default function BeforeAfterPage() {
                       {patient.concern}
                     </p>
 
-                    <p className="mt-2 text-xs text-[#999890]">
+                    <p className="mt-2 text-xs text-[#8C978F]">
                       Current clinic record
                     </p>
 
@@ -1671,7 +1671,7 @@ export default function BeforeAfterPage() {
                 <div className="mt-6 grid gap-6 xl:grid-cols-2">
 
                   {/* AI PROGRESS SUMMARY */}
-                  <div className="rounded-2xl border border-[#D7DDD4] bg-[#F0F3EE] p-6">
+                  <div className="rounded-[24px] border border-[#D5E2D5] bg-[#EDF4ED] shadow-[0_12px_34px_rgba(35,62,44,0.04)] p-6">
 
                     <div className="flex items-start gap-4">
 
@@ -1680,14 +1680,14 @@ export default function BeforeAfterPage() {
                         <Sparkles
                           size={18}
                           strokeWidth={1.7}
-                          className="text-[#62715D]"
+                          className="text-[#45634D]"
                         />
 
                       </div>
 
                       <div>
 
-                        <p className="text-xs font-medium text-[#62715D]">
+                        <p className="text-xs font-medium text-[#45634D]">
                           Progress insight
                         </p>
 
@@ -1731,9 +1731,9 @@ export default function BeforeAfterPage() {
                   </div>
 
                   {/* METRICS */}
-                  <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                  <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-6">
 
-                    <p className="text-sm text-[#77766F]">
+                    <p className="text-sm text-[#667169]">
                       Clinical progress
                     </p>
 
@@ -1751,22 +1751,22 @@ export default function BeforeAfterPage() {
 
                             <div
                               key={metric.label}
-                              className="rounded-xl border border-[#ECEBE6] p-4"
+                              className="rounded-xl border border-[#E7ECE6] p-4"
                             >
 
                               <div className="flex items-center justify-between">
 
-                                <p className="text-sm font-medium">
+                                <p className="text-[11px] font-semibold text-[#334239]">
                                   {metric.label}
                                 </p>
 
                                 <span
                                   className={`rounded-full px-2.5 py-1 text-[10px] font-medium ${
                                     metric.change > 0
-                                      ? "bg-[#E8EEE5] text-[#62715D]"
+                                      ? "border border-[#D3E0D3] bg-[#EAF3EA] text-[#45634D]"
                                       : metric.change < 0
                                       ? "bg-[#F3EAEA] text-[#8A6666]"
-                                      : "bg-[#F1F0EB] text-[#77766F]"
+                                      : "bg-[#F1F0EB] text-[#667169]"
                                   }`}
                                 >
                                   {metric.change > 0
@@ -1783,7 +1783,7 @@ export default function BeforeAfterPage() {
 
                                   <div className="flex items-center justify-between">
 
-                                    <p className="text-[10px] text-[#999890]">
+                                    <p className="text-[10px] text-[#8C978F]">
                                       Before
                                     </p>
 
@@ -1817,7 +1817,7 @@ export default function BeforeAfterPage() {
 
                                   <div className="flex items-center justify-between">
 
-                                    <p className="text-[10px] text-[#999890]">
+                                    <p className="text-[10px] text-[#8C978F]">
                                       After
                                     </p>
 
@@ -1830,7 +1830,7 @@ export default function BeforeAfterPage() {
                                   <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#ECEBE6]">
 
                                     <div
-                                      className="h-full rounded-full bg-[#7D8977]"
+                                      className="h-full rounded-full bg-[#42694D]"
                                       style={{
                                         width: `${Math.max(
                                           0,
@@ -1857,13 +1857,13 @@ export default function BeforeAfterPage() {
 
                     ) : (
 
-                      <div className="mt-6 rounded-xl bg-[#F7F6F2] p-5">
+                      <div className="mt-6 rounded-xl bg-[#F5F8F5] p-5">
 
-                        <p className="text-sm font-medium">
+                        <p className="text-[11px] font-semibold text-[#334239]">
                           No metric comparison available
                         </p>
 
-                        <p className="mt-2 text-xs text-[#999890]">
+                        <p className="mt-2 text-xs text-[#8C978F]">
                           The selected analyses do not
                           contain comparable saved
                           metrics.
@@ -1878,21 +1878,21 @@ export default function BeforeAfterPage() {
                 </div>
 
                 {/* COMPLETED TREATMENTS DURING PROGRESS */}
-                <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white">
-                  <div className="border-b border-[#ECEBE6] px-6 py-5">
-                    <p className="text-sm text-[#77766F]">Treatment progress</p>
+                <div className="mt-6 rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)]">
+                  <div className="border-b border-[#E7ECE6] px-6 py-5">
+                    <p className="text-sm text-[#667169]">Treatment progress</p>
                     <h3 className="mt-1 text-lg font-semibold">Completed treatments</h3>
-                    <p className="mt-2 text-xs text-[#999890]">Treatments completed between the selected baseline and comparison assessments.</p>
+                    <p className="mt-2 text-xs text-[#8C978F]">Treatments completed between the selected baseline and comparison assessments.</p>
                   </div>
 
                   {completedTreatments.length > 0 ? (
-                    <div className="divide-y divide-[#F0EFEA]">
+                    <div className="divide-y divide-[#E9EEE8]">
                       {completedTreatments.map((item) => (
                         <div key={item.id} className="grid gap-4 px-6 py-5 md:grid-cols-[minmax(220px,1.4fr)_repeat(4,minmax(110px,0.7fr))] md:items-center">
                           <div>
                             <p className="text-sm font-semibold">{item.treatment}</p>
-                            <p className="mt-1 text-xs text-[#62715D]">Completed treatment</p>
-                            {item.notes && <p className="mt-2 text-xs leading-5 text-[#77766F]">{item.notes}</p>}
+                            <p className="mt-1 text-xs text-[#45634D]">Completed treatment</p>
+                            {item.notes && <p className="mt-2 text-xs leading-5 text-[#667169]">{item.notes}</p>}
                           </div>
                           <ProgressDetail label="Date" value={item.date || "—"} />
                           <ProgressDetail label="Time" value={item.time || "—"} />
@@ -1903,18 +1903,18 @@ export default function BeforeAfterPage() {
                     </div>
                   ) : (
                     <div className="px-6 py-10 text-center">
-                      <p className="text-sm font-medium">No completed treatments recorded</p>
-                      <p className="mt-2 text-xs text-[#999890]">Complete an appointment to connect treatment activity with progress tracking.</p>
+                      <p className="text-[11px] font-semibold text-[#334239]">No completed treatments recorded</p>
+                      <p className="mt-2 text-xs text-[#8C978F]">Complete an appointment to connect treatment activity with progress tracking.</p>
                     </div>
                   )}
                 </div>
 
                 {/* TREATMENT ACTIVITY */}
-                <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white">
+                <div className="mt-6 rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)]">
 
-                  <div className="flex items-center gap-3 border-b border-[#ECEBE6] px-6 py-5">
+                  <div className="flex items-center gap-3 border-b border-[#E7ECE6] px-6 py-5">
 
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F0EFEA]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-[13px] bg-[#EDF3ED]">
 
                       <ClipboardList
                         size={18}
@@ -1925,7 +1925,7 @@ export default function BeforeAfterPage() {
 
                     <div>
 
-                      <p className="text-sm text-[#77766F]">
+                      <p className="text-sm text-[#667169]">
                         Treatment activity
                       </p>
 
@@ -1940,7 +1940,7 @@ export default function BeforeAfterPage() {
                   {savedTreatmentPlans.length >
                   0 ? (
 
-                    <div className="divide-y divide-[#F0EFEA]">
+                    <div className="divide-y divide-[#E9EEE8]">
 
                       {savedTreatmentPlans.map(
                         (plan) => (
@@ -1954,7 +1954,7 @@ export default function BeforeAfterPage() {
 
                               <div className="flex flex-wrap items-center gap-2">
 
-                                <p className="text-sm font-medium">
+                                <p className="text-[11px] font-semibold text-[#334239]">
                                   {plan.treatment}
                                 </p>
 
@@ -1962,8 +1962,8 @@ export default function BeforeAfterPage() {
                                   className={`rounded-full px-2.5 py-1 text-[9px] font-medium ${
                                     plan.status ===
                                     "Active"
-                                      ? "bg-[#E8EEE5] text-[#62715D]"
-                                      : "bg-[#F1F0EB] text-[#77766F]"
+                                      ? "border border-[#D3E0D3] bg-[#EAF3EA] text-[#45634D]"
+                                      : "bg-[#F1F0EB] text-[#667169]"
                                   }`}
                                 >
                                   {plan.status}
@@ -1971,14 +1971,14 @@ export default function BeforeAfterPage() {
 
                               </div>
 
-                              <p className="mt-1 text-xs text-[#999890]">
+                              <p className="mt-1 text-xs text-[#8C978F]">
                                 {plan.duration} ·{" "}
                                 {plan.createdAt}
                               </p>
 
                               {plan.notes && (
 
-                                <p className="mt-2 max-w-2xl text-xs leading-5 text-[#77766F]">
+                                <p className="mt-2 max-w-2xl text-xs leading-5 text-[#667169]">
                                   {plan.notes}
                                 </p>
 
@@ -2001,11 +2001,11 @@ export default function BeforeAfterPage() {
 
                     <div className="px-6 py-10 text-center">
 
-                      <p className="text-sm font-medium">
+                      <p className="text-[11px] font-semibold text-[#334239]">
                         No saved treatment plans
                       </p>
 
-                      <p className="mt-2 text-xs text-[#999890]">
+                      <p className="mt-2 text-xs text-[#8C978F]">
                         Treatment recommendations can
                         be created from the patient&apos;s
                         analysis results.
@@ -2018,13 +2018,13 @@ export default function BeforeAfterPage() {
                 </div>
 
                 {/* TIMELINE */}
-                <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="mt-6 rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-6">
 
                   <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 
                     <div>
 
-                      <p className="text-sm text-[#77766F]">
+                      <p className="text-sm text-[#667169]">
                         Progress timeline
                       </p>
 
@@ -2034,7 +2034,7 @@ export default function BeforeAfterPage() {
 
                     </div>
 
-                    <span className="w-fit rounded-full bg-[#F1F0EB] px-3 py-1 text-[10px] text-[#77766F]">
+                    <span className="w-fit rounded-full border border-[#E2E7E1] bg-[#F5F7F4] px-3 py-1 text-[9px] font-medium text-[#69746C]">
                       {beforeAnalysis.date} →{" "}
                       {afterAnalysis.date}
                     </span>
@@ -2075,13 +2075,13 @@ export default function BeforeAfterPage() {
                 </div>
 
                 {/* REPORT */}
-                <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="mt-6 rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-6">
 
                   <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
 
                     <div className="flex items-start gap-4">
 
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F0EFEA]">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-[#EDF3ED]">
 
                         <FileText
                           size={18}
@@ -2092,7 +2092,7 @@ export default function BeforeAfterPage() {
 
                       <div>
 
-                        <p className="text-sm text-[#77766F]">
+                        <p className="text-sm text-[#667169]">
                           Progress reporting
                         </p>
 
@@ -2100,7 +2100,7 @@ export default function BeforeAfterPage() {
                           Generate progress report
                         </h3>
 
-                        <p className="mt-2 max-w-xl text-xs leading-5 text-[#999890]">
+                        <p className="mt-2 max-w-xl text-xs leading-5 text-[#8C978F]">
                           Save this comparison, metric changes, treatment programme and
                           progress summary to the patient&apos;s report history.
                         </p>
@@ -2115,8 +2115,8 @@ export default function BeforeAfterPage() {
                       disabled={reportGenerated}
                       className={`flex w-fit items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium transition ${
                         reportGenerated
-                          ? "border border-[#D7DDD4] bg-[#F0F3EE] text-[#62715D]"
-                          : "bg-[#171717] text-white hover:bg-[#333]"
+                          ? "border border-[#D7DDD4] bg-[#F0F3EE] text-[#45634D]"
+                          : "bg-[#173725] text-white shadow-[0_10px_26px_rgba(23,55,37,0.16)] transition hover:-translate-y-px hover:bg-[#102D1C]"
                       }`}
                     >
 
@@ -2143,7 +2143,7 @@ export default function BeforeAfterPage() {
 
                     <div className="mt-5 rounded-xl border border-[#D7DDD4] bg-[#F0F3EE] p-4">
 
-                      <p className="text-xs font-medium text-[#62715D]">
+                      <p className="text-xs font-medium text-[#45634D]">
                         {reportAlreadyExists
                           ? "Progress report already exists"
                           : "Progress report generated successfully"}
@@ -2174,7 +2174,7 @@ export default function BeforeAfterPage() {
                 <button
                   type="button"
                   onClick={runNewAnalysis}
-                  className="rounded-xl border border-[#DDDCD6] bg-white px-5 py-3 text-sm font-medium hover:bg-[#F7F6F2]"
+                  className="rounded-[12px] border border-[#DDE5DC] bg-white px-5 py-3 text-sm font-medium hover:bg-[#F5F8F5]"
                 >
                   Run new analysis
                 </button>
@@ -2203,8 +2203,8 @@ export default function BeforeAfterPage() {
 
 function ProgressDetail({ label, value }: { label: string; value: string }) {
   return (
-    <div className="min-h-[72px] rounded-xl bg-[#F7F6F2] p-4">
-      <p className="text-[10px] uppercase tracking-[0.1em] text-[#999890]">{label}</p>
+    <div className="min-h-[72px] rounded-xl bg-[#F5F8F5] p-4">
+      <p className="text-[10px] uppercase tracking-[0.1em] text-[#8C978F]">{label}</p>
       <p className="mt-2 text-sm font-medium">{value}</p>
     </div>
   );
@@ -2224,7 +2224,7 @@ function TimelineCard({
   completed?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-[#ECEBE6] bg-[#FAF9F6] p-5">
+    <div className="rounded-xl border border-[#E7ECE6] bg-[#FAF9F6] p-5">
 
       <div className="flex items-center justify-between">
 
@@ -2234,7 +2234,7 @@ function TimelineCard({
 
         {completed && (
 
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#E8EEE5] text-[#62715D]">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full border border-[#D3E0D3] bg-[#EAF3EA] text-[#45634D]">
 
             <Check
               size={13}
@@ -2247,7 +2247,7 @@ function TimelineCard({
 
       </div>
 
-      <p className="mt-5 text-[10px] uppercase tracking-[0.12em] text-[#999890]">
+      <p className="mt-5 text-[10px] uppercase tracking-[0.12em] text-[#8C978F]">
         {label}
       </p>
 
@@ -2255,7 +2255,7 @@ function TimelineCard({
         {title}
       </h4>
 
-      <p className="mt-2 text-xs leading-5 text-[#77766F]">
+      <p className="mt-2 text-xs leading-5 text-[#667169]">
         {description}
       </p>
 
@@ -2274,7 +2274,7 @@ function CameraPlaceholder() {
       strokeWidth="1.7"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="text-[#77766F]"
+      className="text-[#667169]"
     >
       <path d="M14.5 4h-5L8 6H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3l-1.5-2Z" />
       <circle

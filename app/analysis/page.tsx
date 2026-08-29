@@ -1635,7 +1635,7 @@ export default function AnalysisPage() {
     "SW";
 
   return (
-    <main className="min-h-screen bg-[#F5F4F0] text-[#171717]">
+    <main className="min-h-screen bg-[#F4F6F3] text-[#172019]">
 
       <div className="flex min-h-screen">
 
@@ -1646,19 +1646,19 @@ export default function AnalysisPage() {
         <section className="min-w-0 flex-1">
 
           {/* HEADER */}
-          <header className="flex items-center justify-between border-b border-[#DDDCD6] bg-white px-6 py-5 lg:px-10">
+          <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[#E4E8E2] bg-[#FCFDFC]/95 px-6 py-4 backdrop-blur-xl lg:px-10">
 
             <div>
 
-              <p className="text-xs text-[#96958E]">
-                AI skin intelligence
+              <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#7D8F81]">
+                Velyquo intelligence
               </p>
 
-              <h1 className="mt-1 text-xl font-semibold tracking-[-0.03em]">
+              <h1 className="mt-1.5 text-[20px] font-semibold tracking-[-0.04em] text-[#202A22]">
                 Skin analysis
               </h1>
 
-              <p className="mt-1 text-[10px] text-[#999890]">
+              <p className="mt-1 text-[10px] text-[#929A93]">
                 {clinicSettings.clinicName ||
                   "Skinhouse Clinic"}
               </p>
@@ -1670,7 +1670,7 @@ export default function AnalysisPage() {
               <button
                 type="button"
                 onClick={resetAnalysis}
-                className="hidden rounded-xl bg-[#171717] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#333] sm:block"
+                className="hidden rounded-[11px] bg-[#24402F] px-4 py-2.5 text-[12px] font-semibold text-white shadow-[0_9px_26px_rgba(36,64,47,0.16)] transition hover:-translate-y-px hover:bg-[#1B3325] sm:block"
               >
                 + New analysis
               </button>
@@ -1678,7 +1678,7 @@ export default function AnalysisPage() {
               <a
                 href="/settings"
                 title="Clinic settings"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-medium transition hover:bg-[#DCD8CE]"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#D6E0D6] bg-[#EAF0EA] text-[10px] font-semibold text-[#486151] transition hover:bg-[#E2EBE2]"
               >
                 {practitionerInitials}
               </a>
@@ -1688,24 +1688,24 @@ export default function AnalysisPage() {
           </header>
 
           {/* CONTENT */}
-          <div className="p-6 lg:p-10">
+          <div className="mx-auto w-full max-w-[1520px] p-6 lg:px-10 lg:py-9">
 
             {/* TITLE */}
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
 
               <div>
 
-                <p className="text-sm text-[#71806C]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6F8875]">
                   AI-powered assessment
                 </p>
 
-                <h2 className="mt-1 text-3xl font-medium tracking-[-0.04em]">
+                <h2 className="mt-2 text-[36px] font-semibold leading-none tracking-[-0.055em] text-[#1C261F]">
                   {historicalAnalysis
                     ? "Historical skin analysis"
                     : "New skin analysis"}
                 </h2>
 
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-[#77766F]">
+                <p className="mt-4 max-w-2xl text-[12px] leading-6 text-[#7C867E]">
                   {historicalAnalysis
                     ? `Reviewing the saved assessment from ${historicalAnalysis.date}. Historical analyses are read-only and do not change the patient's latest analysis.`
                     : "Capture or upload clear patient images to review visible skin characteristics, highlight priority concerns and prepare treatment recommendations."}
@@ -1716,7 +1716,7 @@ export default function AnalysisPage() {
               <button
                 type="button"
                 onClick={resetAnalysis}
-                className="w-fit rounded-xl border border-[#DDDCD6] bg-white px-5 py-3 text-sm font-medium hover:bg-[#F7F6F2]"
+                className="w-fit rounded-[12px] border border-[#DCE2DC] bg-white px-5 py-3 text-[12px] font-semibold text-[#59645C] shadow-[0_4px_16px_rgba(31,56,39,0.03)] transition hover:-translate-y-px hover:bg-[#F6F9F6]"
               >
                 {historicalAnalysis
                   ? "Start new analysis"
@@ -1725,19 +1725,19 @@ export default function AnalysisPage() {
 
             </div>
 
-            <div className="mt-5 rounded-xl border border-[#E3E1DA] bg-[#FAF9F6] px-4 py-3 text-xs leading-5 text-[#77766F]">
+            <div className="mt-6 rounded-[14px] border border-[#E3E8E2] bg-[#F7F9F6] px-4 py-3 text-[10px] leading-5 text-[#7C857E]">
               Demo mode: assessment scores and concern detection are simulated for product demonstration and should not be treated as a medical diagnosis.
             </div>
 
             {/* FOLLOW-UP CONTEXT */}
             {followUpSource && (
-              <div className="mt-6 rounded-2xl border border-[#D7DDD4] bg-[#F0F3EE] p-5">
+              <div className="mt-6 rounded-[20px] border border-[#D6E2D5] bg-[#EDF4ED] p-5 shadow-[0_8px_28px_rgba(35,62,44,0.04)]">
 
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 
                   <div className="flex items-start gap-3">
 
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#62715D]">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border border-[#DBE5DA] bg-white text-[#4F6B54] shadow-[0_4px_14px_rgba(35,62,44,0.04)]">
                       <History
                         size={17}
                         strokeWidth={1.8}
@@ -1772,7 +1772,7 @@ export default function AnalysisPage() {
 
                   </div>
 
-                  <div className="rounded-xl bg-white px-4 py-3 text-xs text-[#77766F]">
+                  <div className="rounded-xl bg-white px-4 py-3 text-xs text-[#667068]">
                     Comparing post-treatment progress
                   </div>
 
@@ -1782,11 +1782,11 @@ export default function AnalysisPage() {
             )}
 
             {/* PATIENT CONTEXT */}
-            <div className={`${followUpSource ? "mt-4" : "mt-8"} flex flex-col justify-between gap-4 rounded-2xl border border-[#DDDCD6] bg-white p-5 sm:flex-row sm:items-center`}>
+            <div className={`${followUpSource ? "mt-4" : "mt-8"} flex flex-col justify-between gap-4 rounded-[22px] border border-[#E0E6DF] bg-[#FEFFFD] p-5 shadow-[0_10px_34px_rgba(28,44,33,0.035)] sm:flex-row sm:items-center`}>
 
               <div className="flex items-center gap-4">
 
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#E5E2D9] text-sm font-medium">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#D5E1D5] bg-[#E9F0E9] text-[11px] font-semibold text-[#496050]">
 
                   {selectedPatient.name
                     .split(" ")
@@ -1803,7 +1803,7 @@ export default function AnalysisPage() {
 
                 <div>
 
-                  <p className="text-xs text-[#999890]">
+                  <p className="text-xs text-[#929A93]">
                     {historicalAnalysis
                       ? "Historical patient"
                       : "Current patient"}
@@ -1813,7 +1813,7 @@ export default function AnalysisPage() {
                     {selectedPatient.name}
                   </p>
 
-                  <p className="mt-1 text-xs text-[#77766F]">
+                  <p className="mt-1 text-xs text-[#667068]">
                     {selectedPatient.concern} ·{" "}
                     {selectedPatient.analyses} analyses
                   </p>
@@ -1823,7 +1823,7 @@ export default function AnalysisPage() {
               </div>
 
               {historicalAnalysis ? (
-                <div className="rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm">
+                <div className="rounded-[12px] border border-[#E0E5DF] bg-[#F8FAF7] px-4 py-3 text-sm">
                   {historicalAnalysis.date}
                 </div>
               ) : (
@@ -1836,7 +1836,7 @@ export default function AnalysisPage() {
                       e.target.value
                     )
                   }
-                  className="rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                  className="rounded-[12px] border border-[#E0E5DF] bg-[#F8FAF7] px-4 py-3 text-[12px] font-medium text-[#465048] outline-none transition focus:border-[#829A87] focus:bg-white focus:shadow-[0_0_0_3px_rgba(77,112,83,0.07)]"
                 >
 
                   {patients.map(
@@ -1858,7 +1858,7 @@ export default function AnalysisPage() {
             </div>
 
             {/* STEPS */}
-            <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-5">
+            <div className="mt-6 rounded-[20px] border border-[#E0E6DF] bg-[#FEFFFD] p-4 shadow-[0_8px_28px_rgba(28,44,33,0.03)]">
 
               <div className="flex flex-wrap items-center gap-4">
 
@@ -1907,15 +1907,15 @@ export default function AnalysisPage() {
 
                 <div>
 
-                  <p className="text-sm text-[#77766F]">
-                    Patient photography
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.17em] text-[#75877A]">
+                    Clinical photography
                   </p>
 
-                  <h3 className="mt-1 text-xl font-semibold">
+                  <h3 className="mt-2 text-[24px] font-semibold tracking-[-0.04em] text-[#202A22]">
                     Upload facial images
                   </h3>
 
-                  <p className="mt-2 text-xs text-[#999890]">
+                  <p className="mt-2 text-[11px] leading-5 text-[#929A93]">
                     A front-facing image is required. Left and right profiles
                     can be added for a more complete demonstration.
                   </p>
@@ -1965,7 +1965,7 @@ export default function AnalysisPage() {
                 {/* GUIDELINES */}
                 <div className="mt-6 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
 
-                  <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                  <div className="rounded-[22px] border border-[#E0E6DF] bg-[#FEFFFD] p-6 shadow-[0_10px_34px_rgba(28,44,33,0.035)]">
 
                     <h3 className="text-lg font-semibold">
                       Image guidelines
@@ -1986,14 +1986,14 @@ export default function AnalysisPage() {
 
                           <div
                             key={item}
-                            className="flex gap-3 rounded-xl bg-[#FAF9F6] p-4"
+                            className="flex gap-3 rounded-xl bg-[#F8FAF7] p-4"
                           >
 
-                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[10px] font-semibold">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#DDE5DC] bg-white text-[9px] font-semibold text-[#526658]">
                               {index + 1}
                             </div>
 
-                            <p className="text-xs leading-5 text-[#77766F]">
+                            <p className="text-xs leading-5 text-[#667068]">
                               {item}
                             </p>
 
@@ -2006,7 +2006,7 @@ export default function AnalysisPage() {
 
                   </div>
 
-                  <div className="rounded-2xl border border-[#D7DDD4] bg-[#F0F3EE] p-6">
+                  <div className="rounded-[22px] border border-[#D4E1D3] bg-[#EAF2EA] p-6 shadow-[0_10px_30px_rgba(35,62,44,0.04)]">
 
                     <Sparkles
                       size={22}
@@ -2039,10 +2039,10 @@ export default function AnalysisPage() {
                       !hasFrontImage
                     }
                     onClick={runAnalysis}
-                    className={`flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-medium transition ${
+                    className={`flex items-center gap-2 rounded-[12px] px-6 py-3 text-[12px] font-semibold transition ${
                       hasFrontImage
-                        ? "bg-[#171717] text-white hover:bg-[#333]"
-                        : "cursor-not-allowed bg-[#DDDCD6] text-[#999890]"
+                        ? "bg-[#24402F] text-white shadow-[0_10px_28px_rgba(36,64,47,0.16)] hover:-translate-y-px hover:bg-[#1B3325]"
+                        : "cursor-not-allowed bg-[#E4E8E3] text-[#9AA29B]"
                     }`}
                   >
 
@@ -2064,11 +2064,11 @@ export default function AnalysisPage() {
             {/* STEP 2 */}
             {step === 2 && (
 
-              <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-8 lg:p-12">
+              <div className="mt-6 rounded-[26px] border border-[#E0E6DF] bg-[#FEFFFD] p-8 shadow-[0_16px_48px_rgba(28,44,33,0.04)] lg:p-12">
 
                 <div className="mx-auto max-w-xl text-center">
 
-                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-[#F0F3EE]">
+                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[22px] border border-[#D6E3D5] bg-[#EAF2EA] shadow-[0_10px_30px_rgba(35,62,44,0.06)]">
 
                     <Sparkles
                       size={30}
@@ -2088,15 +2088,15 @@ export default function AnalysisPage() {
                     &apos;s skin
                   </h2>
 
-                  <p className="mt-3 text-sm leading-6 text-[#77766F]">
+                  <p className="mt-3 text-sm leading-6 text-[#667068]">
                     Reviewing visible skin characteristics and generating
                     structured assessment metrics.
                   </p>
 
-                  <div className="mt-8 overflow-hidden rounded-full bg-[#ECEBE6]">
+                  <div className="mt-8 overflow-hidden rounded-full bg-[#E8ECE7]">
 
                     <div
-                      className="h-2 rounded-full bg-[#7D8977] transition-all duration-100"
+                      className="h-2 rounded-full bg-[#56715D] transition-all duration-100"
                       style={{
                         width: `${progress}%`,
                       }}
@@ -2104,7 +2104,7 @@ export default function AnalysisPage() {
 
                   </div>
 
-                  <div className="mt-3 flex justify-between text-xs text-[#999890]">
+                  <div className="mt-3 flex justify-between text-xs text-[#929A93]">
 
                     <span>
                       {progress < 35
@@ -2153,10 +2153,10 @@ export default function AnalysisPage() {
                       progress < 100
                     }
                     onClick={viewResults}
-                    className={`mt-8 inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-medium transition ${
+                    className={`mt-8 inline-flex items-center gap-2 rounded-[12px] px-6 py-3 text-[12px] font-semibold transition ${
                       progress === 100
-                        ? "bg-[#171717] text-white hover:bg-[#333]"
-                        : "cursor-not-allowed bg-[#DDDCD6] text-[#999890]"
+                        ? "bg-[#24402F] text-white shadow-[0_10px_28px_rgba(36,64,47,0.16)] hover:-translate-y-px hover:bg-[#1B3325]"
+                        : "cursor-not-allowed bg-[#E4E8E3] text-[#9AA29B]"
                     }`}
                   >
 
@@ -2185,7 +2185,7 @@ export default function AnalysisPage() {
               <div className="mt-6">
 
                 {/* HEADER */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="rounded-[22px] border border-[#E0E6DF] bg-[#FEFFFD] p-6 shadow-[0_10px_34px_rgba(28,44,33,0.035)]">
 
                   <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
 
@@ -2193,13 +2193,13 @@ export default function AnalysisPage() {
 
                       <div className="flex items-center gap-2">
 
-                        <span className="rounded-full bg-[#E8EEE5] px-3 py-1 text-[10px] font-medium text-[#62715D]">
+                        <span className="rounded-full border border-[#D6E3D4] bg-[#EDF5EC] px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-[#4F6B54]">
                           {historicalAnalysis
                             ? "Saved historical analysis"
                             : "Analysis complete"}
                         </span>
 
-                        <span className="text-xs text-[#999890]">
+                        <span className="text-xs text-[#929A93]">
                           {historicalAnalysis
                             ? historicalAnalysis.date
                             : getTodayClinicalDate()}
@@ -2207,18 +2207,18 @@ export default function AnalysisPage() {
 
                       </div>
 
-                      <h2 className="mt-3 text-2xl font-semibold">
+                      <h2 className="mt-3 text-[28px] font-semibold tracking-[-0.045em] text-[#1D271F]">
                         {selectedPatient.name}
                       </h2>
 
-                      <p className="mt-1 text-sm text-[#77766F]">
+                      <p className="mt-1.5 text-[11px] font-medium text-[#758078]">
                         AI skin intelligence report
                       </p>
 
                     </div>
 
                     {historicalAnalysis ? (
-                      <div className="flex w-fit items-center gap-2 rounded-xl bg-[#F0F3EE] px-5 py-3 text-sm font-medium text-[#62715D]">
+                      <div className="flex w-fit items-center gap-2 rounded-xl bg-[#EDF4ED] px-5 py-3 text-sm font-medium text-[#62715D]">
                         <History
                           size={16}
                           strokeWidth={1.8}
@@ -2263,13 +2263,13 @@ export default function AnalysisPage() {
                 <div className="mt-6 grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
 
                   {/* PHOTO */}
-                  <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                  <div className="rounded-[22px] border border-[#E0E6DF] bg-[#FEFFFD] p-6 shadow-[0_10px_34px_rgba(28,44,33,0.035)]">
 
                     <div className="flex items-center justify-between">
 
                       <div>
 
-                        <p className="text-sm text-[#77766F]">
+                        <p className="text-sm text-[#667068]">
                           Patient image
                         </p>
 
@@ -2282,7 +2282,7 @@ export default function AnalysisPage() {
                       <Camera
                         size={20}
                         strokeWidth={1.7}
-                        className="text-[#999890]"
+                        className="text-[#929A93]"
                       />
 
                     </div>
@@ -2354,13 +2354,13 @@ export default function AnalysisPage() {
                   </div>
 
                   {/* SCORE */}
-                  <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                  <div className="rounded-[22px] border border-[#E0E6DF] bg-[#FEFFFD] p-6 shadow-[0_10px_34px_rgba(28,44,33,0.035)]">
 
                     <div className="flex items-end justify-between gap-4">
 
                       <div>
 
-                        <p className="text-sm text-[#77766F]">
+                        <p className="text-sm text-[#667068]">
                           Overall skin score
                         </p>
 
@@ -2370,7 +2370,7 @@ export default function AnalysisPage() {
                             {analysisResult.score}
                           </span>
 
-                          <span className="mb-2 text-sm text-[#999890]">
+                          <span className="mb-2 text-sm text-[#929A93]">
                             / 100
                           </span>
 
@@ -2384,7 +2384,7 @@ export default function AnalysisPage() {
                           {scoreChangeText}
                         </span>
 
-                        <p className="mt-2 text-[10px] text-[#999890]">
+                        <p className="mt-2 text-[10px] text-[#929A93]">
                           {historicalAnalysis &&
                           analysisResult.change === 0
                             ? "saved score"
@@ -2420,7 +2420,7 @@ export default function AnalysisPage() {
 
                             <div className="flex items-center justify-between">
 
-                              <p className="text-xs text-[#77766F]">
+                              <p className="text-xs text-[#667068]">
                                 {
                                   metric.label
                                 }
@@ -2465,10 +2465,10 @@ export default function AnalysisPage() {
                         <Target
                           size={16}
                           strokeWidth={1.8}
-                          className="text-[#77766F]"
+                          className="text-[#667068]"
                         />
 
-                        <p className="text-xs font-medium text-[#77766F]">
+                        <p className="text-xs font-medium text-[#667068]">
                           Top priority concerns
                         </p>
                       </div>
@@ -2478,11 +2478,11 @@ export default function AnalysisPage() {
                           (priority, index) => (
                             <div
                               key={priority.label}
-                              className="rounded-xl border border-[#ECEBE6] bg-[#FAF9F6] p-4"
+                              className="rounded-xl border border-[#ECEBE6] bg-[#F8FAF7] p-4"
                             >
                               <div className="flex items-start justify-between gap-3">
                                 <div>
-                                  <p className="text-[10px] uppercase tracking-[0.12em] text-[#999890]">
+                                  <p className="text-[10px] uppercase tracking-[0.12em] text-[#929A93]">
                                     Priority {index + 1}
                                   </p>
                                   <p className="mt-1 text-sm font-semibold">
@@ -2503,7 +2503,7 @@ export default function AnalysisPage() {
                                 </span>
                               </div>
 
-                              <p className="mt-3 text-xs leading-5 text-[#77766F]">
+                              <p className="mt-3 text-xs leading-5 text-[#667068]">
                                 {priority.message}
                               </p>
                             </div>
@@ -2534,7 +2534,7 @@ export default function AnalysisPage() {
                     </div>
 
                     {/* AI SUMMARY */}
-                    <div className="mt-5 rounded-xl bg-[#F0F3EE] p-5">
+                    <div className="mt-5 rounded-xl bg-[#EDF4ED] p-5">
 
                       <div className="flex items-center gap-2">
 
@@ -2564,13 +2564,13 @@ export default function AnalysisPage() {
                 </div>
 
                 {/* RECOMMENDATIONS */}
-                <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="mt-6 rounded-[22px] border border-[#E0E6DF] bg-[#FEFFFD] shadow-[0_10px_34px_rgba(28,44,33,0.035)] p-6">
 
                   <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
 
                     <div>
 
-                      <p className="text-sm text-[#77766F]">
+                      <p className="text-sm text-[#667068]">
                         AI treatment intelligence
                       </p>
 
@@ -2593,7 +2593,7 @@ export default function AnalysisPage() {
                         window.location.href =
                           "/treatments";
                       }}
-                      className="text-xs font-medium text-[#77766F] hover:text-black"
+                      className="text-xs font-medium text-[#667068] hover:text-black"
                     >
                       View treatment plans →
                     </button>
@@ -2618,7 +2618,7 @@ export default function AnalysisPage() {
                                 {item.name}
                               </p>
 
-                              <p className="mt-2 text-xs leading-5 text-[#77766F]">
+                              <p className="mt-2 text-xs leading-5 text-[#667068]">
                                 {
                                   item.reason
                                 }
@@ -2655,7 +2655,7 @@ export default function AnalysisPage() {
                                 window.location.href =
                                   "/treatments";
                               }}
-                              className="text-xs font-medium text-[#77766F] hover:text-black"
+                              className="text-xs font-medium text-[#667068] hover:text-black"
                             >
                               Add to plan →
                             </button>
@@ -2686,7 +2686,7 @@ export default function AnalysisPage() {
                     onClick={
                       resetAnalysis
                     }
-                    className="rounded-xl border border-[#DDDCD6] bg-white px-5 py-3 text-sm font-medium hover:bg-[#F7F6F2]"
+                    className="rounded-xl border border-[#E0E6DF] bg-white px-5 py-3 text-sm font-medium hover:bg-[#F7F6F2]"
                   >
                     Start new analysis
                   </button>
@@ -3066,7 +3066,7 @@ function StepItem({
         className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium ${
           active
             ? "bg-[#171717] text-white"
-            : "border border-[#DDDCD6] bg-white text-[#999890]"
+            : "border border-[#E0E6DF] bg-white text-[#929A93]"
         }`}
       >
         {number}
@@ -3076,7 +3076,7 @@ function StepItem({
         className={`text-xs ${
           active
             ? "font-medium text-[#171717]"
-            : "text-[#999890]"
+            : "text-[#929A93]"
         }`}
       >
         {label}
@@ -3100,7 +3100,7 @@ function ImageUploader({
   ) => void;
 }) {
   return (
-    <label className="group cursor-pointer overflow-hidden rounded-2xl border border-[#DDDCD6] bg-white">
+    <label className="group cursor-pointer overflow-hidden rounded-[22px] border border-[#E0E6DF] bg-[#FEFFFD] shadow-[0_10px_34px_rgba(28,44,33,0.035)]">
 
       <div className="flex items-center justify-between border-b border-[#ECEBE6] px-5 py-4">
 
@@ -3110,7 +3110,7 @@ function ImageUploader({
             {title}
           </p>
 
-          <p className="mt-0.5 text-[10px] text-[#999890]">
+          <p className="mt-0.5 text-[10px] text-[#929A93]">
             {subtitle}
           </p>
 
@@ -3132,14 +3132,14 @@ function ImageUploader({
           <Upload
             size={18}
             strokeWidth={1.7}
-            className="text-[#999890]"
+            className="text-[#929A93]"
           />
 
         )}
 
       </div>
 
-      <div className="relative flex h-[280px] items-center justify-center bg-[#FAF9F6]">
+      <div className="relative flex h-[280px] items-center justify-center bg-[#F8FAF7]">
 
         {image ? (
 
@@ -3158,7 +3158,7 @@ function ImageUploader({
               <Camera
                 size={21}
                 strokeWidth={1.7}
-                className="text-[#77766F]"
+                className="text-[#667068]"
               />
 
             </div>
@@ -3168,7 +3168,7 @@ function ImageUploader({
               {title.toLowerCase()} image
             </p>
 
-            <p className="mt-2 text-xs leading-5 text-[#999890]">
+            <p className="mt-2 text-xs leading-5 text-[#929A93]">
               Click to browse
               <br />
               JPG, PNG or WEBP
@@ -3205,7 +3205,7 @@ function ImageThumbnail({
   return (
     <div className="overflow-hidden rounded-xl border border-[#ECEBE6]">
 
-      <div className="flex h-20 items-center justify-center bg-[#FAF9F6]">
+      <div className="flex h-20 items-center justify-center bg-[#F8FAF7]">
 
         {image ? (
 
@@ -3227,7 +3227,7 @@ function ImageThumbnail({
 
       </div>
 
-      <div className="px-3 py-2 text-center text-[10px] text-[#77766F]">
+      <div className="px-3 py-2 text-center text-[10px] text-[#667068]">
         {label}
       </div>
 
@@ -3243,7 +3243,7 @@ function ProcessingCard({
   completed: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-[#ECEBE6] bg-[#FAF9F6] p-4">
+    <div className="rounded-xl border border-[#ECEBE6] bg-[#F8FAF7] p-4">
 
       <div
         className={`mx-auto flex h-7 w-7 items-center justify-center rounded-full ${
@@ -3269,7 +3269,7 @@ function ProcessingCard({
 
       </div>
 
-      <p className="mt-2 text-xs text-[#77766F]">
+      <p className="mt-2 text-xs text-[#667068]">
         {label}
       </p>
 
@@ -3317,19 +3317,19 @@ function AnalysisHistory({
   }, [patient.id]);
 
   return (
-    <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white">
+    <div className="mt-6 rounded-[22px] border border-[#E0E6DF] bg-[#FEFFFD] shadow-[0_10px_34px_rgba(28,44,33,0.035)]">
 
       <div className="flex items-center gap-3 border-b border-[#ECEBE6] px-6 py-5">
 
         <History
           size={18}
           strokeWidth={1.7}
-          className="text-[#77766F]"
+          className="text-[#667068]"
         />
 
         <div>
 
-          <p className="text-sm text-[#77766F]">
+          <p className="text-sm text-[#667068]">
             Patient history
           </p>
 
@@ -3378,7 +3378,7 @@ function AnalysisHistory({
                         {item.date}
                       </p>
 
-                      <p className="mt-1 text-xs text-[#999890]">
+                      <p className="mt-1 text-xs text-[#929A93]">
                         Skin intelligence assessment
                       </p>
 
@@ -3390,7 +3390,7 @@ function AnalysisHistory({
 
                     <div className="text-right">
 
-                      <p className="text-[10px] text-[#999890]">
+                      <p className="text-[10px] text-[#929A93]">
                         Score
                       </p>
 
@@ -3402,7 +3402,7 @@ function AnalysisHistory({
 
                     {index === 0 && (
 
-                      <span className="rounded-full bg-[#E8EEE5] px-3 py-1 text-[10px] font-medium text-[#62715D]">
+                      <span className="rounded-full border border-[#D6E3D4] bg-[#EDF5EC] px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-[#4F6B54]">
                         Latest
                       </span>
 
@@ -3425,7 +3425,7 @@ function AnalysisHistory({
             No previous analyses
           </p>
 
-          <p className="mt-2 text-xs text-[#999890]">
+          <p className="mt-2 text-[11px] leading-5 text-[#929A93]">
             Save this analysis to begin tracking progress.
           </p>
 

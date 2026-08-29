@@ -2351,7 +2351,7 @@ export default function AppointmentsPage() {
     ).length;
 
   return (
-    <main className="min-h-screen bg-[#F5F4F0] text-[#171717]">
+    <main className="min-h-screen bg-[#F2F5F2] text-[#182019]">
 
       <div className="flex min-h-screen">
 
@@ -2360,15 +2360,15 @@ export default function AppointmentsPage() {
         <section className="min-w-0 flex-1">
 
           {/* HEADER */}
-          <header className="flex items-center justify-between border-b border-[#DDDCD6] bg-white px-6 py-5 lg:px-10">
+          <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[#E1E7E0] bg-[#FDFEFC]/96 px-6 py-4 backdrop-blur-xl lg:px-10">
 
             <div>
 
-              <p className="text-xs text-[#96958E]">
-                {clinicSettings.clinicName}
+              <p className="text-[9px] font-semibold uppercase tracking-[0.19em] text-[#74887A]">
+                Velyquo scheduling
               </p>
 
-              <h1 className="mt-1 text-xl font-semibold tracking-[-0.03em]">
+              <h1 className="mt-1.5 text-[20px] font-semibold tracking-[-0.045em] text-[#202922]">
                 Appointments
               </h1>
 
@@ -2381,14 +2381,14 @@ export default function AppointmentsPage() {
                 onClick={
                   openNewAppointment
                 }
-                className="rounded-xl bg-[#171717] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#333]"
+                className="rounded-[13px] bg-[#173725] px-5 py-3 text-[12px] font-semibold text-white shadow-[0_12px_30px_rgba(23,55,37,0.18)] transition hover:-translate-y-px hover:bg-[#102D1C]"
               >
                 + New appointment
               </button>
 
               <a
                 href="/settings"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-medium transition hover:bg-[#DCD9D0]"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[#D4DFD4] bg-[#E8F0E8] text-[10px] font-semibold text-[#3F5A47] transition hover:bg-[#E3ECE3]"
               >
                 {clinicSettings.initials ||
                   getInitials(
@@ -2401,14 +2401,14 @@ export default function AppointmentsPage() {
           </header>
 
           {/* CONTENT */}
-          <div className="p-6 lg:p-10">
+          <div className="mx-auto w-full max-w-[1520px] p-6 lg:px-10 lg:py-9">
 
             {/* TITLE */}
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
 
               <div>
 
-                <p className="text-sm text-[#77766F]">
+                <p className="text-sm text-[#626D65]">
                   Clinic schedule
                 </p>
 
@@ -2416,7 +2416,7 @@ export default function AppointmentsPage() {
                   Appointments
                 </h2>
 
-                <p className="mt-2 max-w-xl text-xs leading-5 text-[#999890]">
+                <p className="mt-2 max-w-xl text-xs leading-5 text-[#8C978F]">
                   Manage bookings, practitioner availability and patient follow-ups from one schedule.
                 </p>
 
@@ -2497,13 +2497,13 @@ export default function AppointmentsPage() {
             {/* FORM */}
             {showForm && (
 
-              <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-6">
+              <div className="mt-6 rounded-[26px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_16px_44px_rgba(27,43,32,0.055)] p-6">
 
                 <div className="flex items-center justify-between">
 
                   <div>
 
-                    <p className="text-sm text-[#77766F]">
+                    <p className="text-sm text-[#626D65]">
                       Appointment management
                     </p>
 
@@ -2524,7 +2524,7 @@ export default function AppointmentsPage() {
                       );
                       resetAppointmentForm();
                     }}
-                    className="rounded-lg border border-[#DDDCD6] px-3 py-2 text-xs text-[#77766F] hover:bg-[#F7F6F2]"
+                    className="rounded-lg border border-[#DDE5DC] px-3 py-2 text-xs text-[#626D65] hover:bg-[#F3F7F3]"
                   >
                     Close
                   </button>
@@ -2536,7 +2536,7 @@ export default function AppointmentsPage() {
                   {/* PATIENT */}
                   <div>
 
-                    <label className="text-xs font-medium text-[#77766F]">
+                    <label className="text-xs font-medium text-[#626D65]">
                       Patient
                     </label>
 
@@ -2549,7 +2549,7 @@ export default function AppointmentsPage() {
                           event.target.value
                         )
                       }
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                      className="mt-2 w-full rounded-[14px] border border-[#DDE5DC] bg-[#F7F9F6] px-4 py-3 text-sm outline-none"
                     >
 
                       {patients.map(
@@ -2573,7 +2573,7 @@ export default function AppointmentsPage() {
                   {/* TREATMENT */}
                   <div>
 
-                    <label className="text-xs font-medium text-[#77766F]">
+                    <label className="text-xs font-medium text-[#626D65]">
                       Treatment
                     </label>
 
@@ -2586,7 +2586,7 @@ export default function AppointmentsPage() {
                           event.target.value
                         )
                       }
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                      className="mt-2 w-full rounded-[14px] border border-[#DDE5DC] bg-[#F7F9F6] px-4 py-3 text-sm outline-none"
                     >
 
                       {treatmentOptions.map(
@@ -2610,7 +2610,7 @@ export default function AppointmentsPage() {
                   {/* DATE */}
                   <div>
 
-                    <label className="text-xs font-medium text-[#77766F]">
+                    <label className="text-xs font-medium text-[#626D65]">
                       Date
                     </label>
 
@@ -2624,7 +2624,7 @@ export default function AppointmentsPage() {
                           event.target.value
                         )
                       }
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                      className="mt-2 w-full rounded-[14px] border border-[#DDE5DC] bg-[#F7F9F6] px-4 py-3 text-sm outline-none"
                     />
 
                   </div>
@@ -2632,7 +2632,7 @@ export default function AppointmentsPage() {
                   {/* PRACTITIONER */}
                   <div>
 
-                    <label className="text-xs font-medium text-[#77766F]">
+                    <label className="text-xs font-medium text-[#626D65]">
                       Practitioner
                     </label>
 
@@ -2651,7 +2651,7 @@ export default function AppointmentsPage() {
                             )
                           )
                         }
-                        className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                        className="mt-2 w-full rounded-[14px] border border-[#DDE5DC] bg-[#F7F9F6] px-4 py-3 text-sm outline-none"
                       >
 
                         {practitionersAvailableOnDate.map(
@@ -2692,7 +2692,7 @@ export default function AppointmentsPage() {
                   {/* TIME */}
                   <div>
 
-                    <label className="text-xs font-medium text-[#77766F]">
+                    <label className="text-xs font-medium text-[#626D65]">
                       Available time
                     </label>
 
@@ -2708,7 +2708,7 @@ export default function AppointmentsPage() {
                             event.target.value
                           )
                         }
-                        className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                        className="mt-2 w-full rounded-[14px] border border-[#DDE5DC] bg-[#F7F9F6] px-4 py-3 text-sm outline-none"
                       >
 
                         {availableTimeSlots.map(
@@ -2741,7 +2741,7 @@ export default function AppointmentsPage() {
                   {/* DURATION */}
                   <div>
 
-                    <label className="text-xs font-medium text-[#77766F]">
+                    <label className="text-xs font-medium text-[#626D65]">
                       Duration
                     </label>
 
@@ -2754,7 +2754,7 @@ export default function AppointmentsPage() {
                           event.target.value
                         )
                       }
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                      className="mt-2 w-full rounded-[14px] border border-[#DDE5DC] bg-[#F7F9F6] px-4 py-3 text-sm outline-none"
                     >
                       <option>
                         30 min
@@ -2783,13 +2783,13 @@ export default function AppointmentsPage() {
                 {/* AVAILABILITY */}
                 {selectedPractitioner && (
 
-                  <div className="mt-5 rounded-xl bg-[#F7F6F2] p-5">
+                  <div className="mt-5 rounded-xl bg-[#F5F8F4] p-5">
 
                     <div className="flex items-start justify-between">
 
                       <div>
 
-                        <p className="text-[10px] uppercase tracking-[0.12em] text-[#999890]">
+                        <p className="text-[10px] uppercase tracking-[0.12em] text-[#8C978F]">
                           Practitioner availability
                         </p>
 
@@ -2799,7 +2799,7 @@ export default function AppointmentsPage() {
                           }
                         </p>
 
-                        <p className="mt-1 text-xs text-[#77766F]">
+                        <p className="mt-1 text-xs text-[#626D65]">
                           {
                             selectedPractitioner.role
                           }
@@ -2876,7 +2876,7 @@ export default function AppointmentsPage() {
                 {/* NOTES */}
                 <div className="mt-5">
 
-                  <label className="text-xs font-medium text-[#77766F]">
+                  <label className="text-xs font-medium text-[#626D65]">
                     Notes
                   </label>
 
@@ -2890,22 +2890,22 @@ export default function AppointmentsPage() {
                         event.target.value
                       )
                     }
-                    className="mt-2 w-full resize-none rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                    className="mt-2 w-full resize-none rounded-[14px] border border-[#DDE5DC] bg-[#F7F9F6] px-4 py-3 text-sm outline-none"
                   />
 
                 </div>
 
                 {/* SUMMARY */}
-                <div className="mt-6 rounded-xl bg-[#F7F6F2] p-5">
+                <div className="mt-6 rounded-xl bg-[#F5F8F4] p-5">
 
                   <div className="flex items-center gap-2">
 
                     <CalendarDays
                       size={16}
-                      className="text-[#77766F]"
+                      className="text-[#626D65]"
                     />
 
-                    <p className="text-xs font-medium text-[#77766F]">
+                    <p className="text-xs font-medium text-[#626D65]">
                       Appointment summary
                     </p>
 
@@ -2960,7 +2960,7 @@ export default function AppointmentsPage() {
                       );
                       resetAppointmentForm();
                     }}
-                    className="rounded-xl border border-[#DDDCD6] px-5 py-3 text-sm font-medium hover:bg-[#F7F6F2]"
+                    className="rounded-xl border border-[#DDE5DC] px-5 py-3 text-sm font-medium hover:bg-[#F3F7F3]"
                   >
                     Cancel
                   </button>
@@ -2981,8 +2981,8 @@ export default function AppointmentsPage() {
                       availableTimeSlots.length >
                         0 &&
                       !bookingHasConflict
-                        ? "bg-[#171717] text-white hover:bg-[#333]"
-                        : "cursor-not-allowed bg-[#DDDCD6] text-[#999890]"
+                        ? "bg-[#173725] text-white shadow-[0_9px_24px_rgba(31,58,43,0.14)] transition hover:-translate-y-px hover:bg-[#102D1C]"
+                        : "cursor-not-allowed bg-[#DDDCD6] text-[#8C978F]"
                     }`}
                   >
                     {editingAppointmentId !==
@@ -3035,13 +3035,13 @@ export default function AppointmentsPage() {
             </div>
 
             {/* CALENDAR */}
-            <div className="mt-8 rounded-2xl border border-[#DDDCD6] bg-white p-5">
+            <div className="mt-8 rounded-[26px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_16px_44px_rgba(27,43,32,0.055)] p-5">
 
               <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 
                 <div>
 
-                  <p className="text-xs text-[#999890]">
+                  <p className="text-xs text-[#8C978F]">
                     Selected date
                   </p>
 
@@ -3060,7 +3060,7 @@ export default function AppointmentsPage() {
                     onClick={
                       goToPreviousMonth
                     }
-                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#DDDCD6] text-lg text-[#77766F] transition hover:bg-[#F7F6F2] hover:text-[#171717]"
+                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#DDE5DC] text-lg text-[#626D65] transition hover:-translate-y-px hover:bg-[#F3F7F3] hover:text-[#171717]"
                     aria-label="Previous month"
                   >
                     ‹
@@ -3077,7 +3077,7 @@ export default function AppointmentsPage() {
                     onClick={
                       goToNextMonth
                     }
-                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#DDDCD6] text-lg text-[#77766F] transition hover:bg-[#F7F6F2] hover:text-[#171717]"
+                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#DDE5DC] text-lg text-[#626D65] transition hover:-translate-y-px hover:bg-[#F3F7F3] hover:text-[#171717]"
                     aria-label="Next month"
                   >
                     ›
@@ -3101,7 +3101,7 @@ export default function AppointmentsPage() {
 
                   <div
                     key={day}
-                    className="px-1 pb-1 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[#999890]"
+                    className="px-1 pb-1 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8C978F]"
                   >
                     {day}
                   </div>
@@ -3152,7 +3152,7 @@ export default function AppointmentsPage() {
                         className={`min-h-[72px] rounded-xl border px-2 py-2 text-left transition ${
                           isSelected
                             ? "border-[#171717] bg-[#171717] text-white"
-                            : "border-transparent bg-[#F7F6F2] text-[#77766F] hover:border-[#DDDCD6] hover:bg-[#F2F1EC]"
+                            : "border-transparent bg-[#F5F8F4] text-[#626D65] hover:border-[#DDE5DC] hover:bg-[#F2F1EC]"
                         }`}
                       >
 
@@ -3169,7 +3169,7 @@ export default function AppointmentsPage() {
                               className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[9px] font-semibold ${
                                 isSelected
                                   ? "bg-white text-[#171717]"
-                                  : "bg-[#E5E2D9] text-[#5F5E58]"
+                                  : "bg-[#E8F0E8] text-[#5F5E58]"
                               }`}
                             >
                               {
@@ -3188,7 +3188,7 @@ export default function AppointmentsPage() {
                             className={`mt-3 truncate text-[9px] ${
                               isSelected
                                 ? "text-[#D8D8D3]"
-                                : "text-[#999890]"
+                                : "text-[#8C978F]"
                             }`}
                           >
                             {
@@ -3211,14 +3211,14 @@ export default function AppointmentsPage() {
 
                 <div className="flex items-center justify-between gap-3">
 
-                  <p className="text-xs font-medium text-[#77766F]">
+                  <p className="text-xs font-medium text-[#626D65]">
                     Appointments on{" "}
                     {formatLongDate(
                       selectedDate
                     )}
                   </p>
 
-                  <span className="text-[10px] text-[#999890]">
+                  <span className="text-[10px] text-[#8C978F]">
                     {
                       appointmentsForSelectedDate.length
                     }{" "}
@@ -3243,7 +3243,7 @@ export default function AppointmentsPage() {
                           key={
                             appointment.id
                           }
-                          className="flex items-center gap-3 rounded-xl bg-[#F7F6F2] p-4"
+                          className="flex items-center gap-3 rounded-xl bg-[#F5F8F4] p-4"
                         >
 
                           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[10px] font-medium">
@@ -3260,7 +3260,7 @@ export default function AppointmentsPage() {
                               }
                             </p>
 
-                            <p className="mt-1 truncate text-xs text-[#999890]">
+                            <p className="mt-1 truncate text-xs text-[#8C978F]">
                               {
                                 appointment.treatment
                               }{" "}
@@ -3276,7 +3276,7 @@ export default function AppointmentsPage() {
 
                           </div>
 
-                          <span className="rounded-full bg-white px-3 py-1 text-[10px] text-[#77766F]">
+                          <span className="rounded-full bg-white px-3 py-1 text-[10px] text-[#626D65]">
                             {
                               appointment.status
                             }
@@ -3291,13 +3291,13 @@ export default function AppointmentsPage() {
 
                 ) : (
 
-                  <div className="mt-4 rounded-xl bg-[#F7F6F2] px-4 py-5 text-center">
+                  <div className="mt-4 rounded-xl bg-[#F5F8F4] px-4 py-5 text-center">
 
-                    <p className="text-sm font-medium text-[#77766F]">
+                    <p className="text-sm font-medium text-[#626D65]">
                       No appointments on this date
                     </p>
 
-                    <p className="mt-1 text-xs text-[#999890]">
+                    <p className="mt-1 text-xs text-[#8C978F]">
                       Select another date or create a new appointment.
                     </p>
 
@@ -3310,7 +3310,7 @@ export default function AppointmentsPage() {
             </div>
 
             {/* SEARCH */}
-            <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white p-4">
+            <div className="mt-6 rounded-[26px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_16px_44px_rgba(27,43,32,0.055)] p-4">
 
               <div className="flex flex-col gap-3 md:flex-row">
 
@@ -3324,7 +3324,7 @@ export default function AppointmentsPage() {
                     )
                   }
                   placeholder="Search appointments..."
-                  className="flex-1 rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                  className="flex-1 rounded-[14px] border border-[#DDE5DC] bg-[#F7F9F6] px-4 py-3 text-sm outline-none"
                 />
 
                 <select
@@ -3336,7 +3336,7 @@ export default function AppointmentsPage() {
                       event.target.value
                     )
                   }
-                  className="rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                  className="rounded-[14px] border border-[#DDE5DC] bg-[#F7F9F6] px-4 py-3 text-sm outline-none"
                 >
                   <option>
                     All
@@ -3360,11 +3360,11 @@ export default function AppointmentsPage() {
             </div>
 
             {/* APPOINTMENT LIST */}
-            <div className="mt-4 overflow-hidden rounded-2xl border border-[#DDDCD6] bg-white">
+            <div className="mt-4 overflow-hidden rounded-[26px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_16px_44px_rgba(27,43,32,0.055)]">
 
               <div className="border-b border-[#ECEBE6] px-6 py-5">
 
-                <p className="text-sm text-[#77766F]">
+                <p className="text-sm text-[#626D65]">
                   Schedule
                 </p>
 
@@ -3471,7 +3471,7 @@ export default function AppointmentsPage() {
                                 appointment
                               )
                             }
-                            className="flex items-center gap-2 rounded-lg border border-[#DDDCD6] px-3 py-2 text-xs font-medium hover:bg-[#F7F6F2]"
+                            className="flex items-center gap-2 rounded-lg border border-[#DDE5DC] px-3 py-2 text-xs font-medium hover:bg-[#F3F7F3]"
                           >
                             <Pencil
                               size={13}
@@ -3538,7 +3538,7 @@ export default function AppointmentsPage() {
                                 "Confirmed"
                               )
                             }
-                            className="flex items-center gap-2 rounded-lg border border-[#DDDCD6] px-3 py-2 text-xs font-medium hover:bg-[#F7F6F2]"
+                            className="flex items-center gap-2 rounded-lg border border-[#DDE5DC] px-3 py-2 text-xs font-medium hover:bg-[#F3F7F3]"
                           >
                             <RotateCcw
                               size={13}
@@ -3594,7 +3594,7 @@ export default function AppointmentsPage() {
                                       appointment
                                     )
                                   }
-                                  className="flex items-center gap-2 rounded-lg border border-[#DDDCD6] bg-white px-3 py-2 text-xs font-medium hover:bg-[#F7F6F2]"
+                                  className="flex items-center gap-2 rounded-lg border border-[#DDE5DC] bg-white px-3 py-2 text-xs font-medium hover:bg-[#F3F7F3]"
                                 >
                                   <CalendarDays
                                     size={13}
@@ -3639,7 +3639,7 @@ export default function AppointmentsPage() {
                       No appointments found
                     </p>
 
-                    <p className="mt-2 text-xs text-[#999890]">
+                    <p className="mt-2 text-xs text-[#8C978F]">
                       Try changing the search or status filter.
                     </p>
 
@@ -3671,7 +3671,7 @@ function SummaryItem({
   return (
     <div>
 
-      <p className="text-[10px] uppercase tracking-[0.1em] text-[#999890]">
+      <p className="text-[10px] uppercase tracking-[0.1em] text-[#8C978F]">
         {label}
       </p>
 
@@ -3693,7 +3693,7 @@ function InfoColumn({
   return (
     <div className="min-w-[110px]">
 
-      <p className="text-[10px] text-[#999890]">
+      <p className="text-[10px] text-[#8C978F]">
         {label}
       </p>
 
@@ -3715,9 +3715,9 @@ function StatBox({
   detail: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
+    <div className="rounded-[26px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_16px_44px_rgba(27,43,32,0.055)] p-5">
 
-      <p className="text-xs text-[#77766F]">
+      <p className="text-xs text-[#626D65]">
         {label}
       </p>
 
@@ -3739,7 +3739,7 @@ function StatusBadge({
   status: AppointmentStatus;
 }) {
   let classes =
-    "bg-[#F1F0EB] text-[#77766F]";
+    "bg-[#F1F0EB] text-[#626D65]";
 
   if (
     status === "Confirmed"

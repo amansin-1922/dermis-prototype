@@ -826,7 +826,7 @@ export default function SettingsPage() {
       "";
 
   return (
-    <main className="min-h-screen bg-[#F5F4F0] text-[#171717]">
+    <main className="min-h-screen bg-[#F2F5F2] text-[#182019]">
 
       <div className="flex min-h-screen">
 
@@ -835,15 +835,15 @@ export default function SettingsPage() {
         <section className="min-w-0 flex-1">
 
           {/* HEADER */}
-          <header className="flex items-center justify-between border-b border-[#DDDCD6] bg-white px-6 py-5 lg:px-10">
+          <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[#E1E7E0] bg-[#FDFEFC]/96 px-6 py-4 backdrop-blur-xl lg:px-10">
 
             <div>
 
-              <p className="text-xs text-[#96958E]">
-                Workspace
+              <p className="text-[9px] font-semibold uppercase tracking-[0.19em] text-[#74887A]">
+                Velyquo workspace
               </p>
 
-              <h1 className="mt-1 text-xl font-semibold tracking-[-0.03em]">
+              <h1 className="mt-1.5 text-[20px] font-semibold tracking-[-0.045em] text-[#202922]">
                 Settings
               </h1>
 
@@ -852,7 +852,7 @@ export default function SettingsPage() {
             <div className="flex items-center gap-3">
 
               {hasChanges && (
-                <span className="hidden text-xs text-[#999890] sm:block">
+                <span className="hidden rounded-full border border-[#E2E7E1] bg-[#F6F8F5] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-[#7B867E] sm:block">
                   Unsaved changes
                 </span>
               )}
@@ -862,7 +862,7 @@ export default function SettingsPage() {
                 onClick={
                   saveSettings
                 }
-                className="flex items-center gap-2 rounded-xl bg-[#171717] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#333]"
+                className="flex items-center gap-2 rounded-[13px] bg-[#173725] px-4 py-2.5 text-[11px] font-semibold text-white shadow-[0_10px_26px_rgba(23,55,37,0.16)] transition hover:-translate-y-px hover:bg-[#102D1C]"
               >
 
                 {saved ? (
@@ -883,7 +883,7 @@ export default function SettingsPage() {
 
               </button>
 
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-medium">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#D4DFD4] bg-[#E8F0E8] text-[10px] font-semibold text-[#3F5A47]">
                 {displayInitials}
               </div>
 
@@ -892,20 +892,20 @@ export default function SettingsPage() {
           </header>
 
           {/* CONTENT */}
-          <div className="p-6 lg:p-10">
+          <div className="mx-auto w-full max-w-[1520px] p-6 lg:px-10 lg:py-9">
 
             {/* TITLE */}
             <div>
 
-              <p className="text-sm text-[#71806C]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6E8375]">
                 Clinic configuration
               </p>
 
-              <h2 className="mt-1 text-3xl font-medium tracking-[-0.04em]">
+              <h2 className="mt-2 text-[38px] font-semibold leading-[1.02] tracking-[-0.06em] text-[#19231B]">
                 Workspace settings
               </h2>
 
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#77766F]">
+              <p className="mt-4 max-w-2xl text-[12px] leading-6 text-[#77827A]">
                 Manage clinic identity, the primary practitioner and the team available for appointments and treatments.
               </p>
 
@@ -913,9 +913,9 @@ export default function SettingsPage() {
 
             {/* SAVED */}
             {saved && (
-              <div className="mt-6 flex items-start gap-3 rounded-2xl border border-[#D7DDD4] bg-[#F0F3EE] p-5">
+              <div className="mt-6 flex items-start gap-3 rounded-[20px] border border-[#D5E2D5] bg-[#EDF4ED] p-5 shadow-[0_12px_34px_rgba(35,62,44,0.04)]">
 
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-[#62715D]">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#D5E1D5] bg-[#FFFFFE] text-[#45634D]">
 
                   <Check
                     size={17}
@@ -930,7 +930,7 @@ export default function SettingsPage() {
                     Settings saved
                   </p>
 
-                  <p className="mt-1 text-xs text-[#62715D]">
+                  <p className="mt-1 text-xs text-[#45634D]">
                     Clinic and practitioner
                     information has been
                     updated across the
@@ -943,19 +943,19 @@ export default function SettingsPage() {
             )}
 
             {/* OVERVIEW */}
-            <div className="mt-8 rounded-2xl border border-[#DDDCD6] bg-white p-6">
+            <div className="mt-8 rounded-[26px] border border-[#DDE5DC] bg-[#FFFFFE] p-6 shadow-[0_16px_44px_rgba(27,43,32,0.055)]">
 
               <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
 
                 <div className="flex items-center gap-4">
 
-                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#E5E2D9] text-lg font-semibold">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-[#D2DED2] bg-[#E8F0E8] text-[15px] font-semibold text-[#3F5A47] shadow-[inset_0_0_0_5px_rgba(255,255,255,0.55)]">
                     {displayInitials}
                   </div>
 
                   <div>
 
-                    <p className="text-xs text-[#999890]">
+                    <p className="text-xs text-[#8C978F]">
                       Primary practitioner
                     </p>
 
@@ -964,7 +964,7 @@ export default function SettingsPage() {
                         "No Primary practitioner"}
                     </h3>
 
-                    <p className="mt-1 text-sm text-[#77766F]">
+                    <p className="mt-1 text-sm text-[#667169]">
                       {settings.clinicName}
                     </p>
 
@@ -974,14 +974,14 @@ export default function SettingsPage() {
 
                 <div className="flex flex-wrap gap-2">
 
-                  <span className="rounded-full bg-[#E8EEE5] px-3 py-1.5 text-[10px] font-medium text-[#62715D]">
+                  <span className="rounded-full border border-[#D3E0D3] bg-[#EAF3EA] px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.08em] text-[#45634D]">
                     {
                       activePractitioners.length
                     }{" "}
                     active
                   </span>
 
-                  <span className="rounded-full bg-[#F1F0EB] px-3 py-1.5 text-[10px] text-[#77766F]">
+                  <span className="rounded-full border border-[#E2E7E1] bg-[#F5F7F4] px-3 py-1.5 text-[9px] font-medium text-[#69746C]">
                     {
                       settings.practitioners
                         .length
@@ -1002,11 +1002,11 @@ export default function SettingsPage() {
               <div className="space-y-6">
 
                 {/* CLINIC DETAILS */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] p-6 shadow-[0_14px_40px_rgba(27,43,32,0.045)]">
 
                   <div className="flex items-start gap-4">
 
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F0EFEA]">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] border border-[#DCE5DC] bg-[#EDF3ED] text-[#45634D]">
 
                       <Building2
                         size={18}
@@ -1017,7 +1017,7 @@ export default function SettingsPage() {
 
                     <div>
 
-                      <p className="text-sm text-[#77766F]">
+                      <p className="text-sm text-[#667169]">
                         Organisation
                       </p>
 
@@ -1033,7 +1033,7 @@ export default function SettingsPage() {
 
                     <div className="md:col-span-2">
 
-                      <label className="text-xs font-medium text-[#77766F]">
+                      <label className="text-xs font-medium text-[#667169]">
                         Clinic name
                       </label>
 
@@ -1042,7 +1042,7 @@ export default function SettingsPage() {
                         <Building2
                           size={16}
                           strokeWidth={1.7}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 text-[#999890]"
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8C978F]"
                         />
 
                         <input
@@ -1056,7 +1056,7 @@ export default function SettingsPage() {
                               e.target.value
                             )
                           }
-                          className="w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] py-3 pl-11 pr-4 text-sm outline-none focus:border-[#99978F]"
+                          className="w-full rounded-[13px] border border-[#DCE5DC] bg-[#F7F9F6] py-3 pl-11 pr-4 text-[12px] outline-none transition focus:border-[#6E8A75] focus:bg-white focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)]"
                         />
 
                       </div>
@@ -1065,7 +1065,7 @@ export default function SettingsPage() {
 
                     <div>
 
-                      <label className="text-xs font-medium text-[#77766F]">
+                      <label className="text-xs font-medium text-[#667169]">
                         Clinic email
                       </label>
 
@@ -1074,7 +1074,7 @@ export default function SettingsPage() {
                         <Mail
                           size={16}
                           strokeWidth={1.7}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 text-[#999890]"
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8C978F]"
                         />
 
                         <input
@@ -1088,7 +1088,7 @@ export default function SettingsPage() {
                               e.target.value
                             )
                           }
-                          className="w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] py-3 pl-11 pr-4 text-sm outline-none focus:border-[#99978F]"
+                          className="w-full rounded-[13px] border border-[#DCE5DC] bg-[#F7F9F6] py-3 pl-11 pr-4 text-[12px] outline-none transition focus:border-[#6E8A75] focus:bg-white focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)]"
                         />
 
                       </div>
@@ -1097,7 +1097,7 @@ export default function SettingsPage() {
 
                     <div>
 
-                      <label className="text-xs font-medium text-[#77766F]">
+                      <label className="text-xs font-medium text-[#667169]">
                         Phone
                       </label>
 
@@ -1106,7 +1106,7 @@ export default function SettingsPage() {
                         <Phone
                           size={16}
                           strokeWidth={1.7}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 text-[#999890]"
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8C978F]"
                         />
 
                         <input
@@ -1120,7 +1120,7 @@ export default function SettingsPage() {
                               e.target.value
                             )
                           }
-                          className="w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] py-3 pl-11 pr-4 text-sm outline-none focus:border-[#99978F]"
+                          className="w-full rounded-[13px] border border-[#DCE5DC] bg-[#F7F9F6] py-3 pl-11 pr-4 text-[12px] outline-none transition focus:border-[#6E8A75] focus:bg-white focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)]"
                         />
 
                       </div>
@@ -1129,7 +1129,7 @@ export default function SettingsPage() {
 
                     <div className="md:col-span-2">
 
-                      <label className="text-xs font-medium text-[#77766F]">
+                      <label className="text-xs font-medium text-[#667169]">
                         Location
                       </label>
 
@@ -1138,7 +1138,7 @@ export default function SettingsPage() {
                         <MapPin
                           size={16}
                           strokeWidth={1.7}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 text-[#999890]"
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8C978F]"
                         />
 
                         <input
@@ -1152,7 +1152,7 @@ export default function SettingsPage() {
                               e.target.value
                             )
                           }
-                          className="w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] py-3 pl-11 pr-4 text-sm outline-none focus:border-[#99978F]"
+                          className="w-full rounded-[13px] border border-[#DCE5DC] bg-[#F7F9F6] py-3 pl-11 pr-4 text-[12px] outline-none transition focus:border-[#6E8A75] focus:bg-white focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)]"
                         />
 
                       </div>
@@ -1164,13 +1164,13 @@ export default function SettingsPage() {
                 </div>
 
                 {/* PRACTITIONERS */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white">
+                <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)]">
 
-                  <div className="flex flex-col justify-between gap-4 border-b border-[#ECEBE6] px-6 py-5 sm:flex-row sm:items-center">
+                  <div className="flex flex-col justify-between gap-4 border-b border-[#E7ECE6] px-6 py-5 sm:flex-row sm:items-center">
 
                     <div>
 
-                      <p className="text-sm text-[#77766F]">
+                      <p className="text-sm text-[#667169]">
                         Clinic team
                       </p>
 
@@ -1178,7 +1178,7 @@ export default function SettingsPage() {
                         Practitioners
                       </h3>
 
-                      <p className="mt-1 text-xs text-[#999890]">
+                      <p className="mt-1 text-xs text-[#8C978F]">
                         Add and manage
                         practitioners available
                         for bookings.
@@ -1191,7 +1191,7 @@ export default function SettingsPage() {
                       onClick={
                         openAddPractitioner
                       }
-                      className="flex w-fit items-center gap-2 rounded-xl bg-[#171717] px-4 py-2.5 text-xs font-medium text-white hover:bg-[#333]"
+                      className="flex w-fit items-center gap-2 rounded-[13px] bg-[#173725] px-4 py-2.5 text-[10px] font-semibold text-white shadow-[0_10px_26px_rgba(23,55,37,0.14)] transition hover:-translate-y-px hover:bg-[#102D1C]"
                     >
 
                       <Plus
@@ -1208,7 +1208,7 @@ export default function SettingsPage() {
                   {settings.practitioners
                     .length > 0 ? (
 
-                    <div className="divide-y divide-[#F0EFEA]">
+                    <div className="divide-y divide-[#E9EEE8]">
 
                       {settings.practitioners.map(
                         (practitioner) => (
@@ -1224,7 +1224,7 @@ export default function SettingsPage() {
 
                               <div className="flex min-w-0 gap-4">
 
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#E8E5DD] text-xs font-medium">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#D4DFD4] bg-[#E8F0E8] text-[10px] font-semibold text-[#3F5A47]">
                                   {generateInitials(
                                     practitioner.name
                                   )}
@@ -1242,7 +1242,7 @@ export default function SettingsPage() {
 
                                     {settings.practitionerName ===
                                       practitioner.name && (
-                                      <span className="rounded-full bg-[#F0F3EE] px-2.5 py-1 text-[9px] font-medium text-[#62715D]">
+                                      <span className="rounded-full border border-[#D6E2D6] bg-[#EDF4ED] px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.07em] text-[#45634D]">
                                         Primary
                                       </span>
                                     )}
@@ -1250,8 +1250,8 @@ export default function SettingsPage() {
                                     <span
                                       className={`rounded-full px-2.5 py-1 text-[9px] font-medium ${
                                         practitioner.active
-                                          ? "bg-[#E8EEE5] text-[#62715D]"
-                                          : "bg-[#F1F0EB] text-[#77766F]"
+                                          ? "border border-[#D3E0D3] bg-[#EAF3EA] text-[#45634D]"
+                                          : "border border-[#E2E7E1] bg-[#F5F7F4] text-[#69746C]"
                                       }`}
                                     >
                                       {practitioner.active
@@ -1261,18 +1261,18 @@ export default function SettingsPage() {
 
                                   </div>
 
-                                  <p className="mt-1 text-xs text-[#77766F]">
+                                  <p className="mt-1 text-xs text-[#667169]">
                                     {
                                       practitioner.role
                                     }
                                   </p>
 
-                                  <p className="mt-2 text-xs text-[#999890]">
+                                  <p className="mt-2 text-xs text-[#8C978F]">
                                     {practitioner.speciality ||
                                       "No speciality added"}
                                   </p>
 
-                                  <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-[10px] text-[#999890]">
+                                  <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-[10px] text-[#8C978F]">
 
                                     {practitioner.email && (
                                       <span>
@@ -1313,7 +1313,7 @@ export default function SettingsPage() {
                                             key={
                                               day
                                             }
-                                            className="rounded-lg bg-[#F7F6F2] px-2.5 py-1 text-[9px] text-[#77766F]"
+                                            className="rounded-[9px] border border-[#E5EAE4] bg-[#F6F8F5] px-2.5 py-1 text-[9px] text-[#69746C]"
                                           >
                                             {
                                               day.slice(
@@ -1326,7 +1326,7 @@ export default function SettingsPage() {
                                         )
                                       )}
 
-                                      <span className="flex items-center gap-1 rounded-lg bg-[#F7F6F2] px-2.5 py-1 text-[9px] text-[#77766F]">
+                                      <span className="flex items-center gap-1 rounded-[9px] border border-[#E5EAE4] bg-[#F6F8F5] px-2.5 py-1 text-[9px] text-[#69746C]">
 
                                         <Clock3
                                           size={10}
@@ -1364,7 +1364,7 @@ export default function SettingsPage() {
                                         practitioner.name
                                       )
                                     }
-                                    className="rounded-lg border border-[#DDDCD6] px-3 py-2 text-[10px] font-medium hover:bg-[#F7F6F2]"
+                                    className="rounded-[10px] border border-[#DCE4DB] bg-[#FFFFFE] px-3 py-2 text-[10px] font-semibold text-[#4D5A51] transition hover:-translate-y-px hover:bg-[#F5F8F5]"
                                   >
                                     Make primary
                                   </button>
@@ -1378,7 +1378,7 @@ export default function SettingsPage() {
                                       practitioner.id
                                     )
                                   }
-                                  className="rounded-lg border border-[#DDDCD6] px-3 py-2 text-[10px] font-medium hover:bg-[#F7F6F2]"
+                                  className="rounded-[10px] border border-[#DCE4DB] bg-[#FFFFFE] px-3 py-2 text-[10px] font-semibold text-[#4D5A51] transition hover:-translate-y-px hover:bg-[#F5F8F5]"
                                 >
                                   {practitioner.active
                                     ? "Deactivate"
@@ -1392,7 +1392,7 @@ export default function SettingsPage() {
                                       practitioner
                                     )
                                   }
-                                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#DDDCD6] hover:bg-[#F7F6F2]"
+                                  className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-[#DCE4DB] bg-[#FFFFFE] text-[#536158] transition hover:-translate-y-px hover:bg-[#F5F8F5]"
                                 >
                                   <Pencil
                                     size={14}
@@ -1434,14 +1434,14 @@ export default function SettingsPage() {
                       <UserRound
                         size={24}
                         strokeWidth={1.6}
-                        className="mx-auto text-[#999890]"
+                        className="mx-auto text-[#8C978F]"
                       />
 
                       <p className="mt-4 text-sm font-medium">
                         No practitioners
                       </p>
 
-                      <p className="mt-2 text-xs text-[#999890]">
+                      <p className="mt-2 text-xs text-[#8C978F]">
                         Add your first
                         practitioner to begin
                         assigning appointments.
@@ -1459,9 +1459,9 @@ export default function SettingsPage() {
               <div className="space-y-6">
 
                 {/* PRIMARY */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] p-6 shadow-[0_14px_40px_rgba(27,43,32,0.045)]">
 
-                  <p className="text-sm text-[#77766F]">
+                  <p className="text-sm text-[#667169]">
                     Workspace identity
                   </p>
 
@@ -1471,7 +1471,7 @@ export default function SettingsPage() {
 
                   <div className="mt-5">
 
-                    <label className="text-xs font-medium text-[#77766F]">
+                    <label className="text-xs font-medium text-[#667169]">
                       Primary practitioner
                     </label>
 
@@ -1484,7 +1484,7 @@ export default function SettingsPage() {
                           e.target.value
                         )
                       }
-                      className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                      className="mt-2 w-full rounded-[13px] border border-[#DCE5DC] bg-[#F7F9F6] px-4 py-3 text-[12px] outline-none transition focus:border-[#6E8A75] focus:bg-white focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)]"
                     >
 
                       {settings.practitioners
@@ -1519,11 +1519,11 @@ export default function SettingsPage() {
 
                   </div>
 
-                  <div className="mt-6 rounded-xl bg-[#F7F6F2] p-5">
+                  <div className="mt-6 rounded-xl bg-[#F6F8F5] p-5">
 
                     <div className="flex items-center gap-3">
 
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#E5E2D9] text-xs font-semibold">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#E8F0E8] text-xs font-semibold">
                         {displayInitials}
                       </div>
 
@@ -1535,7 +1535,7 @@ export default function SettingsPage() {
                           }
                         </p>
 
-                        <p className="mt-1 text-xs text-[#77766F]">
+                        <p className="mt-1 text-xs text-[#667169]">
                           {
                             settings.clinicName
                           }
@@ -1550,9 +1550,9 @@ export default function SettingsPage() {
                 </div>
 
                 {/* DEMO MODE */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] p-6 shadow-[0_14px_40px_rgba(27,43,32,0.045)]">
 
-                  <p className="text-sm text-[#77766F]">
+                  <p className="text-sm text-[#667169]">
                     Demo mode
                   </p>
 
@@ -1560,16 +1560,16 @@ export default function SettingsPage() {
                     Restore demo data
                   </h3>
 
-                  <p className="mt-3 text-sm leading-6 text-[#77766F]">
+                  <p className="mt-3 text-sm leading-6 text-[#667169]">
                     Restore the complete presentation-ready clinic dataset before a demo. This replaces browser-saved patients, analyses, appointments, treatment plans, completed treatments, follow-ups and reports with the connected master demo story.
                   </p>
 
-                  <div className="mt-5 rounded-xl bg-[#F7F6F2] p-4">
+                  <div className="mt-5 rounded-xl bg-[#F6F8F5] p-4">
                     <p className="text-xs font-medium">
                       What this restores
                     </p>
 
-                    <p className="mt-1 text-xs leading-5 text-[#999890]">
+                    <p className="mt-1 text-xs leading-5 text-[#8C978F]">
                       Only Velyquo prototype data is replaced. Your clinic team, patients, appointments, analyses, treatments, follow-ups and reports are restored together, while unrelated browser storage is left untouched.
                     </p>
                   </div>
@@ -1594,7 +1594,7 @@ export default function SettingsPage() {
                 {/* STORAGE */}
                 <div className="rounded-2xl border border-[#D7DDD4] bg-[#F0F3EE] p-6">
 
-                  <p className="text-xs font-medium text-[#62715D]">
+                  <p className="text-xs font-medium text-[#45634D]">
                     Prototype storage
                   </p>
 
@@ -1609,13 +1609,13 @@ export default function SettingsPage() {
                 </div>
 
                 {/* RESET */}
-                <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+                <div className="rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] p-6 shadow-[0_14px_40px_rgba(27,43,32,0.045)]">
 
                   <p className="text-sm font-semibold">
                     Reset settings
                   </p>
 
-                  <p className="mt-2 text-xs leading-5 text-[#77766F]">
+                  <p className="mt-2 text-xs leading-5 text-[#667169]">
                     Restore Skinhouse Clinic,
                     Sarah Williams and Emma
                     Thompson as the original
@@ -1627,7 +1627,7 @@ export default function SettingsPage() {
                     onClick={
                       resetSettings
                     }
-                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-[#DDDCD6] px-4 py-3 text-sm font-medium transition hover:bg-[#F7F6F2]"
+                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-[#DDE5DC] px-4 py-3 text-sm font-medium transition hover:bg-[#F6F8F5]"
                   >
 
                     <RotateCcw
@@ -1646,7 +1646,7 @@ export default function SettingsPage() {
             </div>
 
             {/* SAVE */}
-            <div className="mt-6 flex flex-col justify-between gap-4 rounded-2xl border border-[#DDDCD6] bg-white p-5 sm:flex-row sm:items-center">
+            <div className="mt-6 flex flex-col justify-between gap-4 rounded-[24px] border border-[#DDE5DC] bg-[#FFFFFE] shadow-[0_14px_40px_rgba(27,43,32,0.045)] p-5 sm:flex-row sm:items-center">
 
               <div>
 
@@ -1654,7 +1654,7 @@ export default function SettingsPage() {
                   Workspace configuration
                 </p>
 
-                <p className="mt-1 text-xs text-[#999890]">
+                <p className="mt-1 text-xs text-[#8C978F]">
                   Save changes to make
                   practitioner updates
                   available across the
@@ -1700,16 +1700,16 @@ export default function SettingsPage() {
       {/* PRACTITIONER FORM MODAL */}
       {showPractitionerForm && (
 
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#172019]/35 p-4 backdrop-blur-[3px]">
 
-          <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white shadow-xl">
+          <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[28px] border border-white/70 bg-[#FFFFFE] shadow-[0_28px_90px_rgba(19,35,24,0.22)]">
 
             {/* MODAL HEADER */}
-            <div className="sticky top-0 z-10 flex items-start justify-between border-b border-[#ECEBE6] bg-white px-6 py-5">
+            <div className="sticky top-0 z-10 flex items-start justify-between border-b border-[#E4EAE3] bg-[#FFFFFE]/96 px-6 py-5 backdrop-blur-xl">
 
               <div>
 
-                <p className="text-xs text-[#71806C]">
+                <p className="text-xs text-[#6E8375]">
                   Practitioner management
                 </p>
 
@@ -1726,7 +1726,7 @@ export default function SettingsPage() {
                 onClick={
                   closePractitionerForm
                 }
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#DDDCD6] hover:bg-[#F7F6F2]"
+                className="flex h-9 w-9 items-center justify-center rounded-[10px] border border-[#DCE4DB] bg-[#FFFFFE] text-[#536158] transition hover:-translate-y-px hover:bg-[#F5F8F5]"
               >
                 <X
                   size={16}
@@ -1859,7 +1859,7 @@ export default function SettingsPage() {
               {/* DAYS */}
               <div className="mt-6">
 
-                <label className="text-xs font-medium text-[#77766F]">
+                <label className="text-xs font-medium text-[#667169]">
                   Working days
                 </label>
 
@@ -1886,7 +1886,7 @@ export default function SettingsPage() {
                           className={`rounded-xl border px-3 py-2 text-xs transition ${
                             selected
                               ? "border-[#171717] bg-[#171717] text-white"
-                              : "border-[#DDDCD6] bg-white text-[#77766F] hover:bg-[#F7F6F2]"
+                              : "border-[#DDE5DC] bg-white text-[#667169] hover:bg-[#F6F8F5]"
                           }`}
                         >
                           {day}
@@ -1905,7 +1905,7 @@ export default function SettingsPage() {
 
                 <div>
 
-                  <label className="text-xs font-medium text-[#77766F]">
+                  <label className="text-xs font-medium text-[#667169]">
                     Start time
                   </label>
 
@@ -1920,14 +1920,14 @@ export default function SettingsPage() {
                         e.target.value
                       )
                     }
-                    className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                    className="mt-2 w-full rounded-[13px] border border-[#DCE5DC] bg-[#F7F9F6] px-4 py-3 text-[12px] outline-none transition focus:border-[#6E8A75] focus:bg-white focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)]"
                   />
 
                 </div>
 
                 <div>
 
-                  <label className="text-xs font-medium text-[#77766F]">
+                  <label className="text-xs font-medium text-[#667169]">
                     End time
                   </label>
 
@@ -1942,7 +1942,7 @@ export default function SettingsPage() {
                         e.target.value
                       )
                     }
-                    className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                    className="mt-2 w-full rounded-[13px] border border-[#DCE5DC] bg-[#F7F9F6] px-4 py-3 text-[12px] outline-none transition focus:border-[#6E8A75] focus:bg-white focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)]"
                   />
 
                 </div>
@@ -1952,7 +1952,7 @@ export default function SettingsPage() {
               {/* NOTES */}
               <div className="mt-6">
 
-                <label className="text-xs font-medium text-[#77766F]">
+                <label className="text-xs font-medium text-[#667169]">
                   Practitioner notes
                 </label>
 
@@ -1968,13 +1968,13 @@ export default function SettingsPage() {
                     )
                   }
                   placeholder="Add internal notes about this practitioner..."
-                  className="mt-2 w-full resize-none rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none"
+                  className="mt-2 w-full resize-none rounded-[13px] border border-[#DCE5DC] bg-[#F7F9F6] px-4 py-3 text-[12px] outline-none transition focus:border-[#6E8A75] focus:bg-white focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)]"
                 />
 
               </div>
 
               {/* ACTIVE */}
-              <div className="mt-6 flex items-center justify-between rounded-xl bg-[#F7F6F2] p-4">
+              <div className="mt-6 flex items-center justify-between rounded-[16px] border border-[#E3E9E2] bg-[#F6F8F5] p-4">
 
                 <div>
 
@@ -1982,7 +1982,7 @@ export default function SettingsPage() {
                     Active practitioner
                   </p>
 
-                  <p className="mt-1 text-xs text-[#999890]">
+                  <p className="mt-1 text-xs text-[#8C978F]">
                     Active practitioners can
                     be selected for new
                     appointments.
@@ -2022,7 +2022,7 @@ export default function SettingsPage() {
                   }
                   className={`relative h-7 w-12 rounded-full transition ${
                     practitionerForm.active
-                      ? "bg-[#62715D]"
+                      ? "bg-[#42694D]"
                       : "bg-[#D8D6CE]"
                   } ${
                     editingPractitionerId &&
@@ -2057,7 +2057,7 @@ export default function SettingsPage() {
                   onClick={
                     closePractitionerForm
                   }
-                  className="rounded-xl border border-[#DDDCD6] px-5 py-3 text-sm font-medium hover:bg-[#F7F6F2]"
+                  className="rounded-[13px] border border-[#DCE4DB] bg-[#FFFFFE] px-5 py-3 text-[11px] font-semibold text-[#4D5A51] transition hover:-translate-y-px hover:bg-[#F5F8F5]"
                 >
                   Cancel
                 </button>
@@ -2072,8 +2072,8 @@ export default function SettingsPage() {
                   }
                   className={`rounded-xl px-5 py-3 text-sm font-medium ${
                     practitionerFormValid
-                      ? "bg-[#171717] text-white hover:bg-[#333]"
-                      : "cursor-not-allowed bg-[#DDDCD6] text-[#999890]"
+                      ? "bg-[#173725] text-white shadow-[0_10px_26px_rgba(23,55,37,0.16)] hover:bg-[#102D1C]"
+                      : "cursor-not-allowed border border-[#E0E5DF] bg-[#E9EDE8] text-[#9AA39C]"
                   }`}
                 >
                   {editingPractitionerId
@@ -2111,7 +2111,7 @@ function FormField({
   return (
     <div>
 
-      <label className="text-xs font-medium text-[#77766F]">
+      <label className="text-xs font-medium text-[#667169]">
         {label}
       </label>
 
@@ -2124,7 +2124,7 @@ function FormField({
           )
         }
         placeholder={placeholder}
-        className="mt-2 w-full rounded-xl border border-[#DDDCD6] bg-[#FAF9F6] px-4 py-3 text-sm outline-none transition focus:border-[#99978F]"
+        className="mt-2 w-full rounded-[13px] border border-[#DCE5DC] bg-[#F7F9F6] px-4 py-3 text-[12px] outline-none transition focus:border-[#6E8A75] focus:bg-white focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)] transition focus:border-[#99978F]"
       />
 
     </div>
