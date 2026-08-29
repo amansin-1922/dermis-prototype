@@ -134,6 +134,7 @@ type FollowUpBookingHandoff = {
   practitioner?: string;
   practitionerId?: number;
   completedDate: string;
+  completedRawDate: string;
 };
 
 
@@ -404,6 +405,46 @@ function buildCalendarDays(year: number, monthIndex: number) {
   }
 
   return cells;
+}
+
+function addDaysToIsoDate(dateValue: string, days: number) {
+  if (!dateValue) return "";
+
+  const date = new Date(`${dateValue}T12:00:00`);
+  date.setDate(date.getDate() + days);
+
+  return toIsoDate(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+}
+
+function getNextWorkingDate(
+  startDate: string,
+  practitioners: Practitioner[]
+) {
+  let candidate = startDate;
+
+  for (let offset = 0; offset < 31; offset += 1) {
+    const weekday = getWeekday(candidate);
+
+    const hasAvailablePractitioner =
+      practitioners.some(
+        (practitioner) =>
+          practitioner.active &&
+          (practitioner.workingDays.length === 0 ||
+            practitioner.workingDays.includes(weekday))
+      );
+
+    if (hasAvailablePractitioner) {
+      return candidate;
+    }
+
+    candidate = addDaysToIsoDate(candidate, 1);
+  }
+
+  return startDate;
 }
 
 function getInitials(name: string) {
@@ -881,6 +922,38 @@ export default function AppointmentsPage() {
         `Follow-up after ${handoff.treatment} completed on ${handoff.completedDate}.`
       );
 
+      const firstFollowUpDate =
+        getNextWorkingDate(
+          addDaysToIsoDate(
+            handoff.completedRawDate,
+            1
+          ),
+          activePractitioners
+        );
+
+      if (firstFollowUpDate) {
+        setFormDate(
+          firstFollowUpDate
+        );
+
+        setSelectedDate(
+          firstFollowUpDate
+        );
+
+        const followUpDate =
+          new Date(
+            `${firstFollowUpDate}T12:00:00`
+          );
+
+        setCalendarMonth(
+          new Date(
+            followUpDate.getFullYear(),
+            followUpDate.getMonth(),
+            1
+          )
+        );
+      }
+
       const preferredPractitioner =
         practitionersAvailableOnDate.find(
           (practitioner) =>
@@ -937,6 +1010,7 @@ export default function AppointmentsPage() {
   }, [
     patients,
     practitionersAvailableOnDate,
+    activePractitioners,
   ]);
 
   /*
@@ -1899,6 +1973,42 @@ export default function AppointmentsPage() {
     setFormNotes(
       `Follow-up after ${appointment.treatment} completed on ${appointment.date}.`
     );
+
+    /*
+     * A follow-up must never default to the treatment date or an earlier date.
+     * Start on the first clinic working day after the completed treatment.
+     */
+    const firstFollowUpDate =
+      getNextWorkingDate(
+        addDaysToIsoDate(
+          appointment.rawDate,
+          1
+        ),
+        activePractitioners
+      );
+
+    if (firstFollowUpDate) {
+      setFormDate(
+        firstFollowUpDate
+      );
+
+      setSelectedDate(
+        firstFollowUpDate
+      );
+
+      const followUpDate =
+        new Date(
+          `${firstFollowUpDate}T12:00:00`
+        );
+
+      setCalendarMonth(
+        new Date(
+          followUpDate.getFullYear(),
+          followUpDate.getMonth(),
+          1
+        )
+      );
+    }
 
     const practitioner =
       practitionersAvailableOnDate.find(
