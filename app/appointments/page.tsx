@@ -362,15 +362,49 @@ const timeSlots = [
   "17:30",
 ];
 
-const dateLabels: Record<string, string> = {
-  "25": "Tuesday, 25 August",
-  "26": "Wednesday, 26 August",
-  "27": "Thursday, 27 August",
-  "28": "Friday, 28 August",
-  "29": "Saturday, 29 August",
-  "30": "Sunday, 30 August",
-  "31": "Monday, 31 August",
-};
+
+function toIsoDate(year: number, monthIndex: number, day: number) {
+  return `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(
+    day
+  ).padStart(2, "0")}`;
+}
+
+function formatLongDate(dateValue: string) {
+  if (!dateValue) return "";
+
+  const date = new Date(`${dateValue}T12:00:00`);
+
+  return date.toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function formatMonthYear(date: Date) {
+  return date.toLocaleDateString("en-GB", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function buildCalendarDays(year: number, monthIndex: number) {
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const firstDay = new Date(year, monthIndex, 1).getDay();
+  const mondayFirstOffset = (firstDay + 6) % 7;
+
+  const cells: Array<number | null> = [
+    ...Array.from({ length: mondayFirstOffset }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, index) => index + 1),
+  ];
+
+  while (cells.length % 7 !== 0) {
+    cells.push(null);
+  }
+
+  return cells;
+}
 
 function getInitials(name: string) {
   return name
@@ -498,7 +532,14 @@ export default function AppointmentsPage() {
   const [
     selectedDate,
     setSelectedDate,
-  ] = useState("27");
+  ] = useState("2026-08-27");
+
+  const [
+    calendarMonth,
+    setCalendarMonth,
+  ] = useState(
+    () => new Date(2026, 7, 1)
+  );
 
   const [
     treatmentPlan,
@@ -1592,22 +1633,22 @@ export default function AppointmentsPage() {
 
     setConflictMessage("");
 
-    const bookingDay =
-      String(
-        Number(
-          formDate.split("-")[2]
-        )
+    setSelectedDate(
+      formDate
+    );
+
+    const bookedDate =
+      new Date(
+        `${formDate}T12:00:00`
       );
 
-    if (
-      dateLabels[
-        bookingDay
-      ]
-    ) {
-      setSelectedDate(
-        bookingDay
-      );
-    }
+    setCalendarMonth(
+      new Date(
+        bookedDate.getFullYear(),
+        bookedDate.getMonth(),
+        1
+      )
+    );
 
     window.history.replaceState(
       {},
@@ -2141,11 +2182,40 @@ export default function AppointmentsPage() {
     appointments.filter(
       (appointment) =>
         appointment.rawDate ===
-        `2026-08-${selectedDate.padStart(
-          2,
-          "0"
-        )}`
+        selectedDate
     );
+
+  const calendarYear =
+    calendarMonth.getFullYear();
+
+  const calendarMonthIndex =
+    calendarMonth.getMonth();
+
+  const calendarDays =
+    buildCalendarDays(
+      calendarYear,
+      calendarMonthIndex
+    );
+
+  const goToPreviousMonth = () => {
+    setCalendarMonth(
+      new Date(
+        calendarYear,
+        calendarMonthIndex - 1,
+        1
+      )
+    );
+  };
+
+  const goToNextMonth = () => {
+    setCalendarMonth(
+      new Date(
+        calendarYear,
+        calendarMonthIndex + 1,
+        1
+      )
+    );
+  };
 
   const confirmedCount =
     appointments.filter(
@@ -2857,125 +2927,275 @@ export default function AppointmentsPage() {
             {/* CALENDAR */}
             <div className="mt-8 rounded-2xl border border-[#DDDCD6] bg-white p-5">
 
-              <div>
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 
-                <p className="text-xs text-[#999890]">
-                  Selected date
-                </p>
+                <div>
 
-                <h3 className="mt-1 text-lg font-semibold">
-                  {
-                    dateLabels[
+                  <p className="text-xs text-[#999890]">
+                    Selected date
+                  </p>
+
+                  <h3 className="mt-1 text-lg font-semibold">
+                    {formatLongDate(
                       selectedDate
-                    ]
-                  }
-                </h3>
+                    )}
+                  </h3>
+
+                </div>
+
+                <div className="flex items-center gap-2">
+
+                  <button
+                    type="button"
+                    onClick={
+                      goToPreviousMonth
+                    }
+                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#DDDCD6] text-lg text-[#77766F] transition hover:bg-[#F7F6F2] hover:text-[#171717]"
+                    aria-label="Previous month"
+                  >
+                    ‹
+                  </button>
+
+                  <div className="min-w-[150px] text-center text-sm font-semibold">
+                    {formatMonthYear(
+                      calendarMonth
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={
+                      goToNextMonth
+                    }
+                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#DDDCD6] text-lg text-[#77766F] transition hover:bg-[#F7F6F2] hover:text-[#171717]"
+                    aria-label="Next month"
+                  >
+                    ›
+                  </button>
+
+                </div>
 
               </div>
 
-              <div className="mt-5 grid grid-cols-7 gap-2">
+              <div className="mt-6 grid grid-cols-7 gap-2">
 
                 {[
-                  ["Mon", "25"],
-                  ["Tue", "26"],
-                  ["Wed", "27"],
-                  ["Thu", "28"],
-                  ["Fri", "29"],
-                  ["Sat", "30"],
-                  ["Sun", "31"],
-                ].map(
-                  ([day, date]) => (
+                  "Mon",
+                  "Tue",
+                  "Wed",
+                  "Thu",
+                  "Fri",
+                  "Sat",
+                  "Sun",
+                ].map((day) => (
 
-                    <button
-                      key={day}
-                      type="button"
-                      onClick={() =>
-                        setSelectedDate(
-                          date
-                        )
-                      }
-                      className={`rounded-xl px-2 py-3 text-center ${
-                        selectedDate ===
-                        date
-                          ? "bg-[#171717] text-white"
-                          : "bg-[#F7F6F2] text-[#77766F]"
-                      }`}
-                    >
-                      <p className="text-[10px]">
-                        {day}
-                      </p>
+                  <div
+                    key={day}
+                    className="px-1 pb-1 text-center text-[10px] font-semibold uppercase tracking-[0.08em] text-[#999890]"
+                  >
+                    {day}
+                  </div>
 
-                      <p className="mt-1 text-sm font-semibold">
-                        {date}
-                      </p>
-                    </button>
+                ))}
 
-                  )
+                {calendarDays.map(
+                  (day, index) => {
+                    if (day === null) {
+                      return (
+                        <div
+                          key={`empty-${index}`}
+                          className="min-h-[72px] rounded-xl"
+                        />
+                      );
+                    }
+
+                    const isoDate =
+                      toIsoDate(
+                        calendarYear,
+                        calendarMonthIndex,
+                        day
+                      );
+
+                    const dayAppointments =
+                      appointments.filter(
+                        (appointment) =>
+                          appointment.rawDate ===
+                            isoDate &&
+                          appointment.status !==
+                            "Cancelled"
+                      );
+
+                    const isSelected =
+                      selectedDate ===
+                      isoDate;
+
+                    return (
+
+                      <button
+                        key={isoDate}
+                        type="button"
+                        onClick={() =>
+                          setSelectedDate(
+                            isoDate
+                          )
+                        }
+                        className={`min-h-[72px] rounded-xl border px-2 py-2 text-left transition ${
+                          isSelected
+                            ? "border-[#171717] bg-[#171717] text-white"
+                            : "border-transparent bg-[#F7F6F2] text-[#77766F] hover:border-[#DDDCD6] hover:bg-[#F2F1EC]"
+                        }`}
+                      >
+
+                        <div className="flex items-start justify-between gap-1">
+
+                          <span className="text-sm font-semibold">
+                            {day}
+                          </span>
+
+                          {dayAppointments.length >
+                            0 && (
+
+                            <span
+                              className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[9px] font-semibold ${
+                                isSelected
+                                  ? "bg-white text-[#171717]"
+                                  : "bg-[#E5E2D9] text-[#5F5E58]"
+                              }`}
+                            >
+                              {
+                                dayAppointments.length
+                              }
+                            </span>
+
+                          )}
+
+                        </div>
+
+                        {dayAppointments.length >
+                          0 && (
+
+                          <p
+                            className={`mt-3 truncate text-[9px] ${
+                              isSelected
+                                ? "text-[#D8D8D3]"
+                                : "text-[#999890]"
+                            }`}
+                          >
+                            {
+                              dayAppointments[0]
+                                .time
+                            }
+                          </p>
+
+                        )}
+
+                      </button>
+
+                    );
+                  }
                 )}
 
               </div>
 
-              {appointmentsForSelectedDate.length >
-                0 && (
+              <div className="mt-5 border-t border-[#ECEBE6] pt-5">
 
-                <div className="mt-5 space-y-3 border-t border-[#ECEBE6] pt-5">
+                <div className="flex items-center justify-between gap-3">
 
-                  {appointmentsForSelectedDate.map(
-                    (appointment) => (
+                  <p className="text-xs font-medium text-[#77766F]">
+                    Appointments on{" "}
+                    {formatLongDate(
+                      selectedDate
+                    )}
+                  </p>
 
-                      <div
-                        key={
-                          appointment.id
-                        }
-                        className="flex items-center gap-3 rounded-xl bg-[#F7F6F2] p-4"
-                      >
-
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[10px] font-medium">
-                          {
-                            appointment.initials
-                          }
-                        </div>
-
-                        <div className="min-w-0 flex-1">
-
-                          <p className="truncate text-sm font-medium">
-                            {
-                              appointment.patient
-                            }
-                          </p>
-
-                          <p className="mt-1 text-xs text-[#999890]">
-                            {
-                              appointment.treatment
-                            }
-                          </p>
-
-                        </div>
-
-                        <div className="text-right">
-
-                          <p className="text-xs font-medium">
-                            {
-                              appointment.time
-                            }
-                          </p>
-
-                          <StatusBadge
-                            status={
-                              appointment.status
-                            }
-                          />
-
-                        </div>
-
-                      </div>
-
-                    )
-                  )}
+                  <span className="text-[10px] text-[#999890]">
+                    {
+                      appointmentsForSelectedDate.length
+                    }{" "}
+                    booking
+                    {appointmentsForSelectedDate.length ===
+                    1
+                      ? ""
+                      : "s"}
+                  </span>
 
                 </div>
 
-              )}
+                {appointmentsForSelectedDate.length >
+                0 ? (
+
+                  <div className="mt-4 space-y-3">
+
+                    {appointmentsForSelectedDate.map(
+                      (appointment) => (
+
+                        <div
+                          key={
+                            appointment.id
+                          }
+                          className="flex items-center gap-3 rounded-xl bg-[#F7F6F2] p-4"
+                        >
+
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[10px] font-medium">
+                            {
+                              appointment.initials
+                            }
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+
+                            <p className="truncate text-sm font-medium">
+                              {
+                                appointment.patient
+                              }
+                            </p>
+
+                            <p className="mt-1 truncate text-xs text-[#999890]">
+                              {
+                                appointment.treatment
+                              }{" "}
+                              ·{" "}
+                              {
+                                appointment.time
+                              }{" "}
+                              ·{" "}
+                              {
+                                appointment.practitioner
+                              }
+                            </p>
+
+                          </div>
+
+                          <span className="rounded-full bg-white px-3 py-1 text-[10px] text-[#77766F]">
+                            {
+                              appointment.status
+                            }
+                          </span>
+
+                        </div>
+
+                      )
+                    )}
+
+                  </div>
+
+                ) : (
+
+                  <div className="mt-4 rounded-xl bg-[#F7F6F2] px-4 py-5 text-center">
+
+                    <p className="text-sm font-medium text-[#77766F]">
+                      No appointments on this date
+                    </p>
+
+                    <p className="mt-1 text-xs text-[#999890]">
+                      Select another date or create a new appointment.
+                    </p>
+
+                  </div>
+
+                )}
+
+              </div>
 
             </div>
 
