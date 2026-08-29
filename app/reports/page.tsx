@@ -446,6 +446,104 @@ function normalizeReport(
 }
 
 
+function isUsableProgressReport(
+  report: ProgressReport,
+  patients: Patient[]
+) {
+  if (!report || typeof report !== "object") {
+    return false;
+  }
+
+  const patientName =
+    typeof report.patient === "string"
+      ? report.patient.trim()
+      : "";
+
+  const hasKnownPatient =
+    (typeof report.patientId === "number" &&
+      patients.some(
+        (patient) => patient.id === report.patientId
+      )) ||
+    Boolean(
+      patientName &&
+        patients.some(
+          (patient) =>
+            patient.name.toLowerCase() ===
+            patientName.toLowerCase()
+        )
+    );
+
+  const beforeDate = String(
+    report.beforeDate ||
+      report.baselineDate ||
+      ""
+  ).trim();
+
+  const afterDate = String(
+    report.afterDate ||
+      report.comparisonDate ||
+      ""
+  ).trim();
+
+  const beforeScore =
+    report.beforeScore ??
+    report.baselineScore;
+
+  const afterScore =
+    report.afterScore ??
+    report.comparisonScore;
+
+  const hasBeforeScore =
+    beforeScore !== undefined &&
+    beforeScore !== null &&
+    Number.isFinite(Number(beforeScore));
+
+  const hasAfterScore =
+    afterScore !== undefined &&
+    afterScore !== null &&
+    Number.isFinite(Number(afterScore));
+
+  return (
+    hasKnownPatient &&
+    Boolean(beforeDate) &&
+    Boolean(afterDate) &&
+    hasBeforeScore &&
+    hasAfterScore
+  );
+}
+
+function deduplicateReports(
+  reports: NormalizedReport[]
+) {
+  const seen = new Set<string>();
+
+  return [...reports]
+    .sort(
+      (a, b) =>
+        getReportTimestamp(b) -
+        getReportTimestamp(a)
+    )
+    .filter((report) => {
+      const patientKey =
+        report.patientId !== undefined
+          ? `id:${report.patientId}`
+          : `name:${report.patient.toLowerCase()}`;
+
+      const key = [
+        patientKey,
+        report.beforeDate.trim().toLowerCase(),
+        report.afterDate.trim().toLowerCase(),
+      ].join("|");
+
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    });
+}
+
 function getReportTimestamp(report: NormalizedReport) {
   const generated = report.generatedAt
     ? new Date(report.generatedAt).getTime()
@@ -733,15 +831,26 @@ export default function ReportsPage() {
         ) as ProgressReport[];
       }
 
-      setReports(
-        reportArray.map((report, index) =>
+      const validReports = reportArray.filter(
+        (report) =>
+          isUsableProgressReport(
+            report,
+            loadedPatients
+          )
+      );
+
+      const normalizedReports = validReports.map(
+        (report, index) =>
           normalizeReport(
             report,
             index,
             loadedPatients,
             loadedTreatmentHistory
           )
-        )
+      );
+
+      setReports(
+        deduplicateReports(normalizedReports)
       );
     } catch (error) {
       console.error(
