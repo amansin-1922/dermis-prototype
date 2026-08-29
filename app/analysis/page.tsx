@@ -515,8 +515,13 @@ export default function AnalysisPage() {
     /*
      * HISTORICAL ANALYSIS VIEW
      *
-     * Patient Analysis History stores the exact record in
+     * Patient Analysis History stores a hand-off record in
      * dermisSelectedAnalysis and opens /analysis?mode=history.
+     *
+     * The patient page may hand off only the core fields, so this page
+     * also looks up the matching record in dermisAnalysisHistory. That
+     * restores the original saved photo and any other persisted fields.
+     *
      * Historical mode is read-only and must never overwrite
      * dermisLatestAnalysis.
      */
@@ -533,55 +538,177 @@ export default function AnalysisPage() {
 
       if (storedSelectedAnalysis) {
         try {
+          type HistoricalAnalysisHandoff =
+            Partial<AnalysisRecord> & {
+              patient?: string;
+              patientId?: number;
+            };
+
           const parsedSelectedAnalysis =
             JSON.parse(
               storedSelectedAnalysis
-            ) as AnalysisRecord;
+            ) as HistoricalAnalysisHandoff;
 
-          const validHistoricalAnalysis =
-            typeof parsedSelectedAnalysis?.id === "number" &&
-            typeof parsedSelectedAnalysis?.date === "string" &&
-            typeof parsedSelectedAnalysis?.score === "number" &&
-            Array.isArray(
-              parsedSelectedAnalysis?.metrics
+          /*
+           * Resolve the patient from the historical hand-off first.
+           * This prevents another previously selected patient from being
+           * used when opening an old record.
+           */
+          const historicalPatient =
+            typeof parsedSelectedAnalysis.patientId === "number"
+              ? availablePatients.find(
+                  (patient) =>
+                    patient.id ===
+                    parsedSelectedAnalysis.patientId
+                )
+              : typeof parsedSelectedAnalysis.patient === "string"
+                ? availablePatients.find(
+                    (patient) =>
+                      patient.name ===
+                      parsedSelectedAnalysis.patient
+                  )
+                : undefined;
+
+          if (historicalPatient) {
+            resolvedPatient =
+              historicalPatient;
+
+            setSelectedPatient(
+              historicalPatient
             );
 
-          if (validHistoricalAnalysis) {
+            localStorage.setItem(
+              "dermisSelectedPatient",
+              JSON.stringify(
+                historicalPatient
+              )
+            );
+          }
+
+          const storedHistory =
+            localStorage.getItem(
+              "dermisAnalysisHistory"
+            );
+
+          let previousHistory:
+            AnalysisRecord[] = [];
+
+          if (storedHistory) {
+            try {
+              const parsedHistory: Record<
+                number,
+                AnalysisRecord[]
+              > = JSON.parse(storedHistory);
+
+              previousHistory =
+                parsedHistory[
+                  resolvedPatient.id
+                ] || [];
+            } catch (error) {
+              console.error(
+                "Could not load historical analysis history:",
+                error
+              );
+            }
+          }
+
+          /*
+           * Recover the full stored record.
+           *
+           * The hand-off from Patient Profile can omit the image, while
+           * dermisAnalysisHistory contains the complete saved analysis.
+           */
+          const matchingStoredRecord =
+            previousHistory.find(
+              (record) =>
+                parsedSelectedAnalysis.id != null &&
+                String(record.id) ===
+                  String(
+                    parsedSelectedAnalysis.id
+                  )
+            ) ||
+            previousHistory.find(
+              (record) =>
+                typeof parsedSelectedAnalysis.date === "string" &&
+                typeof parsedSelectedAnalysis.score === "number" &&
+                record.date ===
+                  parsedSelectedAnalysis.date &&
+                record.score ===
+                  parsedSelectedAnalysis.score
+            ) ||
+            null;
+
+          const restoredHistoricalAnalysis:
+            AnalysisRecord | null =
+            (() => {
+              const mergedRecord = {
+                ...(matchingStoredRecord || {}),
+                ...parsedSelectedAnalysis,
+                image:
+                  parsedSelectedAnalysis.image ||
+                  matchingStoredRecord?.image ||
+                  "",
+                metrics:
+                  Array.isArray(
+                    parsedSelectedAnalysis.metrics
+                  ) &&
+                  parsedSelectedAnalysis.metrics.length > 0
+                    ? parsedSelectedAnalysis.metrics
+                    : matchingStoredRecord?.metrics ||
+                      [],
+              };
+
+              const validId =
+                typeof mergedRecord.id === "number";
+
+              const validDate =
+                typeof mergedRecord.date === "string";
+
+              const validScore =
+                typeof mergedRecord.score === "number";
+
+              const validMetrics =
+                Array.isArray(
+                  mergedRecord.metrics
+                );
+
+              if (
+                !validId ||
+                !validDate ||
+                !validScore ||
+                !validMetrics
+              ) {
+                return null;
+              }
+
+              return {
+                id: mergedRecord.id as number,
+                date: mergedRecord.date as string,
+                score: mergedRecord.score as number,
+                image:
+                  typeof mergedRecord.image === "string"
+                    ? mergedRecord.image
+                    : "",
+                metrics:
+                  mergedRecord.metrics as SkinMetric[],
+              };
+            })();
+
+          if (restoredHistoricalAnalysis) {
             const historicalMetrics =
-              parsedSelectedAnalysis.metrics;
-
-            const previousHistory =
-              (() => {
-                const storedHistory =
-                  localStorage.getItem(
-                    "dermisAnalysisHistory"
-                  );
-
-                if (!storedHistory) {
-                  return [] as AnalysisRecord[];
-                }
-
-                try {
-                  const parsedHistory: Record<
-                    number,
-                    AnalysisRecord[]
-                  > = JSON.parse(storedHistory);
-
-                  return (
-                    parsedHistory[
-                      resolvedPatient.id
-                    ] || []
-                  );
-                } catch {
-                  return [] as AnalysisRecord[];
-                }
-              })();
+              restoredHistoricalAnalysis.metrics;
 
             const selectedIndex =
               previousHistory.findIndex(
                 (record) =>
                   record.id ===
-                  parsedSelectedAnalysis.id
+                    restoredHistoricalAnalysis.id ||
+                  (
+                    record.date ===
+                      restoredHistoricalAnalysis.date &&
+                    record.score ===
+                      restoredHistoricalAnalysis.score
+                  )
               );
 
             const previousRecord =
@@ -593,17 +720,17 @@ export default function AnalysisPage() {
 
             const historicalChange =
               previousRecord
-                ? parsedSelectedAnalysis.score -
+                ? restoredHistoricalAnalysis.score -
                   previousRecord.score
                 : 0;
 
             setHistoricalAnalysis(
-              parsedSelectedAnalysis
+              restoredHistoricalAnalysis
             );
 
             setImages({
               front:
-                parsedSelectedAnalysis.image ||
+                restoredHistoricalAnalysis.image ||
                 null,
               left: null,
               right: null,
@@ -611,7 +738,7 @@ export default function AnalysisPage() {
 
             setAnalysisResult({
               score:
-                parsedSelectedAnalysis.score,
+                restoredHistoricalAnalysis.score,
               change:
                 historicalChange,
               metrics:
@@ -624,9 +751,9 @@ export default function AnalysisPage() {
                 buildRecommendations(
                   historicalMetrics
                 ),
-              summary: `Saved historical assessment for ${resolvedPatient.name} from ${parsedSelectedAnalysis.date}. Overall skin score: ${parsedSelectedAnalysis.score}/100.`,
+              summary: `Saved historical assessment for ${resolvedPatient.name} from ${restoredHistoricalAnalysis.date}. Overall skin score: ${restoredHistoricalAnalysis.score}/100.`,
               expectedImprovement:
-                parsedSelectedAnalysis.score >= 85
+                restoredHistoricalAnalysis.score >= 85
                   ? "Maintain current progress"
                   : "+4–8 points over the next treatment cycle",
             });
@@ -634,6 +761,10 @@ export default function AnalysisPage() {
             setSaved(true);
             setProgress(100);
             setStep(3);
+          } else {
+            console.error(
+              "Historical analysis hand-off was incomplete and no matching saved record was found."
+            );
           }
         } catch (error) {
           console.error(

@@ -1331,16 +1331,27 @@ export default function PatientProfile() {
 
     /*
      * Keep historical analysis separate from the patient's true latest
-     * analysis. Overwriting dermisLatestAnalysis here can make an old
-     * record appear as the newest analysis across the prototype.
+     * analysis. Store a normalized, self-contained historical record so
+     * the Analysis page can render it immediately in read-only mode.
      */
+    const numericAnalysisId =
+      typeof analysis.id === "number"
+        ? analysis.id
+        : typeof analysis.id === "string" &&
+            /^\\d+$/.test(analysis.id)
+          ? Number(analysis.id)
+          : undefined;
+
     const selectedHistoricalAnalysis = {
       patient: patient.name,
       patientId: patient.id,
-      id: analysis.id,
-      date: analysis.date,
-      score: analysis.score,
-      metrics: analysis.metrics,
+      ...(typeof numericAnalysisId === "number"
+        ? { id: numericAnalysisId }
+        : {}),
+      date: getAnalysisDate(analysis),
+      score: getAnalysisScore(analysis),
+      image: getAnalysisImage(analysis),
+      metrics: getAnalysisMetrics(analysis),
     };
 
     try {
@@ -1355,6 +1366,7 @@ export default function PatientProfile() {
         "Could not open saved analysis:",
         error
       );
+      return;
     }
 
     window.location.href =

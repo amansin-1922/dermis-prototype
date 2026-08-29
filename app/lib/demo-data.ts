@@ -258,6 +258,19 @@ export const DERMIS_DEMO_STORAGE_KEYS = [
 export function seedDermisDemoData() {
   if (typeof window === "undefined") return;
 
+  /*
+   * The initializer runs whenever the app shell mounts.
+   * Only seed when this demo-data version has not already been installed.
+   * Otherwise route-to-route hand-off keys such as dermisSelectedAnalysis
+   * would be erased while navigating to the historical Analysis screen.
+   */
+  const installedVersion =
+    localStorage.getItem("dermisDemoDataVersion");
+
+  if (installedVersion === DEMO_DATA_VERSION) {
+    return;
+  }
+
   localStorage.setItem("dermisClinicSettings", JSON.stringify(clinicSettings));
   localStorage.setItem("dermisPatients", JSON.stringify(patients));
   localStorage.setItem("dermisAppointments", JSON.stringify(appointments));
