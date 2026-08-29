@@ -315,6 +315,51 @@ function parseClinicDate(value?: string) {
   return 0;
 }
 
+function formatActivityDate(value?: string) {
+  if (!value) {
+    return "Saved";
+  }
+
+  const trimmedValue = value.trim();
+
+  const isIsoDate =
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(
+      trimmedValue
+    );
+
+  if (!isIsoDate) {
+    return value;
+  }
+
+  const parsedDate = new Date(trimmedValue);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value;
+  }
+
+  const formattedDate =
+    parsedDate.toLocaleDateString(
+      "en-GB",
+      {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }
+    );
+
+  const formattedTime =
+    parsedDate.toLocaleTimeString(
+      "en-GB",
+      {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      }
+    );
+
+  return `${formattedDate}, ${formattedTime}`;
+}
+
 function getInitials(name: string) {
   return name
     .split(" ")
@@ -1400,7 +1445,7 @@ export default function Dashboard() {
         <section className="min-w-0 flex-1">
 
           {/* HEADER */}
-          <header className="flex items-center justify-between sticky top-0 z-30 flex items-center justify-between border-b border-[#E4E2DC] bg-white/90 px-6 py-4 backdrop-blur-xl lg:px-10">
+          <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[#E4E2DC] bg-white/90 px-6 py-4 backdrop-blur-xl lg:px-10">
 
             <div>
 
@@ -2362,7 +2407,9 @@ export default function Dashboard() {
                         </div>
 
                         <p className="text-xs text-[#999890]">
-                          {activity.date}
+                          {formatActivityDate(
+                            activity.date
+                          )}
                         </p>
 
                         <span
