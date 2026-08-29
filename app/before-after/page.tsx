@@ -262,6 +262,9 @@ export default function BeforeAfterPage() {
   const [reportGenerated, setReportGenerated] =
     useState(false);
 
+  const [reportAlreadyExists, setReportAlreadyExists] =
+    useState(false);
+
   const [clinicSettings, setClinicSettings] =
     useState<ClinicSettings>({
       clinicName: "Velyquo Clinic",
@@ -815,7 +818,6 @@ export default function BeforeAfterPage() {
       );
 
       setSlider(50);
-      setReportGenerated(false);
     };
 
   const nextComparison = () => {
@@ -828,7 +830,6 @@ export default function BeforeAfterPage() {
     );
 
     setSlider(50);
-    setReportGenerated(false);
   };
 
   /*
@@ -844,108 +845,141 @@ export default function BeforeAfterPage() {
     );
 
   /*
-   * GENERATE + SAVE PROGRESS REPORT
+   * KEEP REPORT STATE IN SYNC WITH SAVED REPORT HISTORY
    */
-  const generateProgressReport =
-    () => {
-      if (
-        reportGenerated ||
-        !beforeAnalysis ||
-        !afterAnalysis
-      ) {
+  useEffect(() => {
+    if (!beforeAnalysis || !afterAnalysis) {
+      setReportGenerated(false);
+      setReportAlreadyExists(false);
+      return;
+    }
+
+    try {
+      const storedReports = localStorage.getItem(
+        "dermisProgressReports"
+      );
+
+      if (!storedReports) {
+        setReportGenerated(false);
+        setReportAlreadyExists(false);
         return;
       }
 
-      const report: ProgressReport = {
-        id: Date.now(),
-
-        patientId:
-          patient.id,
-
-        patient:
-          patient.name,
-
-        baselineDate:
-          beforeAnalysis.date,
-
-        comparisonDate:
-          afterAnalysis.date,
-
-        baselineScore:
-          beforeAnalysis.score,
-
-        comparisonScore:
-          afterAnalysis.score,
-
-        scoreChange:
-          scoreImprovement,
-
-        metrics:
-          progressMetrics,
-
-        treatmentProgramme,
-
-        completedTreatments,
-
-        summary:
-          progressSummary,
-
-        createdAt:
-          new Date().toLocaleDateString(
-            "en-GB",
-            {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            }
-          ),
-      };
-
-      let reportsByPatient: Record<
+      const reportsByPatient: Record<
         number,
         ProgressReport[]
-      > = {};
-
-      const storedReports =
-        localStorage.getItem(
-          "dermisProgressReports"
-        );
-
-      if (storedReports) {
-        try {
-          reportsByPatient =
-            JSON.parse(
-              storedReports
-            );
-        } catch (error) {
-          console.error(
-            "Could not load progress reports:",
-            error
-          );
-        }
-      }
+      > = JSON.parse(storedReports);
 
       const currentReports =
-        reportsByPatient[
-          patient.id
-        ] || [];
+        reportsByPatient[patient.id] || [];
 
-      reportsByPatient[
-        patient.id
-      ] = [
-        report,
-        ...currentReports,
-      ];
+      const duplicateExists =
+        currentReports.some(
+          (savedReport) =>
+            savedReport.patientId === patient.id &&
+            savedReport.baselineDate === beforeAnalysis.date &&
+            savedReport.comparisonDate === afterAnalysis.date
+        );
 
-      localStorage.setItem(
-        "dermisProgressReports",
-        JSON.stringify(
-          reportsByPatient
-        )
+      setReportGenerated(duplicateExists);
+      setReportAlreadyExists(duplicateExists);
+    } catch (error) {
+      console.error(
+        "Could not check progress report history:",
+        error
+      );
+      setReportGenerated(false);
+      setReportAlreadyExists(false);
+    }
+  }, [
+    afterAnalysis,
+    beforeAnalysis,
+    patient.id,
+  ]);
+
+  /*
+   * GENERATE + SAVE PROGRESS REPORT
+   */
+  const generateProgressReport = () => {
+    if (!beforeAnalysis || !afterAnalysis) {
+      return;
+    }
+
+    let reportsByPatient: Record<
+      number,
+      ProgressReport[]
+    > = {};
+
+    const storedReports =
+      localStorage.getItem(
+        "dermisProgressReports"
       );
 
+    if (storedReports) {
+      try {
+        reportsByPatient =
+          JSON.parse(storedReports);
+      } catch (error) {
+        console.error(
+          "Could not load progress reports:",
+          error
+        );
+      }
+    }
+
+    const currentReports =
+      reportsByPatient[patient.id] || [];
+
+    const duplicateExists =
+      currentReports.some(
+        (savedReport) =>
+          savedReport.patientId === patient.id &&
+          savedReport.baselineDate === beforeAnalysis.date &&
+          savedReport.comparisonDate === afterAnalysis.date
+      );
+
+    if (duplicateExists) {
       setReportGenerated(true);
+      setReportAlreadyExists(true);
+      return;
+    }
+
+    const report: ProgressReport = {
+      id: Date.now(),
+      patientId: patient.id,
+      patient: patient.name,
+      baselineDate: beforeAnalysis.date,
+      comparisonDate: afterAnalysis.date,
+      baselineScore: beforeAnalysis.score,
+      comparisonScore: afterAnalysis.score,
+      scoreChange: scoreImprovement,
+      metrics: progressMetrics,
+      treatmentProgramme,
+      completedTreatments,
+      summary: progressSummary,
+      createdAt: new Date().toLocaleDateString(
+        "en-GB",
+        {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }
+      ),
     };
+
+    reportsByPatient[patient.id] = [
+      report,
+      ...currentReports,
+    ];
+
+    localStorage.setItem(
+      "dermisProgressReports",
+      JSON.stringify(reportsByPatient)
+    );
+
+    setReportGenerated(true);
+    setReportAlreadyExists(false);
+  };
 
   /*
    * NAVIGATION HELPERS
@@ -2096,7 +2130,9 @@ export default function BeforeAfterPage() {
                       )}
 
                       {reportGenerated
-                        ? "Report saved"
+                        ? reportAlreadyExists
+                          ? "Report already exists"
+                          : "Report saved"
                         : "Generate progress report"}
 
                     </button>
@@ -2108,12 +2144,15 @@ export default function BeforeAfterPage() {
                     <div className="mt-5 rounded-xl border border-[#D7DDD4] bg-[#F0F3EE] p-4">
 
                       <p className="text-xs font-medium text-[#62715D]">
-                        Progress report generated successfully
+                        {reportAlreadyExists
+                          ? "Progress report already exists"
+                          : "Progress report generated successfully"}
                       </p>
 
                       <p className="mt-1 text-xs text-[#71806C]">
-                        This comparison is now stored in the patient&apos;s
-                        progress-report history.
+                        {reportAlreadyExists
+                          ? "A report for this baseline and comparison is already stored in the patient&apos;s progress-report history."
+                          : "This comparison is now stored in the patient&apos;s progress-report history."}
                       </p>
 
                     </div>
