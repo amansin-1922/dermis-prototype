@@ -1391,7 +1391,7 @@ export default function Dashboard() {
     "SW";
 
   return (
-    <main className="min-h-screen bg-[#F5F4F0] text-[#171717]">
+    <main className="min-h-screen bg-[#F6F5F1] text-[#181A18]">
 
       <div className="flex min-h-screen">
 
@@ -1400,7 +1400,7 @@ export default function Dashboard() {
         <section className="min-w-0 flex-1">
 
           {/* HEADER */}
-          <header className="flex items-center justify-between border-b border-[#DDDCD6] bg-white px-6 py-5 lg:px-10">
+          <header className="flex items-center justify-between sticky top-0 z-30 flex items-center justify-between border-b border-[#E4E2DC] bg-white/90 px-6 py-4 backdrop-blur-xl lg:px-10">
 
             <div>
 
@@ -1426,7 +1426,7 @@ export default function Dashboard() {
                   window.location.href =
                     "/patients";
                 }}
-                className="hidden rounded-xl border border-[#DDDCD6] bg-white px-4 py-2.5 text-sm font-medium transition hover:bg-[#F5F4F0] sm:block"
+                className="hidden rounded-xl border border-[#DDDCD6] bg-white px-4 py-2.5 text-sm font-medium shadow-sm transition hover:border-[#CFCFC8] hover:bg-[#F7F7F4] sm:block"
               >
                 + Add Patient
               </button>
@@ -1444,7 +1444,7 @@ export default function Dashboard() {
           </header>
 
           {/* CONTENT */}
-          <div className="p-6 lg:p-10">
+          <div className="mx-auto w-full max-w-[1600px] p-6 lg:p-10 xl:p-12">
 
             {/* HEADING */}
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -1452,10 +1452,10 @@ export default function Dashboard() {
               <div>
 
                 <p className="text-sm text-[#77766F]">
-                  Clinic Overview
+                  Velyquo workspace
                 </p>
 
-                <h2 className="mt-1 text-3xl font-medium tracking-[-0.04em]">
+                <h2 className="mt-1 text-3xl font-semibold tracking-[-0.045em] lg:text-[34px]">
                   Overview
                 </h2>
 
@@ -1467,7 +1467,7 @@ export default function Dashboard() {
                   window.location.href =
                     "/analysis";
                 }}
-                className="w-fit rounded-xl bg-[#171717] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#333]"
+                className="w-fit rounded-xl bg-[#1F2A23] px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#2B3930] hover:shadow-md"
               >
                 + New Analysis
               </button>
@@ -1519,14 +1519,14 @@ export default function Dashboard() {
             <div className="mt-6 grid gap-6 xl:grid-cols-[1.6fr_1fr]">
 
               {/* ACTIVITY */}
-              <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+              <div className="rounded-[22px] border border-[#E2E0DA] bg-white p-6 shadow-[0_1px_2px_rgba(24,26,24,0.025)]">
 
                 <div className="flex items-start justify-between gap-4">
 
                   <div>
 
                     <p className="text-sm text-[#77766F]">
-                      Patient Activity
+                      Clinic Activity
                     </p>
 
                     <div className="mt-2 flex flex-wrap items-baseline gap-3">
@@ -1536,13 +1536,13 @@ export default function Dashboard() {
                       </h3>
 
                       <span className="text-xs font-medium text-[#71806C]">
-                        activity events
+                        events in period
                       </span>
 
                     </div>
 
                     <p className="mt-2 text-[10px] text-[#999890]">
-                      {patientActivity} total saved clinic events
+                      {patientActivity} saved events across your clinic
                     </p>
 
                   </div>
@@ -1588,7 +1588,7 @@ export default function Dashboard() {
                         >
 
                           <div
-                            className="w-full rounded-t-lg bg-[#D8D6CE] transition group-hover:bg-[#B9B7AE]"
+                            className="w-full rounded-t-lg bg-[#AEB9AE] transition-all duration-300 group-hover:bg-[#738477]"
                             style={{
                               height: `${point.height}%`,
                             }}
@@ -1638,7 +1638,7 @@ export default function Dashboard() {
               </div>
 
               {/* UPCOMING */}
-              <div className="rounded-2xl border border-[#DDDCD6] bg-white p-6">
+              <div className="rounded-[22px] border border-[#E2E0DA] bg-white p-6 shadow-[0_1px_2px_rgba(24,26,24,0.025)]">
 
                 <div className="flex items-center justify-between">
 
@@ -1677,10 +1677,10 @@ export default function Dashboard() {
 
                         <div
                           key={appointment.id}
-                          className="flex items-center gap-3 rounded-xl border border-[#ECEBE6] p-3"
+                          className="flex items-center gap-3 rounded-xl border border-[#ECEAE4] bg-[#FCFCFA] p-3 transition hover:border-[#DAD7CF] hover:bg-white"
                         >
 
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E8E5DD] text-[10px] font-medium">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E9EEE8] text-[10px] font-semibold text-[#536456]">
                             {appointment.initials ||
                               getInitials(
                                 appointment.patient
@@ -1726,7 +1726,7 @@ export default function Dashboard() {
 
                 ) : (
 
-                  <div className="mt-6 rounded-xl bg-[#F7F6F2] p-5 text-center">
+                  <div className="mt-6 rounded-xl border border-[#EFEEE9] bg-[#F8F7F3] p-5 text-center">
 
                     <p className="text-sm font-medium">
                       No appointments
@@ -1786,14 +1786,14 @@ export default function Dashboard() {
             </div>
 
             {/* FOLLOW-UPS DUE */}
-            <div className="mt-6 overflow-hidden rounded-2xl border border-[#DDDCD6] bg-white">
+            <div className="mt-6 overflow-hidden rounded-[22px] border border-[#E2E0DA] bg-white shadow-[0_1px_2px_rgba(24,26,24,0.025)]">
 
               <div className="flex flex-col justify-between gap-4 border-b border-[#ECEBE6] px-6 py-5 sm:flex-row sm:items-center">
 
                 <div>
 
                   <p className="text-sm text-[#77766F]">
-                    Patient Follow-up
+                    Continuity of care
                   </p>
 
                   <div className="mt-1 flex items-center gap-3">
@@ -1838,7 +1838,7 @@ export default function Dashboard() {
 
                         <div className="flex min-w-0 flex-1 items-center gap-3">
 
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E8E5DD] text-[10px] font-medium">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E9EEE8] text-[10px] font-semibold text-[#536456]">
                             {getInitials(
                               followUp.patient
                             )}
@@ -1935,7 +1935,7 @@ export default function Dashboard() {
             </div>
 
 {/* CLINIC TEAM */}
-<div className="mt-6 overflow-hidden rounded-2xl border border-[#DDDCD6] bg-white">
+<div className="mt-6 overflow-hidden rounded-[22px] border border-[#E2E0DA] bg-white shadow-[0_1px_2px_rgba(24,26,24,0.025)]">
 
   {/* TEAM HEADER */}
   <div className="flex flex-col justify-between gap-4 border-b border-[#ECEBE6] px-6 py-5 sm:flex-row sm:items-center">
@@ -1951,7 +1951,7 @@ export default function Dashboard() {
 
       <div>
         <p className="text-sm text-[#77766F]">
-          Clinic Team
+          Your team
         </p>
 
         <h3 className="mt-1 text-lg font-semibold">
@@ -2008,7 +2008,7 @@ export default function Dashboard() {
               <div className="grid grid-cols-[48px_minmax(0,1fr)_auto] items-start gap-4">
 
                 {/* AVATAR */}
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#E8E5DD] text-xs font-medium">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#E9EEE8] text-xs font-semibold text-[#536456]">
                   {getInitials(
                     practitioner.name
                   )}
@@ -2090,7 +2090,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-2 gap-4">
 
                   {/* BOOKINGS */}
-                  <div className="flex min-h-[90px] flex-col justify-center rounded-xl bg-[#F7F6F2] px-4 py-4">
+                  <div className="flex min-h-[90px] flex-col justify-center rounded-xl border border-[#EFEEE9] bg-[#F8F7F3] px-4 py-4">
 
                     <p className="text-[9px] uppercase tracking-[0.12em] text-[#999890]">
                       Bookings
@@ -2103,7 +2103,7 @@ export default function Dashboard() {
                   </div>
 
                   {/* HOURS */}
-                  <div className="flex min-h-[90px] flex-col justify-center rounded-xl bg-[#F7F6F2] px-4 py-4">
+                  <div className="flex min-h-[90px] flex-col justify-center rounded-xl border border-[#EFEEE9] bg-[#F8F7F3] px-4 py-4">
 
                     <p className="text-[9px] uppercase tracking-[0.12em] text-[#999890]">
                       Hours
@@ -2148,14 +2148,14 @@ export default function Dashboard() {
 </div>
 
             {/* RECENT PATIENTS */}
-            <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white">
+            <div className="mt-6 rounded-[22px] border border-[#E2E0DA] bg-white shadow-[0_1px_2px_rgba(24,26,24,0.025)]">
 
               <div className="flex items-center justify-between border-b border-[#ECEBE6] px-6 py-5">
 
                 <div>
 
                   <p className="text-sm text-[#77766F]">
-                    Patient Management
+                    Patient care
                   </p>
 
                   <h3 className="mt-1 text-lg font-semibold">
@@ -2237,7 +2237,7 @@ export default function Dashboard() {
 
                               <div className="flex items-center gap-3">
 
-                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E8E5DD] text-[10px] font-medium">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E9EEE8] text-[10px] font-semibold text-[#536456]">
                                   {getInitials(
                                     patient.name
                                   )}
@@ -2312,12 +2312,12 @@ export default function Dashboard() {
             </div>
 
             {/* RECENT ACTIVITY */}
-            <div className="mt-6 rounded-2xl border border-[#DDDCD6] bg-white">
+            <div className="mt-6 rounded-[22px] border border-[#E2E0DA] bg-white shadow-[0_1px_2px_rgba(24,26,24,0.025)]">
 
               <div className="border-b border-[#ECEBE6] px-6 py-5">
 
                 <p className="text-sm text-[#77766F]">
-                  Clinic activity
+                  Latest updates
                 </p>
 
                 <h3 className="mt-1 text-lg font-semibold">
@@ -2341,7 +2341,7 @@ export default function Dashboard() {
 
                         <div className="flex min-w-0 flex-1 items-center gap-3">
 
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E8E5DD] text-[10px] font-medium">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E9EEE8] text-[10px] font-semibold text-[#536456]">
                             {getInitials(
                               activity.name
                             )}
@@ -2429,7 +2429,7 @@ function StatCard({
   description: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[#DDDCD6] bg-white p-5">
+    <div className="rounded-[22px] border border-[#E2E0DA] bg-white shadow-[0_1px_2px_rgba(24,26,24,0.025)] p-5">
 
       <p className="text-xs text-[#77766F]">
         {label}
@@ -2441,7 +2441,7 @@ function StatCard({
           {value}
         </p>
 
-        <span className="rounded-full bg-[#E8EEE5] px-2 py-1 text-[10px] font-medium text-[#62715D]">
+        <span className="rounded-full border border-[#DCE5DA] bg-[#EEF3EC] px-2.5 py-1 text-[10px] font-semibold text-[#5C705F]">
           {change}
         </span>
 
@@ -2470,7 +2470,7 @@ function MiniCard({
     <button
       type="button"
       onClick={onClick}
-      className="rounded-2xl border border-[#DDDCD6] bg-white p-5 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
+      className="rounded-[22px] border border-[#E2E0DA] bg-white shadow-[0_1px_2px_rgba(24,26,24,0.025)] p-5 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
     >
 
       <p className="text-xs text-[#77766F]">
