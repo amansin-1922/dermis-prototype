@@ -12,14 +12,17 @@ import {
   Images,
   Save,
   ShieldCheck,
+  Trash2,
   UserRound,
   X,
 } from "lucide-react";
 
 import Sidebar from "@/app/components/sidebar";
+import { createClient } from "@/app/lib/supabase-browser";
 
 type Patient = {
-  id: number;
+  id: string;
+  legacyId?: number;
   name: string;
   email: string;
   phone: string;
@@ -47,7 +50,7 @@ type SavedAnalysisMetric = {
 type SavedAnalysis = {
   id?: number | string;
   patient?: string;
-  patientId?: number;
+  patientId?: string | number;
   date?: string;
   createdAt?: string;
   generatedAt?: string;
@@ -103,7 +106,7 @@ type Appointment = {
 type TreatmentHistoryEntry = {
   id: number;
   appointmentId: number;
-  patientId?: number;
+  patientId?: string | number;
   patient: string;
   treatment: string;
   date: string;
@@ -111,7 +114,7 @@ type TreatmentHistoryEntry = {
   time: string;
   duration: string;
   practitioner: string;
-  practitionerId?: number;
+  practitionerId?: string | number;
   notes: string;
   completedAt: string;
 };
@@ -119,7 +122,7 @@ type TreatmentHistoryEntry = {
 type SavedTreatmentPlan = {
   id: number;
   patient: string;
-  patientId: number;
+  patientId: string | number;
   treatment: string;
   duration: string;
   price: string;
@@ -153,7 +156,8 @@ type RawSavedTreatmentPlan = Partial<SavedTreatmentPlan> & {
 };
 
 type Practitioner = {
-  id: number;
+  id: string | number;
+  legacyId?: number;
   name: string;
   role: string;
   email: string;
@@ -171,7 +175,7 @@ type Practitioner = {
 
 type ConsultationRecord = {
   id: number;
-  patientId: number;
+  patientId: string | number;
   date: string;
   allergies: string;
   medications: string;
@@ -182,11 +186,11 @@ type ConsultationRecord = {
   consentGiven: boolean;
   practitionerNotes: string;
   practitioner?: string;
-  practitionerId?: number;
+  practitionerId?: string | number;
 };
 
 type PatientLinkedRecord = {
-  patientId?: number;
+  patientId?: string | number;
   patient?: string;
   concern?: string;
   [key: string]: unknown;
@@ -201,20 +205,21 @@ type FollowUpStatus =
 type FollowUpRecord = {
   id: number;
   appointmentId: number;
-  patientId?: number;
+  patientId?: string | number;
   patient: string;
   treatment: string;
   completedDate: string;
   completedRawDate: string;
   practitioner: string;
-  practitionerId?: number;
+  practitionerId?: string | number;
   status: FollowUpStatus;
   createdAt: string;
   followUpAppointmentId?: number;
 };
 
 const fallbackPatient: Patient = {
-  id: 1,
+  id: "70583d4d-770f-4d73-9c4a-3a7f627a36fd",
+  legacyId: 1,
   name: "Emily Johnson",
   email: "emily.johnson@email.com",
   phone: "+44 7700 900123",
@@ -228,7 +233,8 @@ const fallbackPatient: Patient = {
 const defaultPatientDirectory: Patient[] = [
   fallbackPatient,
   {
-    id: 2,
+    id: "0b8598a1-0cd9-4416-bf2b-c5a2f99b73b5",
+    legacyId: 2,
     name: "Olivia Smith",
     email: "olivia.smith@email.com",
     phone: "+44 7700 900124",
@@ -239,7 +245,8 @@ const defaultPatientDirectory: Patient[] = [
     analyses: 3,
   },
   {
-    id: 3,
+    id: "6f9dc3fb-18ad-4807-b1e4-fc9ee3e60694",
+    legacyId: 3,
     name: "Amelia Brown",
     email: "amelia.brown@email.com",
     phone: "+44 7700 900125",
@@ -250,7 +257,8 @@ const defaultPatientDirectory: Patient[] = [
     analyses: 6,
   },
   {
-    id: 4,
+    id: "e1d43ba3-4484-4bbf-89f0-3523686b90bf",
+    legacyId: 4,
     name: "Sophia Williams",
     email: "sophia.williams@email.com",
     phone: "+44 7700 900126",
@@ -261,7 +269,8 @@ const defaultPatientDirectory: Patient[] = [
     analyses: 2,
   },
   {
-    id: 5,
+    id: "76558822-50ed-40e2-8e2c-caf424ce9cc2",
+    legacyId: 5,
     name: "Isabella Taylor",
     email: "isabella.taylor@email.com",
     phone: "+44 7700 900127",
@@ -272,7 +281,8 @@ const defaultPatientDirectory: Patient[] = [
     analyses: 5,
   },
   {
-    id: 6,
+    id: "c3281eb5-4ea8-42ce-b237-cd6b18d3ee8b",
+    legacyId: 6,
     name: "Mia Anderson",
     email: "mia.anderson@email.com",
     phone: "+44 7700 900128",
@@ -284,7 +294,7 @@ const defaultPatientDirectory: Patient[] = [
   },
 ];
 
-const defaultClinicalProfiles: Record<number, ClinicalProfile> = {
+const defaultClinicalProfiles: Record<string, ClinicalProfile> = {
   1: {
     score: 76,
     change: "+8.4%",
@@ -383,6 +393,31 @@ function createEmptyClinicalProfile(
   };
 }
 
+function getCompatibilityPatientId(patient: Patient): string | number {
+  return patient.legacyId ?? patient.id;
+}
+
+function patientIdsMatch(
+  recordPatientId: string | number | undefined,
+  patient: Patient
+): boolean {
+  if (recordPatientId === undefined || recordPatientId === null) return false;
+
+  const value = String(recordPatientId);
+  return (
+    value === String(patient.id) ||
+    (patient.legacyId !== undefined && value === String(patient.legacyId))
+  );
+}
+
+function approximateDateOfBirthFromAge(age: number): string {
+  const today = new Date();
+  const year = today.getFullYear() - age;
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function normalizeSavedTreatmentPlan(
   plan: RawSavedTreatmentPlan,
   selectedPatient: Patient,
@@ -446,7 +481,7 @@ function normalizeSavedTreatmentPlan(
     patientId:
       !Number.isNaN(parsedPatientId) && parsedPatientId > 0
         ? parsedPatientId
-        : selectedPatient.id,
+        : getCompatibilityPatientId(selectedPatient),
     treatment,
     duration,
     price,
@@ -472,9 +507,12 @@ export default function PatientProfile() {
   const [patient, setPatient] =
     useState<Patient>(fallbackPatient);
 
+  const [patientResolved, setPatientResolved] =
+    useState(false);
+
   const [clinicalProfile, setClinicalProfile] =
     useState<ClinicalProfile>(
-      defaultClinicalProfiles[1]
+      createEmptyClinicalProfile(fallbackPatient)
     );
 
   const [appointments, setAppointments] =
@@ -493,7 +531,7 @@ export default function PatientProfile() {
     useState<Practitioner[]>([]);
 
   const [selectedPractitionerId, setSelectedPractitionerId] =
-    useState<number | "">("");
+    useState<string | number | "">("");
 
   const [savedAnalyses, setSavedAnalyses] =
     useState<SavedAnalysis[]>([]);
@@ -559,6 +597,26 @@ export default function PatientProfile() {
     setPatientSaved,
   ] = useState(false);
 
+  const [
+    showDeletePatient,
+    setShowDeletePatient,
+  ] = useState(false);
+
+  const [
+    deleteConfirmation,
+    setDeleteConfirmation,
+  ] = useState("");
+
+  const [
+    deletingPatient,
+    setDeletingPatient,
+  ] = useState(false);
+
+  const [
+    deletePatientError,
+    setDeletePatientError,
+  ] = useState("");
+
   const tabs = [
     "Overview",
     "Skin Profile",
@@ -569,6 +627,7 @@ export default function PatientProfile() {
   ];
 
   useEffect(() => {
+    const initializePatientProfile = async () => {
     const requestedPatientTab =
       localStorage.getItem("dermisPatientTab");
 
@@ -617,35 +676,160 @@ export default function PatientProfile() {
       }
     }
 
-    let selectedPatient =
-      fallbackPatient;
+    let selectedPatient = fallbackPatient;
+
+    const requestedPatientId =
+      new URLSearchParams(window.location.search).get("id");
+
+    const storedPatients =
+      localStorage.getItem("dermisPatients");
+
+    let patientDirectory: Patient[] = [];
+
+    if (storedPatients) {
+      try {
+        const parsedPatients = JSON.parse(storedPatients) as Patient[];
+        patientDirectory = Array.isArray(parsedPatients) ? parsedPatients : [];
+      } catch (error) {
+        console.error("Could not load patient directory:", error);
+      }
+    }
 
     const savedPatient =
-      localStorage.getItem(
-        "dermisSelectedPatient"
-      );
+      localStorage.getItem("dermisSelectedPatient");
+
+    let storedSelectedPatient: Patient | null = null;
 
     if (savedPatient) {
       try {
-        selectedPatient =
-          JSON.parse(
-            savedPatient
+        storedSelectedPatient = JSON.parse(savedPatient) as Patient;
+      } catch (error) {
+        console.error("Could not load selected patient:", error);
+      }
+    }
+
+    /*
+     * A patient UUID in the URL is authoritative.
+     * Always read that exact UUID from Supabase instead of trusting the
+     * local compatibility cache. This prevents stale/corrupted cache data
+     * from showing Emily under another patient's UUID.
+     */
+    if (requestedPatientId) {
+      try {
+        const supabase = createClient();
+        const { data: row, error } = await supabase
+          .from("patients")
+          .select(
+            "id, legacy_id, first_name, last_name, email, phone, date_of_birth, status, primary_concern, last_visit_at"
+          )
+          .eq("id", requestedPatientId)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (!row) {
+          console.error(
+            "No accessible patient matched the requested UUID:",
+            requestedPatientId
           );
+          window.location.href = "/patients";
+          return;
+        }
 
-        setPatient(
-          selectedPatient
+        const calculateAgeFromDateOfBirth = (value: string | null) => {
+          if (!value) return 0;
+
+          const birthDate = new Date(`${value}T00:00:00`);
+          if (Number.isNaN(birthDate.getTime())) return 0;
+
+          const today = new Date();
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const monthDifference = today.getMonth() - birthDate.getMonth();
+
+          if (
+            monthDifference < 0 ||
+            (monthDifference === 0 && today.getDate() < birthDate.getDate())
+          ) {
+            age -= 1;
+          }
+
+          return Math.max(0, age);
+        };
+
+        const formatLastVisit = (value: string | null) => {
+          if (!value) return "No visits yet";
+
+          const date = new Date(value);
+          if (Number.isNaN(date.getTime())) return "No visits yet";
+
+          return date.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          });
+        };
+
+        const cachedSamePatient =
+          patientDirectory.find(
+            (candidate) => String(candidate.id) === String(row.id)
+          ) || null;
+
+        selectedPatient = {
+          id: String(row.id),
+          legacyId:
+            typeof row.legacy_id === "number"
+              ? row.legacy_id
+              : undefined,
+          name: [row.first_name, row.last_name]
+            .filter(Boolean)
+            .join(" ")
+            .trim(),
+          email: row.email || "",
+          phone: row.phone || "",
+          age: calculateAgeFromDateOfBirth(row.date_of_birth),
+          lastVisit: formatLastVisit(row.last_visit_at),
+          status:
+            String(row.status).toLowerCase() === "inactive"
+              ? "Inactive"
+              : "Active",
+          concern: row.primary_concern || "Not specified",
+          analyses: cachedSamePatient?.analyses ?? 0,
+        };
+
+        const updatedDirectory = [
+          ...patientDirectory.filter(
+            (candidate) => String(candidate.id) !== selectedPatient.id
+          ),
+          selectedPatient,
+        ];
+
+        localStorage.setItem(
+          "dermisPatients",
+          JSON.stringify(updatedDirectory)
         );
-
-        setEditPatient(
-          selectedPatient
+        localStorage.setItem(
+          "dermisSelectedPatient",
+          JSON.stringify(selectedPatient)
         );
       } catch (error) {
         console.error(
-          "Could not load selected patient:",
+          "Could not load requested patient from Supabase:",
           error
         );
+        window.location.href = "/patients";
+        return;
       }
+    } else if (storedSelectedPatient) {
+      selectedPatient = storedSelectedPatient;
+      localStorage.setItem(
+        "dermisSelectedPatient",
+        JSON.stringify(storedSelectedPatient)
+      );
     }
+
+    setPatient(selectedPatient);
+    setEditPatient(selectedPatient);
+    setPatientResolved(true);
 
     const storedClinicalProfiles =
       localStorage.getItem(
@@ -653,7 +837,7 @@ export default function PatientProfile() {
       );
 
     let customProfiles: Record<
-      number,
+      string,
       ClinicalProfile
     > = {};
 
@@ -673,10 +857,10 @@ export default function PatientProfile() {
 
     let profile =
       customProfiles[
-        selectedPatient.id
+        String(getCompatibilityPatientId(selectedPatient))
       ] ||
       defaultClinicalProfiles[
-        selectedPatient.id
+        Number(getCompatibilityPatientId(selectedPatient))
       ] ||
       createEmptyClinicalProfile(
         selectedPatient
@@ -813,15 +997,15 @@ export default function PatientProfile() {
             const parsedPatientId = Number(plan.patientId);
 
             return (
-              parsedPatientId === selectedPatient.id ||
+              patientIdsMatch(plan.patientId, selectedPatient) ||
               plan.patient === selectedPatient.name ||
               plan.patientName === selectedPatient.name
             );
           });
         } else if (parsedPlans && typeof parsedPlans === "object") {
           const mappedPlans =
+            parsedPlans[String(getCompatibilityPatientId(selectedPatient))] ||
             parsedPlans[String(selectedPatient.id)] ||
-            parsedPlans[selectedPatient.id as unknown as string] ||
             [];
 
           patientPlans = Array.isArray(mappedPlans)
@@ -860,11 +1044,13 @@ export default function PatientProfile() {
         if (Array.isArray(parsedHistory)) {
           patientAnalyses = parsedHistory.filter(
             (analysis: SavedAnalysis) =>
-              analysis.patientId === selectedPatient.id ||
+              patientIdsMatch(analysis.patientId, selectedPatient) ||
               analysis.patient === selectedPatient.name
           );
         } else if (parsedHistory && typeof parsedHistory === "object") {
-          const value = parsedHistory[selectedPatient.id];
+          const value =
+            parsedHistory[String(getCompatibilityPatientId(selectedPatient))] ||
+            parsedHistory[String(selectedPatient.id)];
           patientAnalyses = Array.isArray(value) ? value : [];
         }
 
@@ -894,7 +1080,7 @@ export default function PatientProfile() {
           setFollowUps(
             parsedFollowUps.filter(
               (followUp: FollowUpRecord) =>
-                followUp.patientId === selectedPatient.id ||
+                patientIdsMatch(followUp.patientId, selectedPatient) ||
                 followUp.patient === selectedPatient.name
             )
           );
@@ -919,7 +1105,7 @@ export default function PatientProfile() {
       try {
         const parsed:
           Record<
-            number,
+            string,
             ConsultationRecord[]
           > = JSON.parse(
             storedConsultations
@@ -927,8 +1113,9 @@ export default function PatientProfile() {
 
         const patientConsultations =
           parsed[
-            selectedPatient.id
-          ] || [];
+            String(getCompatibilityPatientId(selectedPatient))
+          ] ||
+          parsed[String(selectedPatient.id)] || [];
 
         setConsultations(
           patientConsultations
@@ -990,6 +1177,9 @@ export default function PatientProfile() {
         );
       }
     }
+    };
+
+    void initializePatientProfile();
   }, []);
 
   const initials =
@@ -1011,7 +1201,7 @@ export default function PatientProfile() {
   const patientTreatmentHistory = treatmentHistory
     .filter(
       (entry) =>
-        entry.patientId === patient.id ||
+        patientIdsMatch(entry.patientId, patient) ||
         entry.patient === patient.name
     )
     .sort((a, b) =>
@@ -1228,7 +1418,7 @@ export default function PatientProfile() {
       allFollowUps.filter(
         (record) =>
           !(
-            record.patientId === patient.id ||
+            patientIdsMatch(record.patientId, patient) ||
             record.patient === patient.name
           )
       );
@@ -1259,7 +1449,7 @@ export default function PatientProfile() {
       JSON.stringify({
         followUpId: followUp.id,
         appointmentId: followUp.appointmentId,
-        patientId: patient.id,
+        patientId: getCompatibilityPatientId(patient),
         patient: patient.name,
         treatment: followUp.treatment,
         practitioner: followUp.practitioner,
@@ -1300,7 +1490,7 @@ export default function PatientProfile() {
       JSON.stringify({
         followUpId: followUp.id,
         appointmentId: followUp.appointmentId,
-        patientId: patient.id,
+        patientId: getCompatibilityPatientId(patient),
         patient: patient.name,
         treatment: followUp.treatment,
         completedDate: followUp.completedDate,
@@ -1344,7 +1534,7 @@ export default function PatientProfile() {
 
     const selectedHistoricalAnalysis = {
       patient: patient.name,
-      patientId: patient.id,
+      patientId: getCompatibilityPatientId(patient),
       ...(typeof numericAnalysisId === "number"
         ? { id: numericAnalysisId }
         : {}),
@@ -1439,7 +1629,7 @@ export default function PatientProfile() {
   };
 
   const saveEditedPatient =
-    () => {
+    async () => {
       const cleanName =
         editPatient.name.trim();
 
@@ -1476,6 +1666,34 @@ export default function PatientProfile() {
           editPatient.age
         ),
       };
+
+      try {
+        const supabase = createClient();
+        const nameParts = cleanName.split(/\s+/).filter(Boolean);
+        const firstName = nameParts[0] || cleanName;
+        const lastName = nameParts.slice(1).join(" ") || "-";
+
+        const { error: updateError } = await supabase
+          .from("patients")
+          .update({
+            first_name: firstName,
+            last_name: lastName,
+            email: cleanEmail,
+            phone: cleanPhone,
+            date_of_birth: approximateDateOfBirthFromAge(Number(editPatient.age)),
+            status: editPatient.status.toLowerCase(),
+            primary_concern: cleanConcern,
+          })
+          .eq("id", updatedPatient.id);
+
+        if (updateError) {
+          console.error("Could not update patient in Supabase:", updateError);
+          return;
+        }
+      } catch (error) {
+        console.error("Could not update patient in Supabase:", error);
+        return;
+      }
 
       /*
        * UPDATE PATIENT DIRECTORY
@@ -1575,7 +1793,7 @@ export default function PatientProfile() {
                       appointment &&
                     (
                       appointment as Appointment & {
-                        patientId?: number;
+                        patientId?: string | number;
                       }
                     ).patientId ===
                       updatedPatient.id
@@ -1650,7 +1868,7 @@ export default function PatientProfile() {
                 patient:
                   updatedPatient.name,
                 patientId:
-                  updatedPatient.id,
+                  getCompatibilityPatientId(updatedPatient),
               })
             );
           }
@@ -1676,7 +1894,7 @@ export default function PatientProfile() {
             storedTreatmentPlans
           ) as
             | PatientLinkedRecord[]
-            | Record<number, PatientLinkedRecord[]>;
+            | Record<string, PatientLinkedRecord[]>;
 
           if (
             Array.isArray(
@@ -1686,8 +1904,7 @@ export default function PatientProfile() {
             const updatedPlans =
               parsedPlans.map(
                 (plan: PatientLinkedRecord) =>
-                  plan.patientId ===
-                    updatedPatient.id ||
+                  patientIdsMatch(plan.patientId, updatedPatient) ||
                   plan.patient ===
                     oldName
                     ? {
@@ -1695,7 +1912,7 @@ export default function PatientProfile() {
                         patient:
                           updatedPatient.name,
                         patientId:
-                          updatedPatient.id,
+                          getCompatibilityPatientId(updatedPatient),
                       }
                     : plan
               );
@@ -1713,7 +1930,7 @@ export default function PatientProfile() {
           ) {
             const patientPlans =
               parsedPlans[
-                updatedPatient.id
+                String(getCompatibilityPatientId(updatedPatient))
               ];
 
             if (
@@ -1722,7 +1939,7 @@ export default function PatientProfile() {
               )
             ) {
               parsedPlans[
-                updatedPatient.id
+                String(getCompatibilityPatientId(updatedPatient))
               ] =
                 patientPlans.map(
                   (plan: PatientLinkedRecord) => ({
@@ -1774,8 +1991,7 @@ export default function PatientProfile() {
             const updatedReports =
               parsedReports.map(
                 (report: PatientLinkedRecord) =>
-                  report.patientId ===
-                    updatedPatient.id ||
+                  patientIdsMatch(report.patientId, updatedPatient) ||
                   report.patient ===
                     oldName
                     ? {
@@ -1783,7 +1999,7 @@ export default function PatientProfile() {
                         patient:
                           updatedPatient.name,
                         patientId:
-                          updatedPatient.id,
+                          getCompatibilityPatientId(updatedPatient),
                         concern:
                           updatedPatient.concern,
                       }
@@ -1816,8 +2032,7 @@ export default function PatientProfile() {
                   parsedReports[key] =
                     value.map(
                       (report: PatientLinkedRecord) =>
-                        report.patientId ===
-                          updatedPatient.id ||
+                        patientIdsMatch(report.patientId, updatedPatient) ||
                         report.patient ===
                           oldName
                           ? {
@@ -1867,8 +2082,7 @@ export default function PatientProfile() {
             );
 
           if (
-            latest.patientId ===
-              updatedPatient.id ||
+            patientIdsMatch(latest.patientId, updatedPatient) ||
             latest.patient ===
               oldName
           ) {
@@ -1879,7 +2093,7 @@ export default function PatientProfile() {
                 patient:
                   updatedPatient.name,
                 patientId:
-                  updatedPatient.id,
+                  getCompatibilityPatientId(updatedPatient),
               })
             );
           }
@@ -1915,6 +2129,247 @@ export default function PatientProfile() {
       );
     };
 
+  const closeDeletePatient = () => {
+    if (deletingPatient) return;
+    setShowDeletePatient(false);
+    setDeleteConfirmation("");
+    setDeletePatientError("");
+  };
+
+  const removePatientFromLocalCache = () => {
+    const patientUuid = String(patient.id);
+    const compatibilityId = String(getCompatibilityPatientId(patient));
+    const patientName = patient.name;
+
+    const belongsToPatient = (record: unknown) => {
+      if (!record || typeof record !== "object") return false;
+
+      const item = record as {
+        patientId?: string | number;
+        patient_id?: string | number;
+        patient?: string;
+        patientName?: string;
+      };
+
+      const recordId = item.patientId ?? item.patient_id;
+      const idMatches =
+        recordId !== undefined &&
+        recordId !== null &&
+        (String(recordId) === patientUuid ||
+          String(recordId) === compatibilityId);
+
+      const nameMatches =
+        item.patient === patientName ||
+        item.patientName === patientName;
+
+      return idMatches || nameMatches;
+    };
+
+    const filterArrayKey = (key: string) => {
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          localStorage.setItem(
+            key,
+            JSON.stringify(parsed.filter((item) => !belongsToPatient(item)))
+          );
+        }
+      } catch (error) {
+        console.error(`Could not clean ${key}:`, error);
+      }
+    };
+
+    const cleanArrayOrPatientMap = (key: string) => {
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+
+      try {
+        const parsed = JSON.parse(raw);
+
+        if (Array.isArray(parsed)) {
+          localStorage.setItem(
+            key,
+            JSON.stringify(parsed.filter((item) => !belongsToPatient(item)))
+          );
+          return;
+        }
+
+        if (parsed && typeof parsed === "object") {
+          const map = parsed as Record<string, unknown>;
+          delete map[patientUuid];
+          delete map[compatibilityId];
+
+          Object.keys(map).forEach((keyName) => {
+            const value = map[keyName];
+            if (Array.isArray(value)) {
+              map[keyName] = value.filter((item) => !belongsToPatient(item));
+            }
+          });
+
+          localStorage.setItem(key, JSON.stringify(map));
+        }
+      } catch (error) {
+        console.error(`Could not clean ${key}:`, error);
+      }
+    };
+
+    const cleanSingleRecordKey = (key: string) => {
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (belongsToPatient(parsed)) {
+          localStorage.removeItem(key);
+        }
+      } catch (error) {
+        console.error(`Could not clean ${key}:`, error);
+      }
+    };
+
+    const storedPatients = localStorage.getItem("dermisPatients");
+    if (storedPatients) {
+      try {
+        const parsedPatients = JSON.parse(storedPatients) as Patient[];
+        if (Array.isArray(parsedPatients)) {
+          localStorage.setItem(
+            "dermisPatients",
+            JSON.stringify(
+              parsedPatients.filter(
+                (item) => String(item.id) !== patientUuid
+              )
+            )
+          );
+        }
+      } catch (error) {
+        console.error("Could not clean patient directory:", error);
+      }
+    }
+
+    cleanSingleRecordKey("dermisSelectedPatient");
+    cleanSingleRecordKey("dermisLatestAnalysis");
+    cleanSingleRecordKey("dermisSelectedAnalysis");
+    cleanSingleRecordKey("dermisSelectedProgressReport");
+    cleanSingleRecordKey("dermisTreatmentPlan");
+    cleanSingleRecordKey("dermisFollowUpSource");
+    cleanSingleRecordKey("dermisFollowUpBooking");
+
+    filterArrayKey("dermisAppointments");
+    filterArrayKey("dermisTreatmentHistory");
+    filterArrayKey("dermisFollowUps");
+
+    cleanArrayOrPatientMap("dermisTreatmentPlans");
+    cleanArrayOrPatientMap("dermisAnalysisHistory");
+    cleanArrayOrPatientMap("dermisConsultations");
+    cleanArrayOrPatientMap("dermisClinicalProfiles");
+    cleanArrayOrPatientMap("dermisProgressReports");
+
+    const progressReportPatientId = localStorage.getItem(
+      "dermisProgressReportPatientId"
+    );
+    if (
+      progressReportPatientId === patientUuid ||
+      progressReportPatientId === compatibilityId
+    ) {
+      localStorage.removeItem("dermisProgressReportPatientId");
+    }
+  };
+
+  const deletePatientPermanently = async () => {
+    if (deleteConfirmation.trim() !== patient.name) return;
+    if (deletingPatient) return;
+
+    setDeletingPatient(true);
+    setDeletePatientError("");
+
+    try {
+      const supabase = createClient();
+
+      const { data: planRows, error: planLookupError } = await supabase
+        .from("treatment_plans")
+        .select("id")
+        .eq("patient_id", patient.id);
+
+      if (planLookupError) throw planLookupError;
+
+      const treatmentPlanIds = (planRows || []).map((row) => row.id);
+
+      const patientLinkedTables = [
+        "follow_ups",
+        "progress_reports",
+        "appointments",
+      ] as const;
+
+      for (const table of patientLinkedTables) {
+        const { error } = await supabase
+          .from(table)
+          .delete()
+          .eq("patient_id", patient.id);
+
+        if (error) throw error;
+      }
+
+      if (treatmentPlanIds.length > 0) {
+        const { error: planItemsError } = await supabase
+          .from("treatment_plan_items")
+          .delete()
+          .in("treatment_plan_id", treatmentPlanIds);
+
+        if (planItemsError) throw planItemsError;
+      }
+
+      const { error: treatmentPlansError } = await supabase
+        .from("treatment_plans")
+        .delete()
+        .eq("patient_id", patient.id);
+
+      if (treatmentPlansError) throw treatmentPlansError;
+
+      const remainingPatientLinkedTables = [
+        "skin_analyses",
+        "consultations",
+      ] as const;
+
+      for (const table of remainingPatientLinkedTables) {
+        const { error } = await supabase
+          .from(table)
+          .delete()
+          .eq("patient_id", patient.id);
+
+        if (error) throw error;
+      }
+
+      const { data: deletedPatient, error: patientDeleteError } = await supabase
+        .from("patients")
+        .delete()
+        .eq("id", patient.id)
+        .select("id")
+        .maybeSingle();
+
+      if (patientDeleteError) throw patientDeleteError;
+
+      if (!deletedPatient) {
+        throw new Error(
+          "No patient row was deleted. Check your clinic permissions and try again."
+        );
+      }
+
+      removePatientFromLocalCache();
+      window.location.href = "/patients";
+    } catch (error) {
+      console.error("Could not delete patient:", error);
+      setDeletePatientError(
+        error instanceof Error
+          ? error.message
+          : "The patient could not be deleted. Please try again."
+      );
+      setDeletingPatient(false);
+    }
+  };
+
   const saveConsultation =
     () => {
       if (
@@ -1928,7 +2383,7 @@ export default function PatientProfile() {
         {
           id: Date.now(),
           patientId:
-            patient.id,
+            getCompatibilityPatientId(patient),
           date:
             new Date().toLocaleDateString(
               "en-GB",
@@ -1959,7 +2414,7 @@ export default function PatientProfile() {
         };
 
       let consultationsByPatient: Record<
-        number,
+        string,
         ConsultationRecord[]
       > = {};
 
@@ -1984,7 +2439,7 @@ export default function PatientProfile() {
 
       const currentConsultations =
         consultationsByPatient[
-          patient.id
+          String(getCompatibilityPatientId(patient))
         ] || [];
 
       const updatedConsultations =
@@ -1994,7 +2449,7 @@ export default function PatientProfile() {
         ];
 
       consultationsByPatient[
-        patient.id
+        String(getCompatibilityPatientId(patient))
       ] =
         updatedConsultations;
 
@@ -2022,6 +2477,21 @@ export default function PatientProfile() {
         2500
       );
     };
+
+  if (!patientResolved) {
+    return (
+      <main className="min-h-screen bg-[#F4F6F3] text-[#172019]">
+        <div className="flex min-h-screen">
+          <Sidebar activePage="Patients" />
+          <section className="flex min-w-0 flex-1 items-center justify-center">
+            <div className="rounded-2xl border border-[#E4E8E2] bg-white px-6 py-5 text-sm font-medium text-[#667168]">
+              Loading patient…
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#F4F6F3] text-[#172019]">
@@ -2112,6 +2582,19 @@ export default function PatientProfile() {
 
                   <button
                     type="button"
+                    onClick={() => {
+                      setDeleteConfirmation("");
+                      setDeletePatientError("");
+                      setShowDeletePatient(true);
+                    }}
+                    className="flex items-center gap-2 rounded-[12px] border border-[#E8D9D6] bg-white px-4 py-3 text-[12px] font-semibold text-[#9B5148] shadow-[0_4px_14px_rgba(31,56,39,0.03)] transition hover:-translate-y-px hover:bg-[#FCF6F5] hover:text-[#7E3E37]"
+                  >
+                    <Trash2 size={14} strokeWidth={1.8} />
+                    Delete Patient
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={
                       openEditPatient
                     }
@@ -2164,6 +2647,96 @@ export default function PatientProfile() {
               </div>
 
             </div>
+
+            {/* DELETE PATIENT CONFIRMATION */}
+            {showDeletePatient && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#172019]/35 px-4 backdrop-blur-[2px]">
+                <div className="w-full max-w-[520px] rounded-[22px] border border-[#E7DEDB] bg-[#FEFFFD] p-6 shadow-[0_24px_80px_rgba(23,32,25,0.18)]">
+                  <div className="flex items-start justify-between gap-5">
+                    <div className="flex min-w-0 items-start gap-4">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#ECD8D4] bg-[#FCF3F1] text-[#9B5148]">
+                        <Trash2 size={18} strokeWidth={1.8} />
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#A6756F]">
+                          Permanent deletion
+                        </p>
+                        <h2 className="mt-1.5 text-xl font-semibold tracking-[-0.03em] text-[#1F2922]">
+                          Delete {patient.name}?
+                        </h2>
+                        <p className="mt-2 text-xs leading-5 text-[#78827A]">
+                          This permanently removes the patient and linked clinical records from this clinic. This action cannot be undone.
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={closeDeletePatient}
+                      disabled={deletingPatient}
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#E1E6E0] text-[#667068] transition hover:bg-[#F5F8F4] disabled:cursor-not-allowed disabled:opacity-50"
+                      aria-label="Close delete patient confirmation"
+                    >
+                      <X size={16} strokeWidth={1.7} />
+                    </button>
+                  </div>
+
+                  <div className="mt-6 rounded-[14px] border border-[#EEE4E1] bg-[#FCF8F7] p-4">
+                    <p className="text-[11px] leading-5 text-[#79645F]">
+                      To confirm, type <span className="font-semibold text-[#5F4540]">{patient.name}</span> below.
+                    </p>
+
+                    <input
+                      type="text"
+                      value={deleteConfirmation}
+                      onChange={(event) => {
+                        setDeleteConfirmation(event.target.value);
+                        setDeletePatientError("");
+                      }}
+                      disabled={deletingPatient}
+                      placeholder={patient.name}
+                      className="mt-3 w-full rounded-[12px] border border-[#E5D7D3] bg-white px-4 py-3 text-sm text-[#263029] outline-none transition focus:border-[#B98A82] focus:shadow-[0_0_0_3px_rgba(155,81,72,0.08)] disabled:cursor-not-allowed disabled:opacity-60"
+                    />
+                  </div>
+
+                  {deletePatientError && (
+                    <div className="mt-4 rounded-[12px] border border-[#EBCFCB] bg-[#FFF7F5] px-4 py-3 text-[11px] leading-5 text-[#93493F]">
+                      {deletePatientError}
+                    </div>
+                  )}
+
+                  <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                    <button
+                      type="button"
+                      onClick={closeDeletePatient}
+                      disabled={deletingPatient}
+                      className="rounded-[12px] border border-[#DDE3DD] bg-white px-5 py-3 text-[12px] font-semibold text-[#59645C] transition hover:bg-[#F6F8F5] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => void deletePatientPermanently()}
+                      disabled={
+                        deletingPatient ||
+                        deleteConfirmation.trim() !== patient.name
+                      }
+                      className={`flex items-center justify-center gap-2 rounded-[12px] px-5 py-3 text-[12px] font-semibold transition ${
+                        !deletingPatient &&
+                        deleteConfirmation.trim() === patient.name
+                          ? "bg-[#93493F] text-white shadow-[0_8px_22px_rgba(147,73,63,0.16)] hover:bg-[#7D3C34]"
+                          : "cursor-not-allowed bg-[#E7E3E0] text-[#A59C98]"
+                      }`}
+                    >
+                      <Trash2 size={14} strokeWidth={1.8} />
+                      {deletingPatient ? "Deleting…" : "Delete permanently"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* EDIT PATIENT */}
             {showEditPatient && (

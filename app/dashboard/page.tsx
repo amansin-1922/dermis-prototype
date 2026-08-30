@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   CalendarDays,
   UsersRound,
 } from "lucide-react";
 
 import Sidebar from "../components/sidebar";
+import { createClient } from "../lib/supabase-browser";
+
+const supabase = createClient();
 
 type Patient = {
   id: number;
@@ -443,6 +447,11 @@ function getAppointmentTimestamp(
 }
 
 export default function Dashboard() {
+  const router = useRouter();
+
+  const [checkingAccess, setCheckingAccess] =
+    useState(true);
+
   const [
     clinicSettings,
     setClinicSettings,
@@ -485,6 +494,82 @@ export default function Dashboard() {
 
   const [dataLoaded, setDataLoaded] =
     useState(false);
+
+  /*
+   * AUTH + CLINIC ACCESS
+   */
+  useEffect(() => {
+    let active = true;
+
+    const verifyAccess = async () => {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (!active) return;
+
+      if (userError || !user) {
+        router.replace("/login");
+        return;
+      }
+
+      const {
+        data: memberships,
+        error: membershipError,
+      } = await supabase
+        .from("clinic_memberships")
+        .select("clinic_id, role, active")
+        .eq("user_id", user.id)
+        .eq("active", true)
+        .limit(1);
+
+      if (!active) return;
+
+      if (
+        membershipError ||
+        !memberships ||
+        memberships.length === 0
+      ) {
+        await supabase.auth.signOut();
+
+        if (!active) return;
+
+        localStorage.removeItem(
+          "dermisDemoLoggedIn"
+        );
+
+        localStorage.removeItem(
+          "dermisRememberLogin"
+        );
+
+        router.replace("/login");
+        return;
+      }
+
+      setCheckingAccess(false);
+    };
+
+    verifyAccess();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (
+          event === "SIGNED_OUT" ||
+          !session
+        ) {
+          router.replace("/login");
+        }
+      }
+    );
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, [router]);
 
   /*
    * LOAD DATA
@@ -1434,6 +1519,25 @@ export default function Dashboard() {
       clinicSettings.practitionerName
     ) ||
     "SW";
+
+  if (checkingAccess) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#F6F5F1] px-6 text-[#181A18]">
+        <div className="text-center">
+          <div className="text-xl font-semibold tracking-[-0.04em]">
+            velyquo
+            <span className="text-[#5F7563]">
+              .
+            </span>
+          </div>
+
+          <p className="mt-3 text-[11px] text-[#8B918B]">
+            Verifying secure clinic access...
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#F6F5F1] text-[#181A18]">

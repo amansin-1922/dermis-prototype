@@ -15,9 +15,11 @@ import {
 } from "lucide-react";
 
 import Sidebar from "../components/sidebar";
+import { createClient } from "../lib/supabase-browser";
 
 type Patient = {
-  id: number;
+  id: string | number;
+  legacyId?: number;
   name: string;
   email: string;
   phone: string;
@@ -29,7 +31,8 @@ type Patient = {
 };
 
 type Practitioner = {
-  id: number;
+  id: string | number;
+  legacyId?: number;
   name: string;
   role: string;
   email: string;
@@ -62,26 +65,32 @@ type AppointmentStatus =
   | "Cancelled";
 
 type Appointment = {
-  id: number;
+  id: string | number;
+  supabaseId?: string;
   patient: string;
-  patientId?: number;
+  patientId?: string | number;
   initials: string;
   treatment: string;
+  treatmentId?: string | number;
+  treatmentPlanItemId?: string | number;
   date: string;
   rawDate: string;
   time: string;
   rawTime: string;
   duration: string;
   practitioner: string;
-  practitionerId?: number;
+  practitionerId?: string | number;
   notes: string;
   status: AppointmentStatus;
 };
 
 type TreatmentPlan = {
   patient: string;
-  patientId?: number;
+  patientId?: string | number;
   treatment: string;
+  treatmentId?: string | number;
+  treatmentPlanId?: string | number;
+  treatmentPlanItemId?: string | number;
   duration: string;
   price: string;
   status: string;
@@ -90,8 +99,8 @@ type TreatmentPlan = {
 
 type TreatmentHistoryEntry = {
   id: number;
-  appointmentId: number;
-  patientId?: number;
+  appointmentId: string | number;
+  patientId?: string | number;
   patient: string;
   treatment: string;
   date: string;
@@ -99,7 +108,7 @@ type TreatmentHistoryEntry = {
   time: string;
   duration: string;
   practitioner: string;
-  practitionerId?: number;
+  practitionerId?: string | number;
   notes: string;
   completedAt: string;
 };
@@ -112,27 +121,27 @@ type FollowUpStatus =
 
 type FollowUpRecord = {
   id: number;
-  appointmentId: number;
-  patientId?: number;
+  appointmentId: string | number;
+  patientId?: string | number;
   patient: string;
   treatment: string;
   completedDate: string;
   completedRawDate: string;
   practitioner: string;
-  practitionerId?: number;
+  practitionerId?: string | number;
   status: FollowUpStatus;
   createdAt: string;
-  followUpAppointmentId?: number;
+  followUpAppointmentId?: string | number;
 };
 
 type FollowUpBookingHandoff = {
   followUpId: number;
-  appointmentId: number;
-  patientId?: number;
+  appointmentId: string | number;
+  patientId?: string | number;
   patient: string;
   treatment: string;
   practitioner?: string;
-  practitionerId?: number;
+  practitionerId?: string | number;
   completedDate: string;
   completedRawDate: string;
 };
@@ -518,9 +527,9 @@ function appointmentMatchesPractitioner(
   practitioner: Practitioner
 ) {
   if (appointment.practitionerId !== undefined) {
-    return (
-      appointment.practitionerId ===
-      practitioner.id
+    return practitionerMatchesId(
+      practitioner,
+      appointment.practitionerId
     );
   }
 
@@ -528,6 +537,128 @@ function appointmentMatchesPractitioner(
     appointment.practitioner ===
     practitioner.name
   );
+}
+
+
+function isUuid(value: string | number | undefined) {
+  return typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+function patientMatchesId(
+  patient: Patient,
+  value: string | number | undefined
+) {
+  if (value === undefined || value === null) return false;
+  return (
+    String(patient.id) === String(value) ||
+    (patient.legacyId !== undefined &&
+      String(patient.legacyId) === String(value))
+  );
+}
+
+function practitionerMatchesId(
+  practitioner: Practitioner,
+  value: string | number | undefined
+) {
+  if (value === undefined || value === null) return false;
+  return (
+    String(practitioner.id) === String(value) ||
+    (practitioner.legacyId !== undefined &&
+      String(practitioner.legacyId) === String(value))
+  );
+}
+
+function calculateAge(dateOfBirth: string | null) {
+  if (!dateOfBirth) return 0;
+  const birth = new Date(`${dateOfBirth}T12:00:00`);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDelta = today.getMonth() - birth.getMonth();
+  if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birth.getDate())) {
+    age -= 1;
+  }
+  return Math.max(age, 0);
+}
+
+function mapDatabaseStatus(value: string): AppointmentStatus {
+  switch (value.toLowerCase()) {
+    case "upcoming":
+      return "Upcoming";
+    case "completed":
+      return "Completed";
+    case "cancelled":
+      return "Cancelled";
+    default:
+      return "Confirmed";
+  }
+}
+
+function toDatabaseStatus(value: AppointmentStatus) {
+  return value.toLowerCase();
+}
+
+function getZonedDateTimeParts(isoValue: string, timeZone: string) {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  });
+
+  const parts = formatter.formatToParts(new Date(isoValue));
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value || "";
+
+  return {
+    date: `${value("year")}-${value("month")}-${value("day")}`,
+    time: `${value("hour")}:${value("minute")}`,
+  };
+}
+
+function zonedDateTimeToUtcIso(
+  dateValue: string,
+  timeValue: string,
+  timeZone: string
+) {
+  const [year, month, day] = dateValue.split("-").map(Number);
+  const [hour, minute] = timeValue.split(":").map(Number);
+  let guess = Date.UTC(year, month - 1, day, hour, minute, 0, 0);
+
+  for (let index = 0; index < 3; index += 1) {
+    const formatter = new Intl.DateTimeFormat("en-GB", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    });
+
+    const parts = formatter.formatToParts(new Date(guess));
+    const get = (type: Intl.DateTimeFormatPartTypes) =>
+      Number(parts.find((part) => part.type === type)?.value || 0);
+
+    const represented = Date.UTC(
+      get("year"),
+      get("month") - 1,
+      get("day"),
+      get("hour"),
+      get("minute")
+    );
+    const target = Date.UTC(year, month - 1, day, hour, minute);
+    guess += target - represented;
+  }
+
+  return new Date(guess).toISOString();
+}
+
+function addMinutesToIso(isoValue: string, minutes: number) {
+  return new Date(new Date(isoValue).getTime() + minutes * 60_000).toISOString();
 }
 
 export default function AppointmentsPage() {
@@ -546,6 +677,12 @@ export default function AppointmentsPage() {
       initialAppointments
     );
 
+  const [clinicId, setClinicId] =
+    useState<string | null>(null);
+
+  const [clinicTimeZone, setClinicTimeZone] =
+    useState("Europe/London");
+
   const [search, setSearch] =
     useState("");
 
@@ -558,7 +695,7 @@ export default function AppointmentsPage() {
   const [
     editingAppointmentId,
     setEditingAppointmentId,
-  ] = useState<number | null>(null);
+  ] = useState<string | number | null>(null);
 
   const [
     bookingConfirmed,
@@ -617,7 +754,7 @@ export default function AppointmentsPage() {
   const [
     formPractitionerId,
     setFormPractitionerId,
-  ] = useState<number | null>(null);
+  ] = useState<string | number | null>(null);
 
   const [formNotes, setFormNotes] =
     useState("");
@@ -818,6 +955,207 @@ export default function AppointmentsPage() {
     }
   }, []);
 
+  /*
+   * SUPABASE SYNC
+   *
+   * Supabase is authoritative for patients and persisted appointments.
+   * localStorage remains a compatibility cache while the remaining
+   * clinical modules are migrated.
+   */
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadSupabaseData = async () => {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user || cancelled) return;
+
+        const { data: membership, error: membershipError } = await supabase
+          .from("clinic_memberships")
+          .select("clinic_id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
+
+        if (membershipError || !membership?.clinic_id || cancelled) {
+          if (membershipError) {
+            console.error("Could not resolve clinic membership:", membershipError);
+          }
+          return;
+        }
+
+        const resolvedClinicId = membership.clinic_id as string;
+        setClinicId(resolvedClinicId);
+
+        const { data: clinicRow } = await supabase
+          .from("clinics")
+          .select("timezone")
+          .eq("id", resolvedClinicId)
+          .maybeSingle();
+
+        const resolvedTimeZone =
+          (clinicRow?.timezone as string | null) || "Europe/London";
+        setClinicTimeZone(resolvedTimeZone);
+
+        const { data: patientRows, error: patientError } = await supabase
+          .from("patients")
+          .select(
+            "id, legacy_id, first_name, last_name, email, phone, date_of_birth, status, primary_concern, last_visit_at"
+          )
+          .eq("clinic_id", resolvedClinicId)
+          .order("created_at", { ascending: true });
+
+        let resolvedPatients: Patient[] = patients;
+
+        if (!patientError && Array.isArray(patientRows)) {
+          const cachedPatientsRaw = localStorage.getItem("dermisPatients");
+          let cachedPatients: Patient[] = [];
+          try {
+            cachedPatients = cachedPatientsRaw ? JSON.parse(cachedPatientsRaw) : [];
+          } catch {
+            cachedPatients = [];
+          }
+
+          resolvedPatients = patientRows.map((row) => {
+            const cached = cachedPatients.find(
+              (item) => String(item.id) === String(row.id)
+            );
+            const name = `${row.first_name || ""} ${row.last_name || ""}`.trim();
+            return {
+              id: row.id,
+              legacyId: row.legacy_id ?? undefined,
+              name,
+              email: row.email || "",
+              phone: row.phone || "",
+              age: calculateAge(row.date_of_birth),
+              lastVisit: row.last_visit_at
+                ? new Date(row.last_visit_at).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    timeZone: resolvedTimeZone,
+                  })
+                : cached?.lastVisit || "No visits yet",
+              status:
+                String(row.status || "active").toLowerCase() === "inactive"
+                  ? "Inactive"
+                  : "Active",
+              concern: row.primary_concern || "",
+              analyses: cached?.analyses ?? 0,
+            } as Patient;
+          });
+
+          if (!cancelled) {
+            setPatients(resolvedPatients);
+            localStorage.setItem(
+              "dermisPatients",
+              JSON.stringify(resolvedPatients)
+            );
+            if (resolvedPatients.length > 0) {
+              setFormPatient((current) =>
+                resolvedPatients.some((patient) => patient.name === current)
+                  ? current
+                  : resolvedPatients[0].name
+              );
+            }
+          }
+        } else if (patientError) {
+          console.error("Could not load Supabase patients:", patientError);
+        }
+
+        const { data: appointmentRows, error: appointmentError } = await supabase
+          .from("appointments")
+          .select(
+            "id, patient_id, practitioner_id, treatment_id, treatment_plan_item_id, title, starts_at, ends_at, status, notes"
+          )
+          .eq("clinic_id", resolvedClinicId)
+          .order("starts_at", { ascending: true });
+
+        if (appointmentError) {
+          console.error("Could not load Supabase appointments:", appointmentError);
+          return;
+        }
+
+        if (!Array.isArray(appointmentRows) || cancelled) return;
+
+        const cachedAppointmentsRaw = localStorage.getItem("dermisAppointments");
+        let cachedAppointments: Appointment[] = [];
+        try {
+          cachedAppointments = cachedAppointmentsRaw
+            ? JSON.parse(cachedAppointmentsRaw)
+            : [];
+        } catch {
+          cachedAppointments = [];
+        }
+
+        const mappedAppointments: Appointment[] = appointmentRows.map((row) => {
+          const cached = cachedAppointments.find(
+            (item) =>
+              String(item.supabaseId || item.id) === String(row.id)
+          );
+          const patient = resolvedPatients.find((item) =>
+            patientMatchesId(item, row.patient_id)
+          );
+          const practitioner = clinicSettings.practitioners.find((item) =>
+            practitionerMatchesId(item, row.practitioner_id)
+          );
+          const start = getZonedDateTimeParts(row.starts_at, resolvedTimeZone);
+          const endMs = new Date(row.ends_at).getTime();
+          const startMs = new Date(row.starts_at).getTime();
+          const durationMinutes = Math.max(
+            1,
+            Math.round((endMs - startMs) / 60_000)
+          );
+          const localId = cached?.id ?? row.id;
+
+          return {
+            id: localId,
+            supabaseId: row.id,
+            patient: patient?.name || cached?.patient || "Unknown patient",
+            patientId: patient?.id || row.patient_id,
+            initials: getInitials(
+              patient?.name || cached?.patient || "Unknown patient"
+            ),
+            treatment: row.title || cached?.treatment || "Appointment",
+            treatmentId: row.treatment_id || cached?.treatmentId || undefined,
+            treatmentPlanItemId:
+              row.treatment_plan_item_id || cached?.treatmentPlanItemId || undefined,
+            date: formatDate(start.date),
+            rawDate: start.date,
+            time: formatTime(start.time),
+            rawTime: start.time,
+            duration: `${durationMinutes} min`,
+            practitioner:
+              practitioner?.name || cached?.practitioner || "Practitioner",
+            practitionerId: practitioner?.id || row.practitioner_id || undefined,
+            notes: row.notes || "",
+            status: mapDatabaseStatus(row.status || "confirmed"),
+          };
+        });
+
+        if (mappedAppointments.length > 0) {
+          setAppointments(mappedAppointments);
+          localStorage.setItem(
+            "dermisAppointments",
+            JSON.stringify(mappedAppointments)
+          );
+        }
+      } catch (error) {
+        console.error("Could not sync appointments with Supabase:", error);
+      }
+    };
+
+    void loadSupabaseData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const activePractitioners =
     useMemo(() => {
       return clinicSettings.practitioners.filter(
@@ -886,10 +1224,8 @@ export default function AppointmentsPage() {
       const matchingPatient =
         patients.find(
           (patient) =>
-            patient.id ===
-              handoff.patientId ||
-            patient.name ===
-              handoff.patient
+            patientMatchesId(patient, handoff.patientId) ||
+            patient.name === handoff.patient
         );
 
       if (!matchingPatient) {
@@ -1498,7 +1834,7 @@ export default function AppointmentsPage() {
   /*
    * CREATE OR UPDATE
    */
-  const saveAppointment = () => {
+  const saveAppointment = async () => {
     if (
       !formPatient ||
       !formTreatment ||
@@ -1518,217 +1854,303 @@ export default function AppointmentsPage() {
       setConflictMessage(
         `${selectedPractitioner.name} already has another appointment that overlaps this time.`
       );
-
       return;
     }
 
-    const selectedPatient =
-      patients.find(
-        (patient) =>
-          patient.name ===
-          formPatient
+    const selectedPatient = patients.find(
+      (patient) => patient.name === formPatient
+    );
+
+    if (!selectedPatient || !isUuid(selectedPatient.id)) {
+      setConflictMessage(
+        "This patient is not yet linked to Supabase. Open the patient record once, then try again."
       );
+      return;
+    }
 
-    /*
-     * EDIT EXISTING
-     */
-    if (
-      editingAppointmentId !== null
-    ) {
-      const updatedAppointments =
-        appointments.map(
-          (appointment) => {
-            if (
-              appointment.id !==
-              editingAppointmentId
-            ) {
-              return appointment;
-            }
-
-            return {
-              ...appointment,
-              patient:
-                formPatient,
-              patientId:
-                selectedPatient?.id,
-              initials:
-                getInitials(
-                  formPatient
-                ),
-              treatment:
-                formTreatment,
-              date:
-                formatDate(
-                  formDate
-                ),
-              rawDate:
-                formDate,
-              time:
-                formatTime(
-                  formTime
-                ),
-              rawTime:
-                formTime,
-              duration:
-                formDuration,
-              practitioner:
-                selectedPractitioner.name,
-              practitionerId:
-                selectedPractitioner.id,
-              notes:
-                formNotes,
-            };
-          }
-        );
-
-      saveAppointments(
-        updatedAppointments
+    if (!clinicId) {
+      setConflictMessage(
+        "Clinic connection is still loading. Please wait a moment and try again."
       );
+      return;
+    }
 
-      setShowForm(
-        false
-      );
+    const startsAt = zonedDateTimeToUtcIso(
+      formDate,
+      formTime,
+      clinicTimeZone
+    );
+    const endsAt = addMinutesToIso(
+      startsAt,
+      durationToMinutes(formDuration)
+    );
 
-      setUpdateConfirmed(
-        "Appointment updated successfully."
-      );
+    const practitionerUuid = isUuid(selectedPractitioner.id)
+      ? String(selectedPractitioner.id)
+      : undefined;
 
-      setEditingAppointmentId(
-        null
-      );
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
+    if (!user) {
+      setConflictMessage("Your session has expired. Please sign in again.");
       return;
     }
 
     /*
-     * CREATE NEW
+     * Resolve treatment-plan links before saving.
+     *
+     * The Treatments page sends these IDs through dermisTreatmentPlan, but
+     * Supabase is authoritative. If a stale browser state drops one of the
+     * IDs, resolve the latest matching active plan/item for this patient so a
+     * completed appointment can always complete the exact plan item.
      */
-    const newAppointment: Appointment = {
-      id: Date.now(),
-      patient:
-        formPatient,
-      patientId:
-        selectedPatient?.id,
-      initials:
-        getInitials(
-          formPatient
-        ),
-      treatment:
-        formTreatment,
-      date:
-        formatDate(
-          formDate
-        ),
-      rawDate:
-        formDate,
-      time:
-        formatTime(
-          formTime
-        ),
-      rawTime:
-        formTime,
-      duration:
-        formDuration,
-      practitioner:
-        selectedPractitioner.name,
-      practitionerId:
-        selectedPractitioner.id,
-      notes:
-        formNotes,
-      status:
-        "Confirmed",
+    let resolvedTreatmentId =
+      treatmentPlan && isUuid(treatmentPlan.treatmentId)
+        ? String(treatmentPlan.treatmentId)
+        : null;
+
+    let resolvedTreatmentPlanId =
+      treatmentPlan && isUuid(treatmentPlan.treatmentPlanId)
+        ? String(treatmentPlan.treatmentPlanId)
+        : null;
+
+    let resolvedTreatmentPlanItemId =
+      treatmentPlan && isUuid(treatmentPlan.treatmentPlanItemId)
+        ? String(treatmentPlan.treatmentPlanItemId)
+        : null;
+
+    if (!resolvedTreatmentId) {
+      const { data: matchingTreatment, error: treatmentLookupError } = await supabase
+        .from("treatments")
+        .select("id")
+        .eq("clinic_id", clinicId)
+        .eq("name", formTreatment)
+        .eq("active", true)
+        .limit(1)
+        .maybeSingle();
+
+      if (treatmentLookupError) {
+        console.error("Could not resolve treatment link:", treatmentLookupError);
+      } else if (matchingTreatment?.id) {
+        resolvedTreatmentId = String(matchingTreatment.id);
+      }
+    }
+
+    if (!resolvedTreatmentPlanId) {
+      const { data: matchingPlan, error: planLookupError } = await supabase
+        .from("treatment_plans")
+        .select("id")
+        .eq("clinic_id", clinicId)
+        .eq("patient_id", String(selectedPatient.id))
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (planLookupError) {
+        console.error("Could not resolve treatment plan link:", planLookupError);
+      } else if (matchingPlan?.id) {
+        resolvedTreatmentPlanId = String(matchingPlan.id);
+      }
+    }
+
+    if (!resolvedTreatmentPlanItemId && resolvedTreatmentPlanId) {
+      let itemQuery = supabase
+        .from("treatment_plan_items")
+        .select("id, treatment_id")
+        .eq("clinic_id", clinicId)
+        .eq("treatment_plan_id", resolvedTreatmentPlanId)
+        .eq("treatment_name", formTreatment)
+        .in("status", ["planned", "scheduled"])
+        .order("sequence_number", { ascending: true })
+        .limit(1);
+
+      if (resolvedTreatmentId) {
+        itemQuery = itemQuery.eq("treatment_id", resolvedTreatmentId);
+      }
+
+      const { data: matchingPlanItem, error: itemLookupError } =
+        await itemQuery.maybeSingle();
+
+      if (itemLookupError) {
+        console.error("Could not resolve treatment plan item link:", itemLookupError);
+      } else if (matchingPlanItem?.id) {
+        resolvedTreatmentPlanItemId = String(matchingPlanItem.id);
+        if (!resolvedTreatmentId && matchingPlanItem.treatment_id) {
+          resolvedTreatmentId = String(matchingPlanItem.treatment_id);
+        }
+      }
+    }
+
+    if (treatmentPlan && !resolvedTreatmentPlanItemId) {
+      setConflictMessage(
+        "This treatment plan could not be linked to its Supabase plan item. Return to Treatments, save the plan again, then continue to appointment."
+      );
+      return;
+    }
+
+    const payload = {
+      clinic_id: clinicId,
+      patient_id: String(selectedPatient.id),
+      practitioner_id: practitionerUuid || null,
+      treatment_id: resolvedTreatmentId,
+      treatment_plan_item_id: resolvedTreatmentPlanItemId,
+      title: formTreatment,
+      starts_at: startsAt,
+      ends_at: endsAt,
+      status: "confirmed",
+      notes: formNotes || null,
+      created_by: user.id,
     };
 
-    const updatedAppointments = [
-      newAppointment,
-      ...appointments,
-    ];
-
-    saveAppointments(
-      updatedAppointments
-    );
-
-    if (
-      schedulingFollowUpId !==
-      null
-    ) {
-      const updatedFollowUps =
-        followUps.map(
-          (record) =>
-            record.id ===
-            schedulingFollowUpId
-              ? {
-                  ...record,
-                  status:
-                    "Scheduled" as FollowUpStatus,
-                  followUpAppointmentId:
-                    newAppointment.id,
-                }
-              : record
-        );
-
-      saveFollowUps(
-        updatedFollowUps
+    /* EDIT EXISTING */
+    if (editingAppointmentId !== null) {
+      const existingAppointment = appointments.find(
+        (appointment) => appointment.id === editingAppointmentId
       );
+      const existingSupabaseId = existingAppointment?.supabaseId ||
+        (isUuid(existingAppointment?.id) ? String(existingAppointment?.id) : null);
 
-      setSchedulingFollowUpId(
-        null
-      );
+      let persistedSupabaseId = existingSupabaseId;
+
+      if (existingSupabaseId) {
+        const { error } = await supabase
+          .from("appointments")
+          .update({
+            patient_id: payload.patient_id,
+            practitioner_id: payload.practitioner_id,
+            title: payload.title,
+            starts_at: payload.starts_at,
+            ends_at: payload.ends_at,
+            notes: payload.notes,
+          })
+          .eq("id", existingSupabaseId)
+          .eq("clinic_id", clinicId);
+
+        if (error) {
+          console.error("Could not update appointment in Supabase:", error);
+          setConflictMessage(`Could not save appointment: ${error.message}`);
+          return;
+        }
+      } else {
+        const { data, error } = await supabase
+          .from("appointments")
+          .insert(payload)
+          .select("id")
+          .single();
+
+        if (error || !data?.id) {
+          console.error("Could not migrate appointment to Supabase:", error);
+          setConflictMessage(
+            `Could not save appointment: ${error?.message || "Unknown database error"}`
+          );
+          return;
+        }
+        persistedSupabaseId = data.id;
+      }
+
+      const updatedAppointments = appointments.map((appointment) => {
+        if (appointment.id !== editingAppointmentId) return appointment;
+        return {
+          ...appointment,
+          supabaseId: persistedSupabaseId || undefined,
+          patient: formPatient,
+          patientId: selectedPatient.id,
+          initials: getInitials(formPatient),
+          treatment: formTreatment,
+          treatmentId: resolvedTreatmentId || undefined,
+          treatmentPlanItemId: resolvedTreatmentPlanItemId || undefined,
+          date: formatDate(formDate),
+          rawDate: formDate,
+          time: formatTime(formTime),
+          rawTime: formTime,
+          duration: formDuration,
+          practitioner: selectedPractitioner.name,
+          practitionerId: selectedPractitioner.id,
+          notes: formNotes,
+        };
+      });
+
+      saveAppointments(updatedAppointments);
+      setShowForm(false);
+      setUpdateConfirmed("Appointment updated successfully.");
+      setEditingAppointmentId(null);
+      return;
     }
 
-    if (selectedPatient) {
-      localStorage.setItem(
-        "dermisSelectedPatient",
-        JSON.stringify(
-          selectedPatient
-        )
+    /* CREATE NEW */
+    const { data: insertedAppointment, error: insertError } = await supabase
+      .from("appointments")
+      .insert(payload)
+      .select("id")
+      .single();
+
+    if (insertError || !insertedAppointment?.id) {
+      console.error("Could not create appointment in Supabase:", insertError);
+      setConflictMessage(
+        `Could not save appointment: ${insertError?.message || "Unknown database error"}`
       );
+      return;
     }
 
-    localStorage.removeItem(
-      "dermisTreatmentPlan"
-    );
+    const newAppointment: Appointment = {
+      id: insertedAppointment.id,
+      supabaseId: insertedAppointment.id,
+      patient: formPatient,
+      patientId: selectedPatient.id,
+      initials: getInitials(formPatient),
+      treatment: formTreatment,
+      treatmentId: resolvedTreatmentId || undefined,
+      treatmentPlanItemId: resolvedTreatmentPlanItemId || undefined,
+      date: formatDate(formDate),
+      rawDate: formDate,
+      time: formatTime(formTime),
+      rawTime: formTime,
+      duration: formDuration,
+      practitioner: selectedPractitioner.name,
+      practitionerId: selectedPractitioner.id,
+      notes: formNotes,
+      status: "Confirmed",
+    };
 
-    localStorage.removeItem(
-      "dermisFollowUpBooking"
-    );
+    const updatedAppointments = [newAppointment, ...appointments];
+    saveAppointments(updatedAppointments);
 
-    setTreatmentPlan(
-      null
-    );
+    if (schedulingFollowUpId !== null) {
+      const updatedFollowUps = followUps.map((record) =>
+        record.id === schedulingFollowUpId
+          ? {
+              ...record,
+              status: "Scheduled" as FollowUpStatus,
+              followUpAppointmentId: newAppointment.id,
+            }
+          : record
+      );
+      saveFollowUps(updatedFollowUps);
+      setSchedulingFollowUpId(null);
+    }
 
-    setShowForm(
-      false
+    localStorage.setItem(
+      "dermisSelectedPatient",
+      JSON.stringify(selectedPatient)
     );
-
-    setBookingConfirmed(
-      true
-    );
-
+    localStorage.removeItem("dermisTreatmentPlan");
+    localStorage.removeItem("dermisFollowUpBooking");
+    setTreatmentPlan(null);
+    setShowForm(false);
+    setBookingConfirmed(true);
     setConflictMessage("");
+    setSelectedDate(formDate);
 
-    setSelectedDate(
-      formDate
-    );
-
-    const bookedDate =
-      new Date(
-        `${formDate}T12:00:00`
-      );
-
+    const bookedDate = new Date(`${formDate}T12:00:00`);
     setCalendarMonth(
-      new Date(
-        bookedDate.getFullYear(),
-        bookedDate.getMonth(),
-        1
-      )
+      new Date(bookedDate.getFullYear(), bookedDate.getMonth(), 1)
     );
 
-    window.history.replaceState(
-      {},
-      "",
-      "/appointments"
-    );
+    window.history.replaceState({}, "", "/appointments");
   };
 
   const saveFollowUps = (
@@ -1815,7 +2237,7 @@ export default function AppointmentsPage() {
   };
 
   const getFollowUpForAppointment = (
-    appointmentId: number
+    appointmentId: string | number
   ) =>
     followUps.find(
       (record) =>
@@ -1938,8 +2360,7 @@ export default function AppointmentsPage() {
     const patient =
       patients.find(
         (item) =>
-          item.id ===
-            appointment.patientId ||
+          patientMatchesId(item, appointment.patientId) ||
           item.name ===
             appointment.patient
       );
@@ -2045,7 +2466,7 @@ export default function AppointmentsPage() {
     const patient =
       patients.find(
         (item) =>
-          item.id === appointment.patientId ||
+          patientMatchesId(item, appointment.patientId) ||
           item.name === appointment.patient
       );
 
@@ -2141,7 +2562,7 @@ export default function AppointmentsPage() {
 
     if (patientId !== undefined) {
       const updatedPatients = patients.map((item) =>
-        item.id === patientId
+        patientMatchesId(item, patientId)
           ? { ...item, lastVisit: appointment.date }
           : item
       );
@@ -2153,7 +2574,7 @@ export default function AppointmentsPage() {
       if (selectedPatientRaw) {
         try {
           const selectedPatient: Patient = JSON.parse(selectedPatientRaw);
-          if (selectedPatient.id === patientId) {
+          if (patientMatchesId(selectedPatient, patientId)) {
             localStorage.setItem(
               "dermisSelectedPatient",
               JSON.stringify({ ...selectedPatient, lastVisit: appointment.date })
@@ -2245,26 +2666,165 @@ export default function AppointmentsPage() {
   /*
    * STATUS UPDATE
    */
-  const updateAppointmentStatus = (
-    appointmentId: number,
+  const updateAppointmentStatus = async (
+    appointmentId: string | number,
     status: AppointmentStatus
   ) => {
     const appointment = appointments.find((item) => item.id === appointmentId);
-
     if (!appointment) return;
 
     const wasAlreadyCompleted = appointment.status === "Completed";
+    const databaseId = appointment.supabaseId ||
+      (isUuid(appointment.id) ? String(appointment.id) : null);
+
+    if (databaseId) {
+      const supabase = createClient();
+      const updatePayload: {
+        status: string;
+        completed_at?: string | null;
+      } = {
+        status: toDatabaseStatus(status),
+      };
+
+      if (status === "Completed") {
+        updatePayload.completed_at = new Date().toISOString();
+      } else if (appointment.status === "Completed") {
+        updatePayload.completed_at = null;
+      }
+
+      const { error } = await supabase
+        .from("appointments")
+        .update(updatePayload)
+        .eq("id", databaseId);
+
+      if (error) {
+        console.error("Could not update appointment status in Supabase:", error);
+        setUpdateConfirmed(`Could not update appointment: ${error.message}`);
+        return;
+      }
+
+      /*
+       * Keep the linked treatment-plan item in sync with the appointment.
+       * The appointment state intentionally stays lightweight, so resolve the
+       * relationship from the authoritative Supabase appointment row here.
+       */
+      if (status === "Completed") {
+        const { data: appointmentLink, error: appointmentLinkError } = await supabase
+          .from("appointments")
+          .select("treatment_plan_item_id")
+          .eq("id", databaseId)
+          .eq("clinic_id", clinicId)
+          .maybeSingle();
+
+        if (appointmentLinkError) {
+          console.error(
+            "Could not resolve appointment treatment-plan item:",
+            appointmentLinkError
+          );
+          setUpdateConfirmed(
+            `The appointment was completed, but its treatment-plan item could not be resolved: ${appointmentLinkError.message}`
+          );
+          return;
+        }
+
+        if (appointmentLink?.treatment_plan_item_id) {
+          const { data: completedPlanItem, error: planItemError } = await supabase
+            .from("treatment_plan_items")
+            .update({ status: "completed" })
+            .eq("id", appointmentLink.treatment_plan_item_id)
+            .eq("clinic_id", clinicId)
+            .select("id, treatment_plan_id, status")
+            .maybeSingle();
+
+          if (planItemError) {
+            console.error(
+              "Could not complete linked treatment-plan item:",
+              planItemError
+            );
+            setUpdateConfirmed(
+              `The appointment was completed, but its treatment-plan item could not be completed: ${planItemError.message}`
+            );
+            return;
+          }
+
+          if (!completedPlanItem) {
+            console.error(
+              "Linked treatment-plan item update matched no Supabase row.",
+              {
+                treatmentPlanItemId: appointmentLink.treatment_plan_item_id,
+                clinicId,
+              }
+            );
+            setUpdateConfirmed(
+              "The appointment was completed, but no matching treatment-plan item was found."
+            );
+            return;
+          }
+
+          const { error: planError } = await supabase
+            .from("treatment_plans")
+            .update({ status: "completed" })
+            .eq("id", completedPlanItem.treatment_plan_id)
+            .eq("clinic_id", clinicId);
+
+          if (planError) {
+            console.error("Could not complete linked treatment plan:", planError);
+            setUpdateConfirmed(
+              `The appointment and treatment-plan item were completed, but the treatment plan could not be completed: ${planError.message}`
+            );
+            return;
+          }
+        }
+      }
+    }
 
     const updatedAppointments = appointments.map((item) =>
       item.id === appointmentId ? { ...item, status } : item
     );
-
     saveAppointments(updatedAppointments);
 
     if (status === "Completed") {
       if (!wasAlreadyCompleted) {
         recordCompletedTreatment(appointment);
         createFollowUpRecord(appointment);
+
+        if (isUuid(appointment.patientId)) {
+          const supabase = createClient();
+          const completedAt = zonedDateTimeToUtcIso(
+            appointment.rawDate,
+            appointment.rawTime,
+            clinicTimeZone
+          );
+          const { data: updatedPatientRow, error: patientUpdateError } = await supabase
+            .from("patients")
+            .update({ last_visit_at: completedAt })
+            .eq("id", String(appointment.patientId))
+            .eq("clinic_id", clinicId)
+            .select("id, last_visit_at")
+            .maybeSingle();
+
+          if (patientUpdateError) {
+            console.error(
+              "Could not update patient last visit in Supabase:",
+              patientUpdateError
+            );
+            setUpdateConfirmed(
+              `${appointment.patient}'s appointment was completed, but the patient last-visit update failed: ${patientUpdateError.message}`
+            );
+            return;
+          }
+
+          if (!updatedPatientRow) {
+            console.error(
+              "Patient last visit update matched no Supabase row.",
+              { patientId: appointment.patientId, clinicId }
+            );
+            setUpdateConfirmed(
+              `${appointment.patient}'s appointment was completed, but no matching patient row was found for the last-visit update.`
+            );
+            return;
+          }
+        }
       }
 
       setUpdateConfirmed(
@@ -2273,15 +2833,11 @@ export default function AppointmentsPage() {
     }
 
     if (status === "Cancelled") {
-      setUpdateConfirmed(
-        `${appointment.patient}'s appointment has been cancelled.`
-      );
+      setUpdateConfirmed(`${appointment.patient}'s appointment has been cancelled.`);
     }
 
     if (status === "Confirmed") {
-      setUpdateConfirmed(
-        `${appointment.patient}'s appointment has been restored.`
-      );
+      setUpdateConfirmed(`${appointment.patient}'s appointment has been restored.`);
     }
   };
 

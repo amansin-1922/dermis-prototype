@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -10,30 +10,103 @@ import {
   LockKeyhole,
   Sparkles,
 } from "lucide-react";
+import { createClient } from "../lib/supabase-browser";
+
+const supabase = createClient();
 
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("demo@velyquo.app");
-  const [password, setPassword] = useState("demo123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [error, setError] = useState("");
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    let mounted = true;
+
+    async function checkExistingSession() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!mounted) return;
+
+      if (session) {
+        router.replace("/dashboard");
+        return;
+      }
+
+      setCheckingSession(false);
+    }
+
+    checkExistingSession();
+
+    return () => {
+      mounted = false;
+    };
+  }, [router]);
+
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
     setError("");
 
-    if (!email.trim() || !password.trim()) {
+    const cleanEmail = email.trim();
+
+    if (!cleanEmail || !password) {
       setError("Enter your email and password to continue.");
       return;
     }
 
     setLoading(true);
 
-    window.setTimeout(() => {
-      localStorage.setItem("dermisDemoLoggedIn", "true");
+    try {
+      const { data, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password,
+        });
+
+      if (signInError) {
+        setError(signInError.message);
+        return;
+      }
+
+      if (!data.session || !data.user) {
+        setError(
+          "We could not create a secure session. Please try again."
+        );
+        return;
+      }
+
+      const { data: memberships, error: membershipError } =
+        await supabase
+          .from("clinic_memberships")
+          .select("clinic_id, role, active")
+          .eq("user_id", data.user.id)
+          .eq("active", true)
+          .limit(1);
+
+      if (membershipError) {
+        await supabase.auth.signOut();
+        setError(
+          "Your account was authenticated, but Velyquo could not verify clinic access."
+        );
+        return;
+      }
+
+      if (!memberships || memberships.length === 0) {
+        await supabase.auth.signOut();
+        setError(
+          "Your account is not connected to an active clinic."
+        );
+        return;
+      }
 
       if (rememberMe) {
         localStorage.setItem("dermisRememberLogin", "true");
@@ -41,21 +114,42 @@ export default function LoginPage() {
         localStorage.removeItem("dermisRememberLogin");
       }
 
-      router.push("/dashboard");
-    }, 450);
-  };
+      // Temporary compatibility flag while the rest of the
+      // prototype is migrated from localStorage to Supabase.
+      localStorage.setItem("dermisDemoLoggedIn", "true");
 
-  const useDemoAccount = () => {
-    setEmail("demo@velyquo.app");
-    setPassword("demo123");
-    setError("");
+      router.replace("/dashboard");
+      router.refresh();
+    } catch {
+      setError(
+        "Something went wrong while signing in. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleForgotPassword = () => {
     setError(
-      "Password recovery is disabled in this demo prototype."
+      "Password recovery will be enabled when the production authentication flow is completed."
     );
   };
+
+  if (checkingSession) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#F5F7F4] px-6 text-[#182019]">
+        <div className="text-center">
+          <div className="text-xl font-semibold tracking-[-0.04em]">
+            velyquo<span className="text-[#8A8A84]">.</span>
+          </div>
+
+          <p className="mt-3 text-[11px] text-[#748078]">
+            Checking your secure session...
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#F3F6F3] text-[#182019]">
@@ -162,7 +256,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Demo access card */}
+            {/* Secure access card */}
             <div className="mb-6 rounded-[20px] border border-[#D7E3D7] bg-[#EDF4ED] p-4 shadow-[0_12px_34px_rgba(35,62,44,0.04)]">
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border border-[#D8E4D8] bg-[#FFFFFE] text-[#45634D]">
@@ -171,21 +265,13 @@ export default function LoginPage() {
 
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold text-[#39473E]">
-                    Demo clinic access
+                    Secure clinic access
                   </p>
 
                   <p className="mt-1 text-[11px] leading-5 text-[#657269]">
-                    The demo credentials are already filled in. Sign in to
-                    explore the complete Velyquo clinic workflow.
+                    Sign in using the email and password associated with your
+                    Velyquo clinic account.
                   </p>
-
-                  <button
-                    type="button"
-                    onClick={useDemoAccount}
-                    className="mt-2 text-[10px] font-semibold text-[#42694D] underline decoration-[#A8B9AB] underline-offset-4 transition hover:text-[#173725]"
-                  >
-                    Restore demo credentials
-                  </button>
                 </div>
               </div>
             </div>
@@ -207,7 +293,8 @@ export default function LoginPage() {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="you@clinic.com"
-                  className="w-full rounded-[14px] border border-[#DCE5DC] bg-[#FFFFFE] px-4 py-3.5 text-[12px] outline-none transition placeholder:text-[#A0AAA2] focus:border-[#6E8A75] focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)]"
+                  disabled={loading}
+                  className="w-full rounded-[14px] border border-[#DCE5DC] bg-[#FFFFFE] px-4 py-3.5 text-[12px] outline-none transition placeholder:text-[#A0AAA2] focus:border-[#6E8A75] focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)] disabled:opacity-60"
                 />
               </div>
 
@@ -223,7 +310,8 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-[10px] font-medium text-[#6D7A71] transition hover:text-[#173725]"
+                    disabled={loading}
+                    className="text-[10px] font-medium text-[#6D7A71] transition hover:text-[#173725] disabled:opacity-60"
                   >
                     Forgot password?
                   </button>
@@ -242,7 +330,8 @@ export default function LoginPage() {
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     placeholder="Enter your password"
-                    className="w-full rounded-[14px] border border-[#DCE5DC] bg-[#FFFFFE] py-3.5 pl-11 pr-12 text-[12px] outline-none transition placeholder:text-[#A0AAA2] focus:border-[#6E8A75] focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)]"
+                    disabled={loading}
+                    className="w-full rounded-[14px] border border-[#DCE5DC] bg-[#FFFFFE] py-3.5 pl-11 pr-12 text-[12px] outline-none transition placeholder:text-[#A0AAA2] focus:border-[#6E8A75] focus:shadow-[0_0_0_3px_rgba(53,91,63,0.08)] disabled:opacity-60"
                   />
 
                   <button
@@ -251,11 +340,10 @@ export default function LoginPage() {
                       setShowPassword((current) => !current)
                     }
                     aria-label={
-                      showPassword
-                        ? "Hide password"
-                        : "Show password"
+                      showPassword ? "Hide password" : "Show password"
                     }
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#758179] transition hover:text-[#173725]"
+                    disabled={loading}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#758179] transition hover:text-[#173725] disabled:opacity-60"
                   >
                     {showPassword ? (
                       <EyeOff size={17} />
@@ -280,6 +368,7 @@ export default function LoginPage() {
                         : "border-[#C9D4CB] bg-[#FFFFFE]"
                     }`}
                     aria-pressed={rememberMe}
+                    disabled={loading}
                   >
                     {rememberMe && (
                       <Check size={11} strokeWidth={3} />
@@ -290,7 +379,7 @@ export default function LoginPage() {
                 </label>
 
                 <span className="text-xs text-[#8B978F]">
-                  Secure demo access
+                  Supabase secured
                 </span>
               </div>
 
@@ -308,7 +397,7 @@ export default function LoginPage() {
                 className="group flex w-full items-center justify-center gap-2 rounded-[14px] bg-[#173725] py-4 text-[12px] font-semibold text-white shadow-[0_14px_34px_rgba(23,55,37,0.20)] transition hover:-translate-y-px hover:bg-[#102D1C] disabled:cursor-wait disabled:translate-y-0 disabled:opacity-70"
               >
                 {loading ? (
-                  "Opening clinic..."
+                  "Signing in..."
                 ) : (
                   <>
                     Sign in
@@ -324,8 +413,7 @@ export default function LoginPage() {
 
             <div className="mt-8 border-t border-[#DEE5DE] pt-6">
               <p className="text-center text-xs leading-5 text-[#8B978F]">
-                Velyquo demo environment · No real patient information is
-                stored
+                Secure Velyquo clinic workspace
               </p>
             </div>
           </div>

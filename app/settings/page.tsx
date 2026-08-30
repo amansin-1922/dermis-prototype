@@ -19,13 +19,15 @@ import {
 } from "lucide-react";
 
 import Sidebar from "../components/sidebar";
+import { createClient } from "../lib/supabase-browser";
 import {
   dermisDemoData,
   resetDermisDemoData,
 } from "../lib/demo-data";
 
 type Practitioner = {
-  id: number;
+  id: string;
+  legacyId?: number;
   name: string;
   role: string;
   email: string;
@@ -53,7 +55,8 @@ type ClinicSettings = {
 
 const defaultPractitioners: Practitioner[] = [
   {
-    id: 1,
+    id: "738944f5-418e-4265-bb22-445080bbb65b",
+    legacyId: 1,
     name: "Sarah Williams",
     role: "Lead Practitioner",
     email: "sarah@skinhouseclinic.co.uk",
@@ -76,7 +79,8 @@ const defaultPractitioners: Practitioner[] = [
     active: true,
   },
   {
-    id: 2,
+    id: "b9f4be53-a7a5-49bf-b890-501d154457f2",
+    legacyId: 2,
     name: "Emma Thompson",
     role: "Aesthetic Practitioner",
     email: "emma@skinhouseclinic.co.uk",
@@ -110,7 +114,7 @@ const defaultSettings: ClinicSettings = {
 };
 
 const emptyPractitioner: Practitioner = {
-  id: 0,
+  id: "",
   name: "",
   role: "",
   email: "",
@@ -147,6 +151,14 @@ function generateInitials(name: string) {
 }
 
 export default function SettingsPage() {
+  const supabase = useMemo(
+    () => createClient(),
+    []
+  );
+
+  const [clinicId, setClinicId] =
+    useState<string | null>(null);
+
   const [settings, setSettings] =
     useState<ClinicSettings>(
       defaultSettings
@@ -166,7 +178,7 @@ export default function SettingsPage() {
   const [
     editingPractitionerId,
     setEditingPractitionerId,
-  ] = useState<number | null>(null);
+  ] = useState<string | null>(null);
 
   const [
     practitionerForm,
@@ -177,46 +189,241 @@ export default function SettingsPage() {
 
   /*
    * LOAD SETTINGS
+   *
+   * Clinic identity and practitioners are loaded from
+   * the authenticated clinic in Supabase. Existing
+   * numeric practitioner IDs are retained as legacyId
+   * values so browser-saved appointments keep working
+   * during the remaining migration.
    */
   useEffect(() => {
-    const storedSettings =
-      localStorage.getItem(
-        "dermisClinicSettings"
-      );
+    let cancelled = false;
 
-    if (!storedSettings) {
-      setSettings(
-        defaultSettings
-      );
-      return;
-    }
+    const loadSettings = async () => {
+      let localSettings = defaultSettings;
 
-    try {
-      const parsedSettings =
-        JSON.parse(
-          storedSettings
+      const storedSettings =
+        localStorage.getItem(
+          "dermisClinicSettings"
         );
 
-      setSettings({
-        ...defaultSettings,
-        ...parsedSettings,
-        practitioners:
-          Array.isArray(
-            parsedSettings.practitioners
-          ) &&
-          parsedSettings.practitioners
-            .length > 0
-            ? parsedSettings.practitioners
-            : defaultPractitioners,
-      });
-    } catch (error) {
-      console.error(
-        "Could not load clinic settings:",
-        error
-      );
-    }
-  }, []);
+      if (storedSettings) {
+        try {
+          const parsedSettings =
+            JSON.parse(storedSettings);
 
+          localSettings = {
+            ...defaultSettings,
+            ...parsedSettings,
+            practitioners:
+              Array.isArray(
+                parsedSettings.practitioners
+              ) &&
+              parsedSettings.practitioners.length > 0
+                ? parsedSettings.practitioners
+                : defaultPractitioners,
+          };
+        } catch (error) {
+          console.error(
+            "Could not load local clinic settings:",
+            error
+          );
+        }
+      }
+
+      const {
+        data: userData,
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !userData.user) {
+        console.error(
+          "Could not identify the signed-in user:",
+          userError
+        );
+        return;
+      }
+
+      const {
+        data: membership,
+        error: membershipError,
+      } = await supabase
+        .from("clinic_memberships")
+        .select("clinic_id")
+        .eq("user_id", userData.user.id)
+        .eq("active", true)
+        .limit(1)
+        .maybeSingle();
+
+      if (membershipError || !membership) {
+        console.error(
+          "Could not load active clinic membership:",
+          membershipError
+        );
+        return;
+      }
+
+      const {
+        data: clinic,
+        error: clinicError,
+      } = await supabase
+        .from("clinics")
+        .select(
+          "id, name, email, phone, city, county, country"
+        )
+        .eq("id", membership.clinic_id)
+        .single();
+
+      if (clinicError || !clinic) {
+        console.error(
+          "Could not load clinic:",
+          clinicError
+        );
+        return;
+      }
+
+      const {
+        data: practitionerRows,
+        error: practitionerError,
+      } = await supabase
+        .from("practitioners")
+        .select(
+          "id, full_name, email, phone, role_title, speciality, qualifications, registration_number, experience, working_days, start_time, end_time, notes, active, is_primary"
+        )
+        .eq("clinic_id", membership.clinic_id)
+        .order("is_primary", {
+          ascending: false,
+        })
+        .order("full_name", {
+          ascending: true,
+        });
+
+      if (practitionerError) {
+        console.error(
+          "Could not load practitioners:",
+          practitionerError
+        );
+        return;
+      }
+
+      if (cancelled) {
+        return;
+      }
+
+      const practitioners: Practitioner[] =
+        (practitionerRows || []).map(
+          (row) => {
+            const localMatch =
+              localSettings.practitioners.find(
+                (item: Practitioner) =>
+                  item.name
+                    .trim()
+                    .toLowerCase() ===
+                  row.full_name
+                    .trim()
+                    .toLowerCase()
+              );
+
+            const oldId =
+              localMatch?.legacyId ??
+              (typeof localMatch?.id === "number"
+                ? localMatch.id
+                : undefined);
+
+            return {
+              id: row.id,
+              legacyId: oldId,
+              name: row.full_name,
+              role: row.role_title || "",
+              email: row.email || "",
+              phone: row.phone || "",
+              speciality:
+                row.speciality || "",
+              qualifications:
+                row.qualifications || "",
+              registrationNumber:
+                row.registration_number || "",
+              experience:
+                row.experience || "",
+              workingDays:
+                Array.isArray(row.working_days)
+                  ? row.working_days
+                  : [],
+              startTime:
+                row.start_time
+                  ? String(row.start_time).slice(0, 5)
+                  : "09:00",
+              endTime:
+                row.end_time
+                  ? String(row.end_time).slice(0, 5)
+                  : "17:00",
+              notes: row.notes || "",
+              active: row.active,
+            };
+          }
+        );
+
+      const primaryRow =
+        (practitionerRows || []).find(
+          (row) => row.is_primary
+        );
+
+      const location = [
+        clinic.city,
+        clinic.county,
+        clinic.country,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      const mergedSettings: ClinicSettings = {
+        ...localSettings,
+        clinicName: clinic.name,
+        email: clinic.email || "",
+        phone: clinic.phone || "",
+        location:
+          location ||
+          localSettings.location,
+        practitioners:
+          practitioners.length > 0
+            ? practitioners
+            : localSettings.practitioners,
+        practitionerName:
+          primaryRow?.full_name ||
+          localSettings.practitionerName,
+        initials:
+          generateInitials(
+            primaryRow?.full_name ||
+              localSettings.practitionerName
+          ) ||
+          localSettings.initials,
+      };
+
+      setClinicId(clinic.id);
+      setSettings(mergedSettings);
+
+      /*
+       * Temporary compatibility cache for pages that
+       * still read dermisClinicSettings.
+       */
+      localStorage.setItem(
+        "dermisClinicSettings",
+        JSON.stringify(mergedSettings)
+      );
+
+      window.dispatchEvent(
+        new Event(
+          "dermisClinicSettingsUpdated"
+        )
+      );
+    };
+
+    void loadSettings();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
   /*
    * CLINIC FIELD
    */
@@ -245,13 +452,6 @@ export default function SettingsPage() {
   const setPrimaryPractitioner = (
     practitionerName: string
   ) => {
-    const practitioner =
-      settings.practitioners.find(
-        (item) =>
-          item.name ===
-          practitionerName
-      );
-
     setSettings(
       (current) => ({
         ...current,
@@ -260,19 +460,12 @@ export default function SettingsPage() {
           generateInitials(
             practitionerName
           ),
-        email:
-          practitioner?.email ||
-          current.email,
-        phone:
-          practitioner?.phone ||
-          current.phone,
       })
     );
 
     setHasChanges(true);
     setSaved(false);
   };
-
   /*
    * OPEN ADD
    */
@@ -283,7 +476,7 @@ export default function SettingsPage() {
 
     setPractitionerForm({
       ...emptyPractitioner,
-      id: Date.now(),
+      id: "",
     });
 
     setShowPractitionerForm(
@@ -380,7 +573,7 @@ export default function SettingsPage() {
   /*
    * SAVE PRACTITIONER
    */
-  const savePractitioner = () => {
+  const savePractitioner = async () => {
     if (
       !practitionerForm.name.trim() ||
       !practitionerForm.role.trim()
@@ -388,11 +581,19 @@ export default function SettingsPage() {
       return;
     }
 
+    if (!clinicId) {
+      window.alert(
+        "Velyquo could not identify your clinic. Please refresh the page and try again."
+      );
+      return;
+    }
+
     const practitionerBeingEdited =
       editingPractitionerId
         ? settings.practitioners.find(
             (item) =>
-              item.id === editingPractitionerId
+              item.id ===
+              editingPractitionerId
           )
         : undefined;
 
@@ -419,98 +620,184 @@ export default function SettingsPage() {
       return;
     }
 
-    const cleanPractitioner: Practitioner =
-      {
-        ...practitionerForm,
-        name:
-          practitionerForm.name.trim(),
-        role:
-          practitionerForm.role.trim(),
-        email:
-          practitionerForm.email.trim(),
-        phone:
-          practitionerForm.phone.trim(),
-        speciality:
-          practitionerForm.speciality.trim(),
-        qualifications:
-          practitionerForm.qualifications.trim(),
-        registrationNumber:
-          practitionerForm.registrationNumber.trim(),
-        experience:
-          practitionerForm.experience.trim(),
-        notes:
-          practitionerForm.notes.trim(),
-      };
+    const payload = {
+      clinic_id: clinicId,
+      full_name:
+        practitionerForm.name.trim(),
+      email:
+        practitionerForm.email.trim() ||
+        null,
+      phone:
+        practitionerForm.phone.trim() ||
+        null,
+      role_title:
+        practitionerForm.role.trim(),
+      speciality:
+        practitionerForm.speciality.trim() ||
+        null,
+      qualifications:
+        practitionerForm.qualifications.trim() ||
+        null,
+      registration_number:
+        practitionerForm.registrationNumber.trim() ||
+        null,
+      experience:
+        practitionerForm.experience.trim() ||
+        null,
+      working_days:
+        practitionerForm.workingDays,
+      start_time:
+        practitionerForm.startTime ||
+        null,
+      end_time:
+        practitionerForm.endTime ||
+        null,
+      notes:
+        practitionerForm.notes.trim() ||
+        null,
+      active:
+        practitionerForm.active,
+    };
 
-    setSettings(
-      (current) => {
-        const updatedPractitioners =
-          editingPractitionerId
-            ? current.practitioners.map(
-                (practitioner) =>
-                  practitioner.id ===
-                  editingPractitionerId
-                    ? cleanPractitioner
-                    : practitioner
-              )
-            : [
-                cleanPractitioner,
-                ...current.practitioners,
-              ];
+    let savedPractitionerId =
+      editingPractitionerId;
 
-        let updatedPrimaryName =
-          current.practitionerName;
+    if (editingPractitionerId) {
+      const { error } = await supabase
+        .from("practitioners")
+        .update(payload)
+        .eq("id", editingPractitionerId)
+        .eq("clinic_id", clinicId);
 
-        let updatedInitials =
-          current.initials;
+      if (error) {
+        console.error(
+          "Could not update practitioner:",
+          error
+        );
+        window.alert(
+          "Practitioner could not be saved. Please try again."
+        );
+        return;
+      }
+    } else {
+      const {
+        data,
+        error,
+      } = await supabase
+        .from("practitioners")
+        .insert({
+          ...payload,
+          is_primary: false,
+        })
+        .select("id")
+        .single();
+
+      if (error || !data) {
+        console.error(
+          "Could not add practitioner:",
+          error
+        );
+        window.alert(
+          "Practitioner could not be added. Please try again."
+        );
+        return;
+      }
+
+      savedPractitionerId = data.id;
+    }
+
+    if (!savedPractitionerId) {
+      return;
+    }
+
+    const cleanPractitioner: Practitioner = {
+      ...practitionerForm,
+      id: savedPractitionerId,
+      legacyId:
+        practitionerBeingEdited?.legacyId,
+      name:
+        practitionerForm.name.trim(),
+      role:
+        practitionerForm.role.trim(),
+      email:
+        practitionerForm.email.trim(),
+      phone:
+        practitionerForm.phone.trim(),
+      speciality:
+        practitionerForm.speciality.trim(),
+      qualifications:
+        practitionerForm.qualifications.trim(),
+      registrationNumber:
+        practitionerForm.registrationNumber.trim(),
+      experience:
+        practitionerForm.experience.trim(),
+      notes:
+        practitionerForm.notes.trim(),
+    };
+
+    setSettings((current) => {
+      const updatedPractitioners =
+        editingPractitionerId
+          ? current.practitioners.map(
+              (practitioner) =>
+                practitioner.id ===
+                editingPractitionerId
+                  ? cleanPractitioner
+                  : practitioner
+            )
+          : [
+              cleanPractitioner,
+              ...current.practitioners,
+            ];
+
+      let updatedPrimaryName =
+        current.practitionerName;
+
+      let updatedInitials =
+        current.initials;
+
+      if (editingPractitionerId) {
+        const oldPractitioner =
+          current.practitioners.find(
+            (item) =>
+              item.id ===
+              editingPractitionerId
+          );
 
         if (
-          editingPractitionerId
+          oldPractitioner?.name ===
+          current.practitionerName
         ) {
-          const oldPractitioner =
-            current.practitioners.find(
-              (item) =>
-                item.id ===
-                editingPractitionerId
+          updatedPrimaryName =
+            cleanPractitioner.name;
+
+          updatedInitials =
+            generateInitials(
+              cleanPractitioner.name
             );
-
-          if (
-            oldPractitioner?.name ===
-            current.practitionerName
-          ) {
-            updatedPrimaryName =
-              cleanPractitioner.name;
-
-            updatedInitials =
-              generateInitials(
-                cleanPractitioner.name
-              );
-          }
         }
-
-        return {
-          ...current,
-          practitionerName:
-            updatedPrimaryName,
-          initials:
-            updatedInitials,
-          practitioners:
-            updatedPractitioners,
-        };
       }
-    );
+
+      return {
+        ...current,
+        practitionerName:
+          updatedPrimaryName,
+        initials:
+          updatedInitials,
+        practitioners:
+          updatedPractitioners,
+      };
+    });
 
     setHasChanges(true);
     setSaved(false);
-
     closePractitionerForm();
   };
-
   /*
    * ACTIVATE / DEACTIVATE
    */
-  const togglePractitionerStatus = (
-    practitionerId: number
+  const togglePractitionerStatus = async (
+    practitionerId: string
   ) => {
     const practitioner =
       settings.practitioners.find(
@@ -518,15 +805,10 @@ export default function SettingsPage() {
           item.id === practitionerId
       );
 
-    if (!practitioner) {
+    if (!practitioner || !clinicId) {
       return;
     }
 
-    /*
-     * Keep the workspace primary practitioner valid.
-     * A primary practitioner must stay active until
-     * another active practitioner is made primary.
-     */
     if (
       practitioner.active &&
       practitioner.name ===
@@ -535,7 +817,28 @@ export default function SettingsPage() {
       window.alert(
         "This practitioner is currently the Primary practitioner. Make another active practitioner Primary before deactivating them."
       );
+      return;
+    }
 
+    const nextActive =
+      !practitioner.active;
+
+    const { error } = await supabase
+      .from("practitioners")
+      .update({
+        active: nextActive,
+      })
+      .eq("id", practitionerId)
+      .eq("clinic_id", clinicId);
+
+    if (error) {
+      console.error(
+        "Could not update practitioner status:",
+        error
+      );
+      window.alert(
+        "Practitioner status could not be updated. Please try again."
+      );
       return;
     }
 
@@ -545,12 +848,10 @@ export default function SettingsPage() {
         practitioners:
           current.practitioners.map(
             (item) =>
-              item.id ===
-              practitionerId
+              item.id === practitionerId
                 ? {
                     ...item,
-                    active:
-                      !item.active,
+                    active: nextActive,
                   }
                 : item
           ),
@@ -560,12 +861,11 @@ export default function SettingsPage() {
     setHasChanges(true);
     setSaved(false);
   };
-
   /*
    * DELETE PRACTITIONER
    */
-  const deletePractitioner = (
-    practitionerId: number
+  const deletePractitioner = async (
+    practitionerId: string
   ) => {
     const practitionerToDelete =
       settings.practitioners.find(
@@ -573,14 +873,13 @@ export default function SettingsPage() {
           item.id === practitionerId
       );
 
-    if (!practitionerToDelete) {
+    if (
+      !practitionerToDelete ||
+      !clinicId
+    ) {
       return;
     }
 
-    /*
-     * Protect the current Primary practitioner.
-     * The user must make someone else Primary first.
-     */
     if (
       practitionerToDelete.name ===
       settings.practitionerName
@@ -588,16 +887,9 @@ export default function SettingsPage() {
       window.alert(
         "This practitioner is currently the Primary practitioner. Make another active practitioner Primary before deleting them."
       );
-
       return;
     }
 
-    /*
-     * Historical appointments must keep their
-     * practitioner attribution. If this practitioner
-     * is already referenced by an appointment, keep
-     * the practitioner record and deactivate instead.
-     */
     let practitionerHasAppointments =
       false;
 
@@ -609,9 +901,7 @@ export default function SettingsPage() {
     if (storedAppointments) {
       try {
         const parsedAppointments =
-          JSON.parse(
-            storedAppointments
-          );
+          JSON.parse(storedAppointments);
 
         if (
           Array.isArray(
@@ -623,6 +913,12 @@ export default function SettingsPage() {
               (appointment) =>
                 appointment?.practitionerId ===
                   practitionerToDelete.id ||
+                (
+                  practitionerToDelete.legacyId !==
+                    undefined &&
+                  appointment?.practitionerId ===
+                    practitionerToDelete.legacyId
+                ) ||
                 (
                   typeof appointment?.practitioner ===
                     "string" &&
@@ -643,13 +939,10 @@ export default function SettingsPage() {
       }
     }
 
-    if (
-      practitionerHasAppointments
-    ) {
+    if (practitionerHasAppointments) {
       window.alert(
         `${practitionerToDelete.name} is linked to existing appointments and cannot be permanently deleted. Deactivate this practitioner instead so historical appointment records remain intact.`
       );
-
       return;
     }
 
@@ -662,14 +955,30 @@ export default function SettingsPage() {
       return;
     }
 
+    const { error } = await supabase
+      .from("practitioners")
+      .delete()
+      .eq("id", practitionerId)
+      .eq("clinic_id", clinicId);
+
+    if (error) {
+      console.error(
+        "Could not delete practitioner:",
+        error
+      );
+      window.alert(
+        "Practitioner could not be deleted. Please try again."
+      );
+      return;
+    }
+
     setSettings(
       (current) => ({
         ...current,
         practitioners:
           current.practitioners.filter(
             (item) =>
-              item.id !==
-              practitionerId
+              item.id !== practitionerId
           ),
       })
     );
@@ -677,44 +986,136 @@ export default function SettingsPage() {
     setHasChanges(true);
     setSaved(false);
   };
-
   /*
    * SAVE SETTINGS
+   *
+   * Clinic identity and primary practitioner are
+   * persisted in Supabase. A local compatibility
+   * mirror remains while other prototype modules
+   * are migrated.
    */
-  const saveSettings = () => {
-    const primaryPractitioner =
-      settings.practitioners.find(
+  const saveSettings = async () => {
+    const finalSettings: ClinicSettings = {
+      ...settings,
+      initials:
+        generateInitials(
+          settings.practitionerName
+        ) ||
+        settings.initials ||
+        "SW",
+      email: settings.email.trim(),
+      phone: settings.phone.trim(),
+    };
+
+    if (!clinicId) {
+      window.alert(
+        "Velyquo could not identify your clinic. Please refresh the page and try again."
+      );
+      return;
+    }
+
+    const selectedPrimary =
+      finalSettings.practitioners.find(
         (item) =>
           item.name ===
-          settings.practitionerName
+          finalSettings.practitionerName
       );
 
-    const finalSettings: ClinicSettings =
-      {
-        ...settings,
-        initials:
-          generateInitials(
-            settings.practitionerName
-          ) ||
-          settings.initials ||
-          "SW",
-        email:
-          primaryPractitioner?.email ||
-          settings.email,
-        phone:
-          primaryPractitioner?.phone ||
-          settings.phone,
-      };
+    if (
+      !selectedPrimary ||
+      !selectedPrimary.active
+    ) {
+      window.alert(
+        "Please select an active Primary practitioner before saving."
+      );
+      return;
+    }
 
-    setSettings(
-      finalSettings
-    );
+    const cleanLocation =
+      finalSettings.location.trim();
+
+    const {
+      error: clinicError,
+    } = await supabase
+      .from("clinics")
+      .update({
+        name:
+          finalSettings.clinicName.trim(),
+        email:
+          finalSettings.email || null,
+        phone:
+          finalSettings.phone || null,
+        city:
+          cleanLocation || null,
+      })
+      .eq("id", clinicId);
+
+    if (clinicError) {
+      console.error(
+        "Could not save clinic settings:",
+        clinicError
+      );
+      window.alert(
+        "Clinic settings could not be saved. Please try again."
+      );
+      return;
+    }
+
+    /*
+     * Clear the previous primary first because the
+     * database has a one-primary-per-clinic unique
+     * index, then set the selected practitioner.
+     */
+    const {
+      error: clearPrimaryError,
+    } = await supabase
+      .from("practitioners")
+      .update({
+        is_primary: false,
+      })
+      .eq("clinic_id", clinicId)
+      .eq("is_primary", true);
+
+    if (clearPrimaryError) {
+      console.error(
+        "Could not clear current Primary practitioner:",
+        clearPrimaryError
+      );
+      window.alert(
+        "Primary practitioner could not be updated. Please try again."
+      );
+      return;
+    }
+
+    const {
+      error: setPrimaryError,
+    } = await supabase
+      .from("practitioners")
+      .update({
+        is_primary: true,
+      })
+      .eq(
+        "id",
+        selectedPrimary.id
+      )
+      .eq("clinic_id", clinicId);
+
+    if (setPrimaryError) {
+      console.error(
+        "Could not set Primary practitioner:",
+        setPrimaryError
+      );
+      window.alert(
+        "Primary practitioner could not be updated. Please try again."
+      );
+      return;
+    }
+
+    setSettings(finalSettings);
 
     localStorage.setItem(
       "dermisClinicSettings",
-      JSON.stringify(
-        finalSettings
-      )
+      JSON.stringify(finalSettings)
     );
 
     window.dispatchEvent(
@@ -733,7 +1134,6 @@ export default function SettingsPage() {
       3000
     );
   };
-
   /*
    * RESET DEMO DATA
    *
@@ -772,36 +1172,22 @@ export default function SettingsPage() {
 
   /*
    * RESET
+   *
+   * Production-backed clinic identity should not be
+   * silently replaced with demo defaults. Reload the
+   * authenticated workspace instead.
    */
   const resetSettings = () => {
-    setSettings(
-      defaultSettings
+    const confirmed = window.confirm(
+      "Discard unsaved Settings changes and reload the clinic workspace from Supabase?"
     );
 
-    localStorage.setItem(
-      "dermisClinicSettings",
-      JSON.stringify(
-        defaultSettings
-      )
-    );
+    if (!confirmed) {
+      return;
+    }
 
-    window.dispatchEvent(
-      new Event(
-        "dermisClinicSettingsUpdated"
-      )
-    );
-
-    setSaved(true);
-    setHasChanges(false);
-
-    window.setTimeout(
-      () => {
-        setSaved(false);
-      },
-      3000
-    );
+    window.location.reload();
   };
-
   const displayInitials =
     generateInitials(
       settings.practitionerName
@@ -1595,15 +1981,15 @@ export default function SettingsPage() {
                 <div className="rounded-2xl border border-[#D7DDD4] bg-[#F0F3EE] p-6">
 
                   <p className="text-xs font-medium text-[#45634D]">
-                    Prototype storage
+                    Hybrid migration
                   </p>
 
                   <h3 className="mt-1 text-lg font-semibold">
-                    Prototype data is saved locally
+                    Clinic team is connected to Supabase
                   </h3>
 
                   <p className="mt-3 text-sm leading-6 text-[#5F685A]">
-                    Clinic and practitioner changes are stored in this browser using localStorage. A production SaaS would move this workspace data into a secure database and authenticated account.
+                    Clinic identity and practitioner records are now stored in the authenticated Supabase workspace. A temporary local compatibility cache remains while appointments and the remaining clinical modules are migrated.
                   </p>
 
                 </div>

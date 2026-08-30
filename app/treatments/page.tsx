@@ -18,9 +18,11 @@ import {
 } from "lucide-react";
 
 import Sidebar from "../components/sidebar";
+import { createClient } from "../lib/supabase-browser";
 
 type Patient = {
-  id: number;
+  id: string | number;
+  legacyId?: number;
   name: string;
   email: string;
   phone: string;
@@ -82,8 +84,8 @@ type TreatmentFormState = {
 };
 
 type ConsultationRecord = {
-  id: number;
-  patientId: number;
+  id: string | number;
+  patientId: string | number;
   date: string;
   allergies: string;
   medications: string;
@@ -96,10 +98,12 @@ type ConsultationRecord = {
 };
 
 type SavedTreatmentPlan = {
-  id: number;
+  id: string | number;
   patient: string;
-  patientId: number;
+  patientId: string | number;
   treatment: string;
+  treatmentId?: string | null;
+  treatmentPlanItemId?: string | null;
   duration: string;
   price: string;
   status: "Active" | "Completed";
@@ -108,7 +112,7 @@ type SavedTreatmentPlan = {
 
   clinicalReviewRequired?: boolean;
   clinicalReviewAcknowledged?: boolean;
-  consultationId?: number | null;
+  consultationId?: string | number | null;
   consultationDate?: string | null;
 };
 
@@ -232,6 +236,41 @@ function hasRecordedValue(value?: string) {
   );
 }
 
+
+function isUuid(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+  );
+}
+
+function durationToMinutes(value: string) {
+  const match = value.match(/\d+/);
+  const minutes = match ? Number(match[0]) : 60;
+  return Number.isFinite(minutes) && minutes > 0 ? minutes : 60;
+}
+
+function priceToPence(value: string) {
+  const numeric = Number(value.replace(/[£,\s]/g, ""));
+  return Number.isFinite(numeric) && numeric >= 0
+    ? Math.round(numeric * 100)
+    : 0;
+}
+
+function formatPriceFromPence(value: number | null) {
+  if (value == null) return "£0";
+  const pounds = value / 100;
+  return `£${Number.isInteger(pounds) ? pounds.toFixed(0) : pounds.toFixed(2)}`;
+}
+
+function formatPlanDate(value: string) {
+  return new Date(value).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export default function TreatmentsPage() {
   const [patient, setPatient] =
     useState<Patient>(fallbackPatient);
@@ -293,193 +332,300 @@ export default function TreatmentsPage() {
   const [catalogueMessage, setCatalogueMessage] =
     useState("");
 
+  const [deleteProtectionMessage, setDeleteProtectionMessage] =
+    useState("");
+
+  const [clinicId, setClinicId] =
+    useState<string | null>(null);
+
+  const [authUserId, setAuthUserId] =
+    useState<string | null>(null);
+
+  const [primaryPractitionerId, setPrimaryPractitionerId] =
+    useState<string | null>(null);
+
+  const [supabaseReady, setSupabaseReady] =
+    useState(false);
+
+  const supabase = useMemo(() => createClient(), []);
+
   /*
-   * LOAD PATIENT + PROFILE +
-   * CONSULTATION + SAVED PLANS
+   * LOAD PATIENT + PROFILE + CONSULTATION +
+   * SUPABASE CATALOGUE + SAVED PLANS
+   *
+   * Supabase is authoritative for the treatment catalogue and
+   * treatment plans. Existing dermis... localStorage keys remain
+   * as a compatibility cache for the rest of the prototype.
    */
   useEffect(() => {
-    const storedClinicSettings =
-      localStorage.getItem(
-        "dermisClinicSettings"
-      );
+    let cancelled = false;
 
-    if (storedClinicSettings) {
-      try {
-        const parsedClinicSettings =
-          JSON.parse(storedClinicSettings);
+    const loadTreatmentsPage = async () => {
+      const storedClinicSettings =
+        localStorage.getItem("dermisClinicSettings");
 
-        setClinicSettings((current) => ({
-          ...current,
-          ...parsedClinicSettings,
-        }));
-      } catch (error) {
-        console.error(
-          "Could not load clinic settings:",
-          error
-        );
+      if (storedClinicSettings) {
+        try {
+          const parsedClinicSettings = JSON.parse(storedClinicSettings);
+          setClinicSettings((current) => ({
+            ...current,
+            ...parsedClinicSettings,
+          }));
+        } catch (error) {
+          console.error("Could not load clinic settings:", error);
+        }
       }
-    }
 
-    /*
-     * TREATMENT CATALOGUE
-     */
-    const storedCatalogue =
-      localStorage.getItem(
-        "dermisTreatments"
-      );
+      let currentPatient: Patient = fallbackPatient;
+      const savedPatient =
+        localStorage.getItem("dermisSelectedPatient");
 
-    if (storedCatalogue) {
+      if (savedPatient) {
+        try {
+          currentPatient = JSON.parse(savedPatient);
+          setPatient(currentPatient);
+        } catch (error) {
+          console.error("Could not load selected patient:", error);
+        }
+      }
+
+      const savedProfiles =
+        localStorage.getItem("dermisClinicalProfiles");
+
+      if (savedProfiles) {
+        try {
+          const profiles = JSON.parse(savedProfiles) as Record<
+            string,
+            ClinicalProfile
+          >;
+
+          setClinicalProfile(
+            profiles[String(currentPatient.id)] ||
+              (currentPatient.legacyId != null
+                ? profiles[String(currentPatient.legacyId)]
+                : null) ||
+              null
+          );
+        } catch (error) {
+          console.error("Could not load clinical profile:", error);
+        }
+      }
+
+      const storedConsultations =
+        localStorage.getItem("dermisConsultations");
+
+      if (storedConsultations) {
+        try {
+          const consultationsByPatient = JSON.parse(
+            storedConsultations
+          ) as Record<string, ConsultationRecord[]>;
+
+          setConsultations(
+            consultationsByPatient[String(currentPatient.id)] ||
+              (currentPatient.legacyId != null
+                ? consultationsByPatient[String(currentPatient.legacyId)]
+                : []) ||
+              []
+          );
+        } catch (error) {
+          console.error("Could not load consultations:", error);
+        }
+      }
+
       try {
-        const parsed = JSON.parse(
-          storedCatalogue
-        );
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
 
-        if (Array.isArray(parsed)) {
-          const normalised: Treatment[] =
-            parsed.map((item, index) => ({
-              id:
-                typeof item.id === "string"
-                  ? item.id
-                  : `treatment-${index}-${Date.now()}`,
-              name: item.name || "Untitled treatment",
-              category: item.category || "Other",
-              duration: item.duration || "30 min",
-              price: item.price || "£0",
-              match: item.match || "80%",
-              description: item.description || "",
-              keywords: Array.isArray(item.keywords)
-                ? item.keywords
-                : [],
-              active: item.active !== false,
-            }));
+        if (userError) throw userError;
+        if (!user) {
+          throw new Error("Your session has expired. Please sign in again.");
+        }
 
-          setTreatmentCatalogue(normalised);
+        if (cancelled) return;
+        setAuthUserId(user.id);
 
-          localStorage.setItem(
-            "dermisTreatments",
-            JSON.stringify(normalised)
+        const { data: membership, error: membershipError } =
+          await supabase
+            .from("clinic_memberships")
+            .select("clinic_id")
+            .eq("user_id", user.id)
+            .eq("active", true)
+            .limit(1)
+            .maybeSingle();
+
+        if (membershipError) throw membershipError;
+        if (!membership?.clinic_id) {
+          throw new Error("No active clinic membership was found.");
+        }
+
+        const resolvedClinicId = String(membership.clinic_id);
+        if (cancelled) return;
+        setClinicId(resolvedClinicId);
+
+        const { data: practitionerRows, error: practitionerError } =
+          await supabase
+            .from("practitioners")
+            .select("id, is_primary")
+            .eq("clinic_id", resolvedClinicId)
+            .eq("active", true)
+            .order("is_primary", { ascending: false })
+            .limit(1);
+
+        if (practitionerError) throw practitionerError;
+
+        if (!cancelled) {
+          setPrimaryPractitionerId(
+            practitionerRows?.[0]?.id
+              ? String(practitionerRows[0].id)
+              : null
           );
         }
+
+        const { data: treatmentRows, error: treatmentError } =
+          await supabase
+            .from("treatments")
+            .select(
+              "id, name, category, description, duration_minutes, price_pence, recommendation_match, keywords, active"
+            )
+            .eq("clinic_id", resolvedClinicId)
+            .order("created_at", { ascending: true });
+
+        if (treatmentError) throw treatmentError;
+
+        const mappedTreatments: Treatment[] = (treatmentRows || []).map(
+          (row) => ({
+            id: String(row.id),
+            name: row.name || "Untitled treatment",
+            category: row.category || "Other",
+            duration: `${row.duration_minutes || 60} min`,
+            price: formatPriceFromPence(row.price_pence),
+            match: `${row.recommendation_match ?? 80}%`,
+            description: row.description || "",
+            keywords: Array.isArray(row.keywords) ? row.keywords : [],
+            active: row.active !== false,
+          })
+        );
+
+        if (!cancelled) {
+          setTreatmentCatalogue(mappedTreatments);
+          localStorage.setItem(
+            "dermisTreatments",
+            JSON.stringify(mappedTreatments)
+          );
+        }
+
+        if (isUuid(currentPatient.id)) {
+          const { data: planRows, error: planError } =
+            await supabase
+              .from("treatment_plans")
+              .select(
+                "id, patient_id, consultation_id, title, summary, status, clinical_review_required, clinical_review_acknowledged, created_at, treatment_plan_items(id, treatment_id, treatment_name, status)"
+              )
+              .eq("clinic_id", resolvedClinicId)
+              .eq("patient_id", currentPatient.id)
+              .order("created_at", { ascending: false });
+
+          if (planError) throw planError;
+
+          const treatmentById = new Map(
+            mappedTreatments.map((item) => [item.id, item])
+          );
+
+          const mappedPlans: SavedTreatmentPlan[] = (planRows || []).map(
+            (row) => {
+              const item = Array.isArray(row.treatment_plan_items)
+                ? row.treatment_plan_items[0]
+                : row.treatment_plan_items;
+
+              const treatment =
+                item?.treatment_id
+                  ? treatmentById.get(String(item.treatment_id))
+                  : undefined;
+
+              return {
+                id: String(row.id),
+                patient: currentPatient.name,
+                patientId: currentPatient.id,
+                treatment: item?.treatment_name || row.title,
+                treatmentId: item?.treatment_id
+                  ? String(item.treatment_id)
+                  : null,
+                treatmentPlanItemId: item?.id ? String(item.id) : null,
+                duration: treatment?.duration || "60 min",
+                price: treatment?.price || "£0",
+                status:
+                  row.status === "completed" ? "Completed" : "Active",
+                notes: row.summary || "",
+                createdAt: formatPlanDate(row.created_at),
+                clinicalReviewRequired:
+                  row.clinical_review_required === true,
+                clinicalReviewAcknowledged:
+                  row.clinical_review_acknowledged === true,
+                consultationId: row.consultation_id
+                  ? String(row.consultation_id)
+                  : null,
+                consultationDate: null,
+              };
+            }
+          );
+
+          if (!cancelled) {
+            setSavedPlans(mappedPlans);
+
+            let plansByPatient: Record<string, SavedTreatmentPlan[]> = {};
+            const cachedPlans =
+              localStorage.getItem("dermisTreatmentPlans");
+
+            if (cachedPlans) {
+              try {
+                const parsed = JSON.parse(cachedPlans);
+                if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+                  plansByPatient = parsed;
+                }
+              } catch {
+                // Replace malformed compatibility cache below.
+              }
+            }
+
+            plansByPatient[String(currentPatient.id)] = mappedPlans;
+
+            if (currentPatient.legacyId != null) {
+              plansByPatient[String(currentPatient.legacyId)] = mappedPlans;
+            }
+
+            localStorage.setItem(
+              "dermisTreatmentPlans",
+              JSON.stringify(plansByPatient)
+            );
+          }
+        } else if (!cancelled) {
+          setSavedPlans([]);
+        }
       } catch (error) {
-        console.error(
-          "Could not load treatment catalogue:",
-          error
-        );
+        console.error("Could not load Supabase treatments:", error);
+
+        if (!cancelled) {
+          setCatalogueMessage(
+            error instanceof Error
+              ? error.message
+              : "Could not load the treatment catalogue."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setSupabaseReady(true);
+        }
       }
-    } else {
-      localStorage.setItem(
-        "dermisTreatments",
-        JSON.stringify(defaultTreatments)
-      );
-    }
+    };
 
-    let currentPatient =
-      fallbackPatient;
+    void loadTreatmentsPage();
 
-    const savedPatient =
-      localStorage.getItem(
-        "dermisSelectedPatient"
-      );
-
-    if (savedPatient) {
-      try {
-        currentPatient =
-          JSON.parse(savedPatient);
-
-        setPatient(currentPatient);
-      } catch (error) {
-        console.error(
-          "Could not load selected patient:",
-          error
-        );
-      }
-    }
-
-    /*
-     * CLINICAL PROFILE
-     */
-    const savedProfiles =
-      localStorage.getItem(
-        "dermisClinicalProfiles"
-      );
-
-    if (savedProfiles) {
-      try {
-        const profiles: Record<
-          number,
-          ClinicalProfile
-        > = JSON.parse(savedProfiles);
-
-        setClinicalProfile(
-          profiles[currentPatient.id] ||
-            null
-        );
-      } catch (error) {
-        console.error(
-          "Could not load clinical profile:",
-          error
-        );
-      }
-    }
-
-    /*
-     * CONSULTATIONS
-     */
-    const storedConsultations =
-      localStorage.getItem(
-        "dermisConsultations"
-      );
-
-    if (storedConsultations) {
-      try {
-        const consultationsByPatient: Record<
-          number,
-          ConsultationRecord[]
-        > = JSON.parse(
-          storedConsultations
-        );
-
-        setConsultations(
-          consultationsByPatient[
-            currentPatient.id
-          ] || []
-        );
-      } catch (error) {
-        console.error(
-          "Could not load consultations:",
-          error
-        );
-      }
-    }
-
-    /*
-     * SAVED TREATMENT PLANS
-     */
-    const storedPlans =
-      localStorage.getItem(
-        "dermisTreatmentPlans"
-      );
-
-    if (storedPlans) {
-      try {
-        const plansByPatient: Record<
-          number,
-          SavedTreatmentPlan[]
-        > = JSON.parse(storedPlans);
-
-        setSavedPlans(
-          plansByPatient[
-            currentPatient.id
-          ] || []
-        );
-      } catch (error) {
-        console.error(
-          "Could not load treatment plans:",
-          error
-        );
-      }
-    }
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
 
   const initials = patient.name
     .split(" ")
@@ -733,7 +879,6 @@ export default function TreatmentsPage() {
     updated: Treatment[]
   ) => {
     setTreatmentCatalogue(updated);
-
     localStorage.setItem(
       "dermisTreatments",
       JSON.stringify(updated)
@@ -744,6 +889,7 @@ export default function TreatmentsPage() {
     setEditingTreatmentId(null);
     setTreatmentForm(emptyTreatmentForm);
     setCatalogueMessage("");
+    setDeleteProtectionMessage("");
     setShowTreatmentModal(true);
   };
 
@@ -763,6 +909,7 @@ export default function TreatmentsPage() {
     });
 
     setCatalogueMessage("");
+    setDeleteProtectionMessage("");
     setShowTreatmentModal(true);
   };
 
@@ -782,7 +929,7 @@ export default function TreatmentsPage() {
     }));
   };
 
-  const saveCatalogueTreatment = () => {
+  const saveCatalogueTreatment = async () => {
     const name = treatmentForm.name.trim();
     const category = treatmentForm.category.trim();
     const duration = treatmentForm.duration.trim();
@@ -798,6 +945,13 @@ export default function TreatmentsPage() {
     ) {
       setCatalogueMessage(
         "Complete the treatment name, category, duration, price and description."
+      );
+      return;
+    }
+
+    if (!clinicId) {
+      setCatalogueMessage(
+        "The clinic connection is still loading. Try again in a moment."
       );
       return;
     }
@@ -820,9 +974,7 @@ export default function TreatmentsPage() {
       100,
       Math.max(
         0,
-        Number(
-          treatmentForm.match.replace(/%/g, "")
-        ) || 0
+        Number(treatmentForm.match.replace(/%/g, "")) || 0
       )
     );
 
@@ -831,189 +983,307 @@ export default function TreatmentsPage() {
       .map((keyword) => keyword.trim().toLowerCase())
       .filter(Boolean);
 
-    const price = rawPrice.startsWith("£")
-      ? rawPrice
-      : `£${rawPrice}`;
+    const payload = {
+      clinic_id: clinicId,
+      name,
+      category,
+      description,
+      duration_minutes: durationToMinutes(duration),
+      price_pence: priceToPence(rawPrice),
+      recommendation_match: matchNumber,
+      keywords,
+      active: true,
+    };
 
-    if (editingTreatmentId) {
-      const previous = treatmentCatalogue.find(
-        (treatment) => treatment.id === editingTreatmentId
+    try {
+      if (editingTreatmentId) {
+        const previous = treatmentCatalogue.find(
+          (treatment) => treatment.id === editingTreatmentId
+        );
+
+        const { data, error } = await supabase
+          .from("treatments")
+          .update({
+            name: payload.name,
+            category: payload.category,
+            description: payload.description,
+            duration_minutes: payload.duration_minutes,
+            price_pence: payload.price_pence,
+            recommendation_match: payload.recommendation_match,
+            keywords: payload.keywords,
+          })
+          .eq("id", editingTreatmentId)
+          .eq("clinic_id", clinicId)
+          .select(
+            "id, name, category, description, duration_minutes, price_pence, recommendation_match, keywords, active"
+          )
+          .maybeSingle();
+
+        if (error) throw error;
+        if (!data) throw new Error("Treatment update was not permitted.");
+
+        const mapped: Treatment = {
+          id: String(data.id),
+          name: data.name,
+          category: data.category || "Other",
+          duration: `${data.duration_minutes} min`,
+          price: formatPriceFromPence(data.price_pence),
+          match: `${data.recommendation_match ?? 80}%`,
+          description: data.description || "",
+          keywords: Array.isArray(data.keywords) ? data.keywords : [],
+          active: data.active !== false,
+        };
+
+        const updated = treatmentCatalogue.map((treatment) =>
+          treatment.id === editingTreatmentId ? mapped : treatment
+        );
+
+        persistTreatmentCatalogue(updated);
+
+        if (previous && selected === previous.name) {
+          setSelected(mapped.name);
+        }
+
+        setCatalogueMessage("Treatment updated successfully.");
+      } else {
+        const { data, error } = await supabase
+          .from("treatments")
+          .insert(payload)
+          .select(
+            "id, name, category, description, duration_minutes, price_pence, recommendation_match, keywords, active"
+          )
+          .single();
+
+        if (error) throw error;
+
+        const newTreatment: Treatment = {
+          id: String(data.id),
+          name: data.name,
+          category: data.category || "Other",
+          duration: `${data.duration_minutes} min`,
+          price: formatPriceFromPence(data.price_pence),
+          match: `${data.recommendation_match ?? 80}%`,
+          description: data.description || "",
+          keywords: Array.isArray(data.keywords) ? data.keywords : [],
+          active: data.active !== false,
+        };
+
+        persistTreatmentCatalogue([
+          newTreatment,
+          ...treatmentCatalogue,
+        ]);
+
+        setCatalogueMessage("Treatment added successfully.");
+      }
+
+      window.setTimeout(() => {
+        closeTreatmentModal();
+        setCatalogueMessage("");
+      }, 650);
+    } catch (error) {
+      console.error("Could not save treatment:", error);
+      setCatalogueMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not save the treatment."
       );
+    }
+  };
 
-      const updated = treatmentCatalogue.map(
-        (treatment) =>
-          treatment.id === editingTreatmentId
-            ? {
-                ...treatment,
-                name,
-                category,
-                duration,
-                price,
-                match: `${matchNumber}%`,
-                description,
-                keywords,
-              }
-            : treatment
+  const toggleTreatmentActive = async (
+    treatmentId: string
+  ) => {
+    if (!clinicId) {
+      setCatalogueMessage("Clinic connection is not ready yet.");
+      return;
+    }
+
+    const current = treatmentCatalogue.find(
+      (treatment) => treatment.id === treatmentId
+    );
+
+    if (!current) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("treatments")
+        .update({ active: !current.active })
+        .eq("id", treatmentId)
+        .eq("clinic_id", clinicId)
+        .select("id, active, name")
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) throw new Error("Treatment update was not permitted.");
+
+      const updated = treatmentCatalogue.map((treatment) =>
+        treatment.id === treatmentId
+          ? { ...treatment, active: data.active !== false }
+          : treatment
       );
 
       persistTreatmentCatalogue(updated);
 
-      if (previous && selected === previous.name) {
-        setSelected(name);
+      if (!data.active && selected === current.name) {
+        setSelected(null);
+        setShowPlan(false);
+        setNotes("");
+        setPlanSaved(false);
       }
 
       setCatalogueMessage(
-        "Treatment updated successfully."
+        data.active
+          ? `${current.name} reactivated.`
+          : `${current.name} deactivated.`
       );
-    } else {
-      const newTreatment: Treatment = {
-        id: `treatment-${Date.now()}`,
-        name,
-        category,
-        duration,
-        price,
-        match: `${matchNumber}%`,
-        description,
-        keywords,
-        active: true,
-      };
-
-      persistTreatmentCatalogue([
-        newTreatment,
-        ...treatmentCatalogue,
-      ]);
-
+    } catch (error) {
+      console.error("Could not change treatment status:", error);
       setCatalogueMessage(
-        "Treatment added successfully."
+        error instanceof Error
+          ? error.message
+          : "Could not change the treatment status."
       );
     }
-
-    window.setTimeout(() => {
-      closeTreatmentModal();
-      setCatalogueMessage("");
-    }, 650);
-  };
-
-  const toggleTreatmentActive = (
-    treatmentId: string
-  ) => {
-    const updated = treatmentCatalogue.map(
-      (treatment) =>
-        treatment.id === treatmentId
-          ? {
-              ...treatment,
-              active: !treatment.active,
-            }
-          : treatment
-    );
-
-    persistTreatmentCatalogue(updated);
-
-    const changed = updated.find(
-      (treatment) => treatment.id === treatmentId
-    );
-
-    setCatalogueMessage(
-      changed?.active
-        ? `${changed.name} reactivated.`
-        : `${changed?.name || "Treatment"} deactivated.`
-    );
   };
 
   const treatmentIsUsed = (
-    treatmentName: string
+    treatment: Treatment
   ) => {
-    const storedPlans = localStorage.getItem(
-      "dermisTreatmentPlans"
-    );
-
-    if (storedPlans) {
-      try {
-        const parsed = JSON.parse(storedPlans);
-
-        if (Array.isArray(parsed)) {
-          if (
-            parsed.some(
-              (plan) => plan.treatment === treatmentName
-            )
-          ) {
-            return true;
-          }
-        } else if (parsed && typeof parsed === "object") {
-          const allPlans = Object.values(parsed).flatMap(
-            (value) =>
-              Array.isArray(value) ? value : []
-          ) as SavedTreatmentPlan[];
-
-          if (
-            allPlans.some(
-              (plan) => plan.treatment === treatmentName
-            )
-          ) {
-            return true;
-          }
-        }
-      } catch (error) {
-        console.error(
-          "Could not check treatment plan usage:",
-          error
-        );
-      }
+    if (
+      savedPlans.some(
+        (plan) =>
+          plan.treatmentId === treatment.id ||
+          plan.treatment === treatment.name
+      )
+    ) {
+      return true;
     }
 
-    const handoff = localStorage.getItem(
-      "dermisTreatmentPlan"
-    );
+    const handoff = localStorage.getItem("dermisTreatmentPlan");
 
     if (handoff) {
       try {
         const parsed = JSON.parse(handoff);
-
-        if (parsed?.treatment === treatmentName) {
+        if (
+          parsed?.treatmentId === treatment.id ||
+          parsed?.treatment === treatment.name
+        ) {
           return true;
         }
       } catch {
-        // Ignore malformed prototype handoff data.
+        // Ignore malformed compatibility handoff data.
       }
     }
 
     return false;
   };
 
-  const deleteTreatment = (
+  const deleteTreatment = async (
     treatment: Treatment
   ) => {
-    if (treatmentIsUsed(treatment.name)) {
-      setCatalogueMessage(
-        `${treatment.name} is already referenced by a saved treatment plan and cannot be deleted. Deactivate it instead.`
+    setDeleteProtectionMessage("");
+
+    const showProtectedTreatmentMessage = () => {
+      const message =
+        `${treatment.name} is currently used in one or more patient treatment plans. ` +
+        "It cannot be deleted while those clinical records reference it. Deactivate it instead.";
+
+      setCatalogueMessage(message);
+      setDeleteProtectionMessage(message);
+    };
+
+    /*
+     * Fast compatibility check for the currently loaded patient / handoff.
+     * The Supabase check below remains authoritative for the whole clinic.
+     */
+    if (treatmentIsUsed(treatment)) {
+      showProtectedTreatmentMessage();
+      return;
+    }
+
+    if (!clinicId) {
+      setCatalogueMessage("Clinic connection is not ready yet.");
+      return;
+    }
+
+    try {
+      /*
+       * Check the entire clinic before showing a destructive confirmation.
+       * This prevents a treatment being deleted when it is referenced by
+       * another patient's plan that is not currently loaded in the UI.
+       */
+      const { data: linkedItems, error: linkedItemsError } = await supabase
+        .from("treatment_plan_items")
+        .select("id")
+        .eq("clinic_id", clinicId)
+        .eq("treatment_id", treatment.id)
+        .limit(1);
+
+      if (linkedItemsError) throw linkedItemsError;
+
+      if (linkedItems && linkedItems.length > 0) {
+        showProtectedTreatmentMessage();
+        return;
+      }
+
+      const confirmed = window.confirm(
+        `Delete ${treatment.name} from the treatment catalogue?`
       );
-      return;
+
+      if (!confirmed) return;
+
+      const { data, error } = await supabase
+        .from("treatments")
+        .delete()
+        .eq("id", treatment.id)
+        .eq("clinic_id", clinicId)
+        .select("id")
+        .maybeSingle();
+
+      if (error) {
+        /*
+         * If a database relationship blocks deletion, translate the raw
+         * database error into a clinic-friendly message.
+         */
+        const code =
+          typeof error === "object" && error && "code" in error
+            ? String(error.code)
+            : "";
+
+        if (code === "23503") {
+          showProtectedTreatmentMessage();
+          return;
+        }
+
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error("Treatment deletion was not permitted.");
+      }
+
+      const updated = treatmentCatalogue.filter(
+        (item) => item.id !== treatment.id
+      );
+
+      persistTreatmentCatalogue(updated);
+
+      if (selected === treatment.name) {
+        setSelected(null);
+        setShowPlan(false);
+        setNotes("");
+        setPlanSaved(false);
+      }
+
+      setCatalogueMessage(`${treatment.name} deleted.`);
+    } catch (error) {
+      console.error("Could not delete treatment:", error);
+      setCatalogueMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not delete the treatment."
+      );
     }
-
-    const confirmed = window.confirm(
-      `Delete ${treatment.name} from the treatment catalogue?`
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    const updated = treatmentCatalogue.filter(
-      (item) => item.id !== treatment.id
-    );
-
-    persistTreatmentCatalogue(updated);
-
-    if (selected === treatment.name) {
-      setSelected(null);
-      setShowPlan(false);
-      setNotes("");
-      setPlanSaved(false);
-    }
-
-    setCatalogueMessage(
-      `${treatment.name} deleted.`
-    );
   };
 
   const aiHeadline =
@@ -1111,243 +1381,287 @@ export default function TreatmentsPage() {
   };
 
   /*
-   * PERMANENTLY SAVE PLAN
+   * PERMANENTLY SAVE PLAN TO SUPABASE
    */
-  const saveTreatmentPlan = () => {
+  const saveTreatmentPlan = async () => {
     if (!selected) {
-      return false;
+      return null;
     }
 
     if (!canProceedWithPlan()) {
-      return false;
+      return null;
+    }
+
+    if (!clinicId || !authUserId || !isUuid(patient.id)) {
+      setSaveMessage(
+        "This patient must be linked to Supabase before a treatment plan can be saved."
+      );
+      return null;
     }
 
     const treatmentDetails =
       treatmentCatalogue.find(
-        (treatment) =>
-          treatment.name ===
-          selected
+        (treatment) => treatment.name === selected
+      );
+
+    if (!treatmentDetails || !isUuid(treatmentDetails.id)) {
+      setSaveMessage(
+        "The selected treatment is not linked to the clinic catalogue."
+      );
+      return null;
+    }
+
+    setSaveMessage("Saving treatment plan...");
+
+    try {
+      /*
+       * Keep only one active plan for the same treatment/patient.
+       * Existing plans are retained historically and moved to cancelled.
+       */
+      const duplicatePlans = savedPlans.filter(
+        (plan) =>
+          plan.treatment === selected &&
+          plan.status === "Active" &&
+          isUuid(plan.id)
+      );
+
+      for (const duplicatePlan of duplicatePlans) {
+        const { error: duplicateError } = await supabase
+          .from("treatment_plans")
+          .update({ status: "cancelled" })
+          .eq("id", String(duplicatePlan.id))
+          .eq("clinic_id", clinicId);
+
+        if (duplicateError) throw duplicateError;
+      }
+
+      const { data: planRow, error: planError } = await supabase
+        .from("treatment_plans")
+        .insert({
+          clinic_id: clinicId,
+          patient_id: patient.id,
+          consultation_id: null,
+          practitioner_id: primaryPractitionerId,
+          title: selected,
+          summary: notes.trim() || null,
+          status: "active",
+          clinical_review_required: clinicalReviewRequired,
+          clinical_review_acknowledged: clinicalReviewRequired
+            ? clinicalReviewAcknowledged
+            : true,
+          created_by: authUserId,
+        })
+        .select(
+          "id, patient_id, title, summary, status, clinical_review_required, clinical_review_acknowledged, created_at"
+        )
+        .single();
+
+      if (planError) throw planError;
+
+      const { data: itemRow, error: itemError } = await supabase
+        .from("treatment_plan_items")
+        .insert({
+          clinic_id: clinicId,
+          treatment_plan_id: planRow.id,
+          treatment_id: treatmentDetails.id,
+          treatment_name: selected,
+          sequence_number: 1,
+          recommended_sessions: 1,
+          interval_notes: null,
+          practitioner_notes: notes.trim() || null,
+          status: "planned",
+        })
+        .select("id, treatment_id, treatment_name")
+        .single();
+
+      if (itemError) {
+        await supabase
+          .from("treatment_plans")
+          .delete()
+          .eq("id", planRow.id)
+          .eq("clinic_id", clinicId);
+
+        throw itemError;
+      }
+
+      const newPlan: SavedTreatmentPlan = {
+        id: String(planRow.id),
+        patient: patient.name,
+        patientId: patient.id,
+        treatment: selected,
+        treatmentId: String(itemRow.treatment_id),
+        treatmentPlanItemId: String(itemRow.id),
+        duration: treatmentDetails.duration,
+        price: treatmentDetails.price,
+        status: "Active",
+        notes,
+        createdAt: formatPlanDate(planRow.created_at),
+        clinicalReviewRequired,
+        clinicalReviewAcknowledged: clinicalReviewRequired
+          ? clinicalReviewAcknowledged
+          : true,
+        /*
+         * Consultations have not been migrated yet, so the Supabase
+         * consultation_id intentionally remains null. The legacy value
+         * is retained only in the compatibility handoff below.
+         */
+        consultationId: null,
+        consultationDate: latestConsultation?.date || null,
+      };
+
+      const filtered = savedPlans.filter(
+        (plan) =>
+          !(
+            plan.treatment === selected &&
+            plan.status === "Active"
+          )
+      );
+
+      const updatedPlans = [newPlan, ...filtered];
+      setSavedPlans(updatedPlans);
+
+      let plansByPatient: Record<string, SavedTreatmentPlan[]> = {};
+      const storedPlans =
+        localStorage.getItem("dermisTreatmentPlans");
+
+      if (storedPlans) {
+        try {
+          const parsed = JSON.parse(storedPlans);
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+            plansByPatient = parsed;
+          }
+        } catch {
+          // Replace malformed compatibility cache below.
+        }
+      }
+
+      plansByPatient[String(patient.id)] = updatedPlans;
+
+      if (patient.legacyId != null) {
+        plansByPatient[String(patient.legacyId)] = updatedPlans;
+      }
+
+      localStorage.setItem(
+        "dermisTreatmentPlans",
+        JSON.stringify(plansByPatient)
+      );
+
+      setPlanSaved(true);
+      setSaveMessage("Treatment plan saved successfully.");
+
+      return newPlan;
+    } catch (error) {
+      console.error("Could not save treatment plan:", error);
+      setPlanSaved(false);
+      setSaveMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not save the treatment plan."
+      );
+      return null;
+    }
+  };
+
+  /*
+   * SAVE PLAN + SEND TO APPOINTMENTS
+   */
+  const continueToAppointment = async () => {
+    if (!selected) return;
+
+    if (!canProceedWithPlan()) {
+      return;
+    }
+
+    const treatmentDetails =
+      treatmentCatalogue.find(
+        (treatment) => treatment.name === selected
       );
 
     if (!treatmentDetails) {
-      return false;
+      return;
     }
 
-    const newPlan: SavedTreatmentPlan =
-      {
-        id: Date.now(),
+    let savedPlan =
+      savedPlans.find(
+        (plan) =>
+          plan.treatment === selected &&
+          plan.status === "Active"
+      ) || null;
 
-        patient:
-          patient.name,
+    if (!planSaved || !savedPlan) {
+      savedPlan = await saveTreatmentPlan();
 
-        patientId:
-          patient.id,
+      if (!savedPlan) {
+        return;
+      }
+    }
 
-        treatment:
-          selected,
-
-        duration:
-          treatmentDetails.duration,
-
-        price:
-          treatmentDetails.price,
-
-        status:
-          "Active",
-
+    localStorage.setItem(
+      "dermisTreatmentPlan",
+      JSON.stringify({
+        patient: patient.name,
+        patientId: patient.id,
+        treatment: selected,
+        treatmentId: treatmentDetails.id,
+        treatmentPlanId: savedPlan.id,
+        treatmentPlanItemId:
+          savedPlan.treatmentPlanItemId || null,
+        duration: treatmentDetails.duration,
+        price: treatmentDetails.price,
+        status: "Active",
         notes,
-
-        createdAt:
-          new Date().toLocaleDateString(
-            "en-GB",
-            {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            }
-          ),
-
         clinicalReviewRequired,
-
         clinicalReviewAcknowledged:
           clinicalReviewRequired
             ? clinicalReviewAcknowledged
             : true,
-
         consultationId:
-          latestConsultation?.id ||
-          null,
-
+          latestConsultation?.id || null,
         consultationDate:
-          latestConsultation?.date ||
-          null,
-      };
-
-    let plansByPatient: Record<
-      number,
-      SavedTreatmentPlan[]
-    > = {};
-
-    const storedPlans =
-      localStorage.getItem(
-        "dermisTreatmentPlans"
-      );
-
-    if (storedPlans) {
-      try {
-        plansByPatient =
-          JSON.parse(
-            storedPlans
-          );
-      } catch (error) {
-        console.error(
-          "Could not read treatment plans:",
-          error
-        );
-      }
-    }
-
-    const currentPlans =
-      plansByPatient[
-        patient.id
-      ] || [];
-
-    /*
-     * Avoid duplicate active copies
-     * of the same treatment.
-     */
-    const filtered =
-      currentPlans.filter(
-        (plan) =>
-          !(
-            plan.treatment ===
-              selected &&
-            plan.status ===
-              "Active"
-          )
-      );
-
-    const updatedPlans = [
-      newPlan,
-      ...filtered,
-    ];
-
-    plansByPatient[
-      patient.id
-    ] = updatedPlans;
+          latestConsultation?.date || null,
+      })
+    );
 
     localStorage.setItem(
-      "dermisTreatmentPlans",
-      JSON.stringify(
-        plansByPatient
-      )
+      "dermisSelectedPatient",
+      JSON.stringify(patient)
     );
 
-    setSavedPlans(
-      updatedPlans
-    );
-
-    setPlanSaved(true);
-
-    setSaveMessage(
-      "Treatment plan saved successfully."
-    );
-
-    return true;
+    window.location.href =
+      "/appointments?from=treatment";
   };
-
-  /*
-   * SAVE PLAN + SEND TO
-   * APPOINTMENTS
-   */
-  const continueToAppointment =
-    () => {
-      if (!selected) return;
-
-      if (!canProceedWithPlan()) {
-        return;
-      }
-
-      const treatmentDetails =
-        treatmentCatalogue.find(
-          (treatment) =>
-            treatment.name ===
-            selected
-        );
-
-      if (!treatmentDetails) {
-        return;
-      }
-
-      /*
-       * Save permanently first if
-       * user hasn't already done it.
-       */
-      if (!planSaved) {
-        const saved =
-          saveTreatmentPlan();
-
-        if (!saved) {
-          return;
-        }
-      }
-
-      /*
-       * Temporary booking handoff.
-       */
-      localStorage.setItem(
-        "dermisTreatmentPlan",
-        JSON.stringify({
-          patient:
-            patient.name,
-
-          patientId:
-            patient.id,
-
-          treatment:
-            selected,
-
-          duration:
-            treatmentDetails.duration,
-
-          price:
-            treatmentDetails.price,
-
-          status:
-            "Active",
-
-          notes,
-
-          clinicalReviewRequired,
-
-          clinicalReviewAcknowledged:
-            clinicalReviewRequired
-              ? clinicalReviewAcknowledged
-              : true,
-
-          consultationId:
-            latestConsultation?.id ||
-            null,
-
-          consultationDate:
-            latestConsultation?.date ||
-            null,
-        })
-      );
-
-      localStorage.setItem(
-        "dermisSelectedPatient",
-        JSON.stringify(
-          patient
-        )
-      );
-
-      window.location.href =
-        "/appointments?from=treatment";
-    };
 
   return (
     <main className="min-h-screen bg-[#F3F6F3] text-[#182019]">
+
+      {deleteProtectionMessage && (
+        <div className="fixed right-5 top-5 z-[100] w-[calc(100%-2.5rem)] max-w-md rounded-[18px] border border-[#E6D6D2] bg-[#FFFDFC] p-4 shadow-[0_18px_50px_rgba(54,35,31,0.14)]">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F7EEEE] text-[#8A6666]">
+              <AlertTriangle size={17} strokeWidth={1.8} />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-[#3B302F]">
+                Treatment cannot be deleted
+              </p>
+
+              <p className="mt-1 text-[11px] leading-5 text-[#756765]">
+                {deleteProtectionMessage}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setDeleteProtectionMessage("")}
+              aria-label="Dismiss message"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[#8D817E] transition hover:bg-[#F5EEEE] hover:text-[#5E4D4A]"
+            >
+              <X size={15} />
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex min-h-screen">
 

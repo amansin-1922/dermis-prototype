@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { Check, Search, X } from "lucide-react";
 import Sidebar from "@/app/components/sidebar";
+import { createClient } from "@/app/lib/supabase-browser";
 
 type Patient = {
-  id: number;
+  id: string;
+  legacyId?: number;
   name: string;
   email: string;
   phone: string;
@@ -24,7 +26,8 @@ type ClinicSettings = {
 
 const initialPatients: Patient[] = [
   {
-    id: 1,
+    id: "70583d4d-770f-4d73-9c4a-3a7f627a36fd",
+    legacyId: 1,
     name: "Emily Johnson",
     email: "emily.johnson@email.com",
     phone: "+44 7700 900123",
@@ -35,7 +38,8 @@ const initialPatients: Patient[] = [
     analyses: 4,
   },
   {
-    id: 2,
+    id: "0b8598a1-0cd9-4416-bf2b-c5a2f99b73b5",
+    legacyId: 2,
     name: "Olivia Smith",
     email: "olivia.smith@email.com",
     phone: "+44 7700 900124",
@@ -46,7 +50,8 @@ const initialPatients: Patient[] = [
     analyses: 3,
   },
   {
-    id: 3,
+    id: "6f9dc3fb-18ad-4807-b1e4-fc9ee3e60694",
+    legacyId: 3,
     name: "Amelia Brown",
     email: "amelia.brown@email.com",
     phone: "+44 7700 900125",
@@ -57,7 +62,8 @@ const initialPatients: Patient[] = [
     analyses: 6,
   },
   {
-    id: 4,
+    id: "e1d43ba3-4484-4bbf-89f0-3523686b90bf",
+    legacyId: 4,
     name: "Sophia Williams",
     email: "sophia.williams@email.com",
     phone: "+44 7700 900126",
@@ -68,7 +74,8 @@ const initialPatients: Patient[] = [
     analyses: 2,
   },
   {
-    id: 5,
+    id: "76558822-50ed-40e2-8e2c-caf424ce9cc2",
+    legacyId: 5,
     name: "Isabella Taylor",
     email: "isabella.taylor@email.com",
     phone: "+44 7700 900127",
@@ -79,7 +86,8 @@ const initialPatients: Patient[] = [
     analyses: 5,
   },
   {
-    id: 6,
+    id: "c3281eb5-4ea8-42ce-b237-cd6b18d3ee8b",
+    legacyId: 6,
     name: "Mia Anderson",
     email: "mia.anderson@email.com",
     phone: "+44 7700 900128",
@@ -99,6 +107,44 @@ function getInitials(name: string) {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+}
+
+function formatSupabaseLastVisit(value: string | null) {
+  if (!value) return "New patient";
+
+  return new Date(value).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function calculateAge(dateOfBirth: string | null) {
+  if (!dateOfBirth) return 0;
+
+  const birthDate = new Date(`${dateOfBirth}T12:00:00`);
+  const today = new Date();
+  let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+
+  const monthDifference = today.getMonth() - birthDate.getMonth();
+
+  if (
+    monthDifference < 0 ||
+    (monthDifference === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    calculatedAge -= 1;
+  }
+
+  return calculatedAge;
+}
+
+function dateOfBirthFromAge(age: number) {
+  const today = new Date();
+  const year = today.getFullYear() - age;
+
+  return `${year}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(
+    today.getDate()
+  ).padStart(2, "0")}`;
 }
 
 export default function PatientsPage() {
@@ -127,71 +173,162 @@ export default function PatientsPage() {
     useState<"Active" | "Inactive">("Active");
 
   useEffect(() => {
-    const savedPatients = localStorage.getItem(
-      "dermisPatients"
-    );
+    let cancelled = false;
 
-    if (savedPatients) {
-      try {
-        const parsedPatients: Patient[] =
-          JSON.parse(savedPatients);
+    const loadPatients = async () => {
+      const savedPatients = localStorage.getItem("dermisPatients");
+      let legacyPatients: Array<Patient & { id: string | number }> = [];
 
-        setPatients(parsedPatients);
-      } catch (error) {
-        console.error(
-          "Could not load patients:",
-          error
-        );
+      if (savedPatients) {
+        try {
+          const parsed = JSON.parse(savedPatients);
+          if (Array.isArray(parsed)) {
+            legacyPatients = parsed;
+          }
+        } catch (error) {
+          console.error("Could not load compatibility patient cache:", error);
+        }
       }
-    }
 
-    const loadClinicSettings = () => {
-      const storedSettings = localStorage.getItem(
-        "dermisClinicSettings"
-      );
+      const loadClinicSettings = () => {
+        const storedSettings = localStorage.getItem("dermisClinicSettings");
 
-      if (!storedSettings) {
+        if (!storedSettings) return;
+
+        try {
+          const parsedSettings: ClinicSettings = JSON.parse(storedSettings);
+
+          setClinicSettings((current) => ({
+            ...current,
+            ...parsedSettings,
+          }));
+        } catch (error) {
+          console.error("Could not load clinic settings:", error);
+        }
+      };
+
+      loadClinicSettings();
+
+      const supabase = createClient();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error("Could not resolve authenticated user:", userError);
         return;
       }
 
+      const { data: membership, error: membershipError } = await supabase
+        .from("clinic_memberships")
+        .select("clinic_id")
+        .eq("user_id", user.id)
+        .eq("active", true)
+        .limit(1)
+        .maybeSingle();
+
+      if (membershipError || !membership) {
+        console.error("Could not resolve active clinic membership:", membershipError);
+        return;
+      }
+
+      const { data: rows, error: patientsError } = await supabase
+        .from("patients")
+        .select(
+          "id, legacy_id, first_name, last_name, email, phone, date_of_birth, status, primary_concern, last_visit_at"
+        )
+        .eq("clinic_id", membership.clinic_id)
+        .order("created_at", { ascending: true });
+
+      if (patientsError) {
+        console.error("Could not load Supabase patients:", patientsError);
+        return;
+      }
+
+      const mappedPatients: Patient[] = (rows ?? []).map((row) => {
+        const fullName = `${row.first_name} ${row.last_name}`.trim();
+
+        const legacyMatch = legacyPatients.find((patient) => {
+          const patientEmail =
+            typeof patient.email === "string" ? patient.email.toLowerCase() : "";
+          const rowEmail =
+            typeof row.email === "string" ? row.email.toLowerCase() : "";
+
+          return (
+            (rowEmail && patientEmail === rowEmail) ||
+            patient.name === fullName
+          );
+        });
+
+        const matchedLegacyId =
+          typeof row.legacy_id === "number"
+            ? row.legacy_id
+            : legacyMatch?.legacyId ??
+              (typeof legacyMatch?.id === "number" ? legacyMatch.id : undefined);
+
+        return {
+          id: row.id,
+          legacyId: matchedLegacyId,
+          name: fullName,
+          email: row.email ?? "",
+          phone: row.phone ?? "",
+          age:
+            calculateAge(row.date_of_birth) ||
+            (legacyMatch?.age ?? 0),
+          lastVisit: formatSupabaseLastVisit(row.last_visit_at),
+          status:
+            row.status === "inactive" ? "Inactive" : "Active",
+          concern: row.primary_concern ?? "",
+          analyses: legacyMatch?.analyses ?? 0,
+        };
+      });
+
+      if (cancelled) return;
+
+      setPatients(mappedPatients);
+
+      localStorage.setItem(
+        "dermisPatients",
+        JSON.stringify(mappedPatients)
+      );
+    };
+
+    const loadClinicSettings = () => {
+      const storedSettings = localStorage.getItem("dermisClinicSettings");
+
+      if (!storedSettings) return;
+
       try {
-        const parsedSettings: ClinicSettings =
-          JSON.parse(storedSettings);
+        const parsedSettings: ClinicSettings = JSON.parse(storedSettings);
 
         setClinicSettings((current) => ({
           ...current,
           ...parsedSettings,
         }));
       } catch (error) {
-        console.error(
-          "Could not load clinic settings:",
-          error
-        );
+        console.error("Could not load clinic settings:", error);
       }
     };
 
-    loadClinicSettings();
+    void loadPatients();
 
     window.addEventListener(
       "dermisClinicSettingsUpdated",
       loadClinicSettings
     );
 
-    window.addEventListener(
-      "storage",
-      loadClinicSettings
-    );
+    window.addEventListener("storage", loadClinicSettings);
 
     return () => {
+      cancelled = true;
+
       window.removeEventListener(
         "dermisClinicSettingsUpdated",
         loadClinicSettings
       );
 
-      window.removeEventListener(
-        "storage",
-        loadClinicSettings
-      );
+      window.removeEventListener("storage", loadClinicSettings);
     };
   }, []);
 
@@ -259,7 +396,7 @@ export default function PatientsPage() {
     setStatus("Active");
   };
 
-  const addPatient = () => {
+  const addPatient = async () => {
     if (
       !name.trim() ||
       !email.trim() ||
@@ -270,15 +407,85 @@ export default function PatientsPage() {
       return;
     }
 
+    const numericAge = Number(age);
+
+    if (
+      !Number.isFinite(numericAge) ||
+      numericAge < 1 ||
+      numericAge > 120
+    ) {
+      return;
+    }
+
+    const trimmedName = name.trim();
+    const nameParts = trimmedName.split(/\s+/);
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(" ") || "-";
+
+    const supabase = createClient();
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      console.error("Could not resolve authenticated user:", userError);
+      return;
+    }
+
+    const { data: membership, error: membershipError } = await supabase
+      .from("clinic_memberships")
+      .select("clinic_id")
+      .eq("user_id", user.id)
+      .eq("active", true)
+      .limit(1)
+      .maybeSingle();
+
+    if (membershipError || !membership) {
+      console.error("Could not resolve active clinic membership:", membershipError);
+      return;
+    }
+
+    const { data: insertedPatient, error: insertError } = await supabase
+      .from("patients")
+      .insert({
+        clinic_id: membership.clinic_id,
+        first_name: firstName,
+        last_name: lastName,
+        email: email.trim(),
+        phone: phone.trim(),
+        date_of_birth: dateOfBirthFromAge(numericAge),
+        status: status.toLowerCase(),
+        primary_concern: concern.trim(),
+        created_by: user.id,
+      })
+      .select(
+        "id, legacy_id, first_name, last_name, email, phone, date_of_birth, status, primary_concern, last_visit_at"
+      )
+      .single();
+
+    if (insertError || !insertedPatient) {
+      console.error("Could not add patient to Supabase:", insertError);
+      return;
+    }
+
     const newPatient: Patient = {
-      id: Date.now(),
-      name: name.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-      age: Number(age),
-      lastVisit: "New patient",
-      status,
-      concern: concern.trim(),
+      id: insertedPatient.id,
+      legacyId:
+        typeof insertedPatient.legacy_id === "number"
+          ? insertedPatient.legacy_id
+          : undefined,
+      name: `${insertedPatient.first_name} ${insertedPatient.last_name}`.trim(),
+      email: insertedPatient.email ?? "",
+      phone: insertedPatient.phone ?? "",
+      age:
+        calculateAge(insertedPatient.date_of_birth) ||
+        numericAge,
+      lastVisit: formatSupabaseLastVisit(insertedPatient.last_visit_at),
+      status:
+        insertedPatient.status === "inactive" ? "Inactive" : "Active",
+      concern: insertedPatient.primary_concern ?? "",
       analyses: 0,
     };
 
@@ -865,7 +1072,7 @@ export default function PatientsPage() {
                             );
 
                             window.location.href =
-                              "/patient";
+                              `/patient?id=${encodeURIComponent(patient.id)}`;
                           }}
                           className="group cursor-pointer border-b border-[#F0F1EC] transition duration-200 hover:bg-[#F7FAF6] last:border-0"
                         >
