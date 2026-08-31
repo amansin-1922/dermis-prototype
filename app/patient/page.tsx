@@ -23,6 +23,7 @@ import { createClient } from "@/app/lib/supabase-browser";
 type Patient = {
   id: string;
   legacyId?: number;
+  clinicId?: string;
   name: string;
   email: string;
   phone: string;
@@ -174,7 +175,7 @@ type Practitioner = {
 };
 
 type ConsultationRecord = {
-  id: number;
+  id: string | number;
   patientId: string | number;
   date: string;
   allergies: string;
@@ -581,6 +582,16 @@ export default function PatientProfile() {
   ] = useState(false);
 
   const [
+    consultationSaving,
+    setConsultationSaving,
+  ] = useState(false);
+
+  const [
+    consultationSaveError,
+    setConsultationSaveError,
+  ] = useState("");
+
+  const [
     showEditPatient,
     setShowEditPatient,
   ] = useState(false);
@@ -720,7 +731,7 @@ export default function PatientProfile() {
         const { data: row, error } = await supabase
           .from("patients")
           .select(
-            "id, legacy_id, first_name, last_name, email, phone, date_of_birth, status, primary_concern, last_visit_at"
+            "id, clinic_id, legacy_id, first_name, last_name, email, phone, date_of_birth, status, primary_concern, last_visit_at"
           )
           .eq("id", requestedPatientId)
           .maybeSingle();
@@ -776,6 +787,7 @@ export default function PatientProfile() {
 
         selectedPatient = {
           id: String(row.id),
+          clinicId: row.clinic_id ? String(row.clinic_id) : undefined,
           legacyId:
             typeof row.legacy_id === "number"
               ? row.legacy_id
@@ -1094,88 +1106,145 @@ export default function PatientProfile() {
     }
 
     /*
-     * CONSULTATIONS
+     * CONSULTATIONS — SUPABASE AUTHORITATIVE
+     *
+     * Consultation rows are now loaded from Supabase for the selected patient.
+     * localStorage remains only as a compatibility mirror for the rest of the
+     * prototype while the remaining clinical modules are migrated.
      */
-    const storedConsultations =
-      localStorage.getItem(
-        "dermisConsultations"
+    try {
+      const supabase = createClient();
+
+      const { data: consultationRows, error: consultationError } =
+        await supabase
+          .from("consultations")
+          .select(
+            "id, practitioner_id, consultation_date, medical_history, allergies, medications, contraindications, pregnancy_status, previous_treatments, clinical_notes, consent_given, consent_recorded_at, created_at"
+          )
+          .eq("patient_id", selectedPatient.id)
+          .order("consultation_date", { ascending: false });
+
+      if (consultationError) {
+        throw consultationError;
+      }
+
+      let practitionerDirectory: Practitioner[] = [];
+
+      const latestClinicSettings =
+        localStorage.getItem("dermisClinicSettings");
+
+      if (latestClinicSettings) {
+        try {
+          const parsedSettings = JSON.parse(latestClinicSettings);
+          practitionerDirectory = Array.isArray(parsedSettings?.practitioners)
+            ? parsedSettings.practitioners
+            : [];
+        } catch (error) {
+          console.error(
+            "Could not read practitioner names for consultations:",
+            error
+          );
+        }
+      }
+
+      const patientConsultations: ConsultationRecord[] =
+        (consultationRows || []).map((row) => {
+          const practitionerId = row.practitioner_id
+            ? String(row.practitioner_id)
+            : "";
+
+          const practitionerRecord = practitionerDirectory.find(
+            (practitioner) =>
+              String(practitioner.id) === practitionerId
+          );
+
+          const consultationDate =
+            row.consultation_date || row.created_at || new Date().toISOString();
+
+          return {
+            id: String(row.id),
+            patientId: selectedPatient.id,
+            date: new Date(consultationDate).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            }),
+            allergies: row.allergies || "",
+            medications: row.medications || "",
+            pregnancyStatus: row.pregnancy_status || "Not Applicable",
+            previousTreatments: row.previous_treatments || "",
+            contraindications: row.contraindications || "",
+            medicalHistory: row.medical_history || "",
+            consentGiven: Boolean(row.consent_given),
+            practitionerNotes: row.clinical_notes || "",
+            practitioner: practitionerRecord?.name || "",
+            practitionerId: practitionerId || undefined,
+          };
+        });
+
+      setConsultations(patientConsultations);
+
+      /*
+       * Keep the old cache current while Treatments and other dependent
+       * prototype flows are still being migrated away from localStorage.
+       */
+      let consultationsByPatient: Record<
+        string,
+        ConsultationRecord[]
+      > = {};
+
+      const storedConsultations =
+        localStorage.getItem("dermisConsultations");
+
+      if (storedConsultations) {
+        try {
+          const parsed = JSON.parse(storedConsultations);
+          consultationsByPatient =
+            parsed && typeof parsed === "object" && !Array.isArray(parsed)
+              ? parsed
+              : {};
+        } catch (error) {
+          console.error(
+            "Could not read consultation compatibility cache:",
+            error
+          );
+        }
+      }
+
+      consultationsByPatient[
+        String(getCompatibilityPatientId(selectedPatient))
+      ] = patientConsultations;
+
+      consultationsByPatient[String(selectedPatient.id)] =
+        patientConsultations;
+
+      localStorage.setItem(
+        "dermisConsultations",
+        JSON.stringify(consultationsByPatient)
       );
 
-    if (storedConsultations) {
-      try {
-        const parsed:
-          Record<
-            string,
-            ConsultationRecord[]
-          > = JSON.parse(
-            storedConsultations
-          );
+      if (patientConsultations.length > 0) {
+        const latest = patientConsultations[0];
 
-        const patientConsultations =
-          parsed[
-            String(getCompatibilityPatientId(selectedPatient))
-          ] ||
-          parsed[String(selectedPatient.id)] || [];
+        setAllergies(latest.allergies);
+        setMedications(latest.medications);
+        setPregnancyStatus(latest.pregnancyStatus);
+        setPreviousTreatments(latest.previousTreatments);
+        setContraindications(latest.contraindications);
+        setMedicalHistory(latest.medicalHistory);
+        setConsentGiven(latest.consentGiven);
+        setPractitionerNotes(latest.practitionerNotes);
 
-        setConsultations(
-          patientConsultations
-        );
-
-        /*
-         * Fill the form with the
-         * latest consultation
-         */
-        if (
-          patientConsultations.length >
-          0
-        ) {
-          const latest =
-            patientConsultations[0];
-
-          setAllergies(
-            latest.allergies
-          );
-
-          setMedications(
-            latest.medications
-          );
-
-          setPregnancyStatus(
-            latest.pregnancyStatus
-          );
-
-          setPreviousTreatments(
-            latest.previousTreatments
-          );
-
-          setContraindications(
-            latest.contraindications
-          );
-
-          setMedicalHistory(
-            latest.medicalHistory
-          );
-
-          setConsentGiven(
-            latest.consentGiven
-          );
-
-          setPractitionerNotes(
-            latest.practitionerNotes
-          );
-
-          if (latest.practitionerId) {
-            setSelectedPractitionerId(
-              latest.practitionerId
-            );
-          }
+        if (latest.practitionerId) {
+          setSelectedPractitionerId(latest.practitionerId);
         }
-      } catch (error) {
-        console.error(
-          "Could not load consultations:",
-          error
-        );
       }
+    } catch (error) {
+      console.error(
+        "Could not load consultations from Supabase:",
+        error
+      );
+      setConsultations([]);
     }
     };
 
@@ -1320,7 +1389,7 @@ export default function PatientProfile() {
   const selectedPractitioner =
     practitioners.find(
       (practitioner) =>
-        practitioner.id === selectedPractitionerId
+        String(practitioner.id) === String(selectedPractitionerId)
     ) || null;
 
   const latestConsultation =
@@ -2370,113 +2439,211 @@ export default function PatientProfile() {
     }
   };
 
-  const saveConsultation =
-    () => {
-      if (
-        !selectedPractitioner ||
-        !consentGiven
-      ) {
-        return;
+  const saveConsultation = async () => {
+    if (
+      !selectedPractitioner ||
+      !consentGiven ||
+      consultationSaving
+    ) {
+      return;
+    }
+
+    setConsultationSaving(true);
+    setConsultationSaveError("");
+    setConsultationSaved(false);
+
+    try {
+      const supabase = createClient();
+
+      /*
+       * The patient UUID is the authoritative patient reference. Resolve the
+       * clinic directly from the patient row if an older cache does not yet
+       * carry clinicId.
+       */
+      let clinicId = patient.clinicId || "";
+
+      if (!clinicId) {
+        const { data: patientRow, error: patientClinicError } =
+          await supabase
+            .from("patients")
+            .select("clinic_id")
+            .eq("id", patient.id)
+            .maybeSingle();
+
+        if (patientClinicError) {
+          throw patientClinicError;
+        }
+
+        clinicId = patientRow?.clinic_id
+          ? String(patientRow.clinic_id)
+          : "";
       }
 
-      const newConsultation: ConsultationRecord =
-        {
-          id: Date.now(),
-          patientId:
-            getCompatibilityPatientId(patient),
-          date:
-            new Date().toLocaleDateString(
-              "en-GB",
-              {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              }
-            ),
-          allergies:
-            allergies.trim(),
-          medications:
-            medications.trim(),
-          pregnancyStatus,
-          previousTreatments:
-            previousTreatments.trim(),
-          contraindications:
-            contraindications.trim(),
-          medicalHistory:
-            medicalHistory.trim(),
-          consentGiven,
-          practitionerNotes:
-            practitionerNotes.trim(),
-          practitioner:
-            selectedPractitioner?.name || "",
-          practitionerId:
-            selectedPractitioner?.id,
-        };
+      if (!clinicId) {
+        throw new Error(
+          "The clinic for this patient could not be resolved."
+        );
+      }
 
+      const practitionerId = String(selectedPractitioner.id);
+
+      const uuidPattern =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+      if (!uuidPattern.test(practitionerId)) {
+        throw new Error(
+          "The selected practitioner is using an old local identifier. Open Clinic Settings once, then return and select the practitioner again."
+        );
+      }
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        throw userError;
+      }
+
+      if (!user) {
+        throw new Error(
+          "Your session has expired. Please sign in again."
+        );
+      }
+
+      const nowIso = new Date().toISOString();
+
+      const { data: savedRow, error: insertError } =
+        await supabase
+          .from("consultations")
+          .insert({
+            clinic_id: clinicId,
+            patient_id: patient.id,
+            practitioner_id: practitionerId,
+            consultation_date: nowIso,
+            concerns: patient.concern || null,
+            medical_history: medicalHistory.trim() || null,
+            allergies: allergies.trim() || null,
+            medications: medications.trim() || null,
+            contraindications: contraindications.trim() || null,
+            pregnancy_status: pregnancyStatus || null,
+            previous_treatments: previousTreatments.trim() || null,
+            clinical_notes: practitionerNotes.trim() || null,
+            consent_given: true,
+            consent_recorded_at: nowIso,
+            created_by: user.id,
+          })
+          .select(
+            "id, practitioner_id, consultation_date, medical_history, allergies, medications, contraindications, pregnancy_status, previous_treatments, clinical_notes, consent_given, consent_recorded_at, created_at"
+          )
+          .single();
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      const consultationDate =
+        savedRow.consultation_date ||
+        savedRow.created_at ||
+        nowIso;
+
+      const newConsultation: ConsultationRecord = {
+        id: String(savedRow.id),
+        patientId: patient.id,
+        date: new Date(consultationDate).toLocaleDateString(
+          "en-GB",
+          {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }
+        ),
+        allergies: savedRow.allergies || "",
+        medications: savedRow.medications || "",
+        pregnancyStatus:
+          savedRow.pregnancy_status || "Not Applicable",
+        previousTreatments:
+          savedRow.previous_treatments || "",
+        contraindications:
+          savedRow.contraindications || "",
+        medicalHistory:
+          savedRow.medical_history || "",
+        consentGiven: Boolean(savedRow.consent_given),
+        practitionerNotes:
+          savedRow.clinical_notes || "",
+        practitioner:
+          selectedPractitioner.name,
+        practitionerId,
+      };
+
+      const updatedConsultations = [
+        newConsultation,
+        ...consultations.filter(
+          (consultation) =>
+            String(consultation.id) !== String(newConsultation.id)
+        ),
+      ];
+
+      /*
+       * Compatibility mirror. Supabase is authoritative; this keeps
+       * Treatments and other not-yet-migrated flows working during migration.
+       */
       let consultationsByPatient: Record<
         string,
         ConsultationRecord[]
       > = {};
 
       const storedConsultations =
-        localStorage.getItem(
-          "dermisConsultations"
-        );
+        localStorage.getItem("dermisConsultations");
 
       if (storedConsultations) {
         try {
+          const parsed = JSON.parse(storedConsultations);
           consultationsByPatient =
-            JSON.parse(
-              storedConsultations
-            );
+            parsed && typeof parsed === "object" && !Array.isArray(parsed)
+              ? parsed
+              : {};
         } catch (error) {
           console.error(
-            "Could not read consultations:",
+            "Could not read consultations compatibility cache:",
             error
           );
         }
       }
 
-      const currentConsultations =
-        consultationsByPatient[
-          String(getCompatibilityPatientId(patient))
-        ] || [];
-
-      const updatedConsultations =
-        [
-          newConsultation,
-          ...currentConsultations,
-        ];
-
       consultationsByPatient[
         String(getCompatibilityPatientId(patient))
-      ] =
+      ] = updatedConsultations;
+
+      consultationsByPatient[String(patient.id)] =
         updatedConsultations;
 
       localStorage.setItem(
         "dermisConsultations",
-        JSON.stringify(
-          consultationsByPatient
-        )
+        JSON.stringify(consultationsByPatient)
       );
 
-      setConsultations(
-        updatedConsultations
+      setConsultations(updatedConsultations);
+      setConsultationSaved(true);
+
+      window.setTimeout(() => {
+        setConsultationSaved(false);
+      }, 2500);
+    } catch (error) {
+      console.error(
+        "Could not save consultation to Supabase:",
+        error
       );
 
-      setConsultationSaved(
-        true
+      setConsultationSaveError(
+        error instanceof Error
+          ? error.message
+          : "The consultation could not be saved. Please try again."
       );
-
-      window.setTimeout(
-        () => {
-          setConsultationSaved(
-            false
-          );
-        },
-        2500
-      );
-    };
+    } finally {
+      setConsultationSaving(false);
+    }
+  };
 
   if (!patientResolved) {
     return (
@@ -4030,9 +4197,7 @@ export default function PatientProfile() {
                       value={selectedPractitionerId}
                       onChange={(event) =>
                         setSelectedPractitionerId(
-                          event.target.value
-                            ? Number(event.target.value)
-                            : ""
+                          event.target.value || ""
                         )
                       }
                       className="mt-2 w-full rounded-[12px] border border-[#E0E5DF] bg-[#F8FAF7] px-4 py-3 text-sm outline-none transition focus:border-[#829A87] focus:bg-white focus:shadow-[0_0_0_3px_rgba(77,112,83,0.07)]"
@@ -4137,6 +4302,17 @@ export default function PatientProfile() {
                       </div>
                     )}
 
+                    {consultationSaveError && (
+                      <div className="mb-3 rounded-xl border border-[#E7D7D3] bg-[#FBF4F2] px-4 py-3">
+                        <p className="text-xs font-medium text-[#8A554A]">
+                          Consultation could not be saved
+                        </p>
+                        <p className="mt-1 text-[11px] leading-5 text-[#9B7168]">
+                          {consultationSaveError}
+                        </p>
+                      </div>
+                    )}
+
                     <div className="flex justify-end">
 
                       <button
@@ -4146,11 +4322,13 @@ export default function PatientProfile() {
                         }
                         disabled={
                           !selectedPractitioner ||
-                          !consentGiven
+                          !consentGiven ||
+                          consultationSaving
                         }
                         className={`flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium transition ${
                           !selectedPractitioner ||
-                          !consentGiven
+                          !consentGiven ||
+                          consultationSaving
                             ? "cursor-not-allowed bg-[#D8D7D1] text-[#8C8B84]"
                             : "bg-[#24402F] text-white shadow-[0_8px_22px_rgba(36,64,47,0.14)] hover:bg-[#1B3325]"
                         }`}
@@ -4163,7 +4341,9 @@ export default function PatientProfile() {
                           />
                         )}
 
-                        {consultationSaved
+                        {consultationSaving
+                          ? "Saving…"
+                          : consultationSaved
                           ? "Consultation Saved"
                           : "Save Consultation"}
 
