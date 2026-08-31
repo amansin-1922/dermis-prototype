@@ -120,7 +120,7 @@ type FollowUpStatus =
   | "Completed";
 
 type FollowUpRecord = {
-  id: number;
+  id: string | number;
   appointmentId: string | number;
   patientId?: string | number;
   patient: string;
@@ -135,7 +135,7 @@ type FollowUpRecord = {
 };
 
 type FollowUpBookingHandoff = {
-  followUpId: number;
+  followUpId: string | number;
   appointmentId: string | number;
   patientId?: string | number;
   patient: string;
@@ -598,6 +598,32 @@ function toDatabaseStatus(value: AppointmentStatus) {
   return value.toLowerCase();
 }
 
+function mapFollowUpStatus(value: string): FollowUpStatus {
+  switch (String(value || "").toLowerCase()) {
+    case "scheduled":
+      return "Scheduled";
+    case "analysis_started":
+      return "Analysis started";
+    case "completed":
+      return "Completed";
+    default:
+      return "Due";
+  }
+}
+
+function toDatabaseFollowUpStatus(value: FollowUpStatus) {
+  switch (value) {
+    case "Scheduled":
+      return "scheduled";
+    case "Analysis started":
+      return "analysis_started";
+    case "Completed":
+      return "completed";
+    default:
+      return "due";
+  }
+}
+
 function getZonedDateTimeParts(isoValue: string, timeZone: string) {
   const formatter = new Intl.DateTimeFormat("en-GB", {
     timeZone,
@@ -770,7 +796,7 @@ export default function AppointmentsPage() {
   const [
     schedulingFollowUpId,
     setSchedulingFollowUpId,
-  ] = useState<number | null>(null);
+  ] = useState<string | number | null>(null);
 
   /*
    * LOAD DATA
@@ -1142,6 +1168,98 @@ export default function AppointmentsPage() {
           localStorage.setItem(
             "dermisAppointments",
             JSON.stringify(mappedAppointments)
+          );
+        }
+
+        const { data: followUpRows, error: followUpError } = await supabase
+          .from("follow_ups")
+          .select(
+            "id, patient_id, practitioner_id, source_appointment_id, source_analysis_id, follow_up_appointment_id, due_at, status, reason, notes, completed_at, created_at"
+          )
+          .eq("clinic_id", resolvedClinicId)
+          .order("created_at", { ascending: false });
+
+        if (followUpError) {
+          console.error("Could not load Supabase follow-ups:", followUpError);
+        } else if (Array.isArray(followUpRows) && !cancelled) {
+          const cachedFollowUpsRaw = localStorage.getItem("dermisFollowUps");
+          let cachedFollowUps: FollowUpRecord[] = [];
+          try {
+            cachedFollowUps = cachedFollowUpsRaw
+              ? JSON.parse(cachedFollowUpsRaw)
+              : [];
+          } catch {
+            cachedFollowUps = [];
+          }
+
+          const mappedFollowUps: FollowUpRecord[] = followUpRows.map((row) => {
+            const sourceAppointment = mappedAppointments.find(
+              (appointment) =>
+                String(appointment.supabaseId || appointment.id) ===
+                String(row.source_appointment_id || "")
+            );
+
+            const cached = cachedFollowUps.find(
+              (record) => String(record.id) === String(row.id)
+            );
+
+            const patient = resolvedPatients.find((item) =>
+              patientMatchesId(item, row.patient_id)
+            );
+
+            const practitioner = clinicSettings.practitioners.find((item) =>
+              practitionerMatchesId(item, row.practitioner_id)
+            );
+
+            const dueParts = row.due_at
+              ? getZonedDateTimeParts(row.due_at, resolvedTimeZone)
+              : null;
+
+            return {
+              id: String(row.id),
+              appointmentId:
+                row.source_appointment_id ||
+                sourceAppointment?.id ||
+                cached?.appointmentId ||
+                "",
+              patientId: patient?.id || row.patient_id,
+              patient: patient?.name || cached?.patient || "Unknown patient",
+              treatment:
+                sourceAppointment?.treatment ||
+                row.reason ||
+                cached?.treatment ||
+                "Treatment",
+              completedDate:
+                sourceAppointment?.date ||
+                cached?.completedDate ||
+                (dueParts ? formatDate(dueParts.date) : ""),
+              completedRawDate:
+                sourceAppointment?.rawDate ||
+                cached?.completedRawDate ||
+                (dueParts?.date || ""),
+              practitioner:
+                practitioner?.name ||
+                sourceAppointment?.practitioner ||
+                cached?.practitioner ||
+                "Practitioner",
+              practitionerId:
+                practitioner?.id ||
+                row.practitioner_id ||
+                sourceAppointment?.practitionerId ||
+                cached?.practitionerId,
+              status: mapFollowUpStatus(row.status),
+              createdAt: row.created_at || cached?.createdAt || new Date().toISOString(),
+              followUpAppointmentId:
+                row.follow_up_appointment_id ||
+                cached?.followUpAppointmentId ||
+                undefined,
+            };
+          });
+
+          setFollowUps(mappedFollowUps);
+          localStorage.setItem(
+            "dermisFollowUps",
+            JSON.stringify(mappedFollowUps)
           );
         }
       } catch (error) {
@@ -2120,8 +2238,31 @@ export default function AppointmentsPage() {
     saveAppointments(updatedAppointments);
 
     if (schedulingFollowUpId !== null) {
+      if (isUuid(schedulingFollowUpId)) {
+        const { error: followUpScheduleError } = await supabase
+          .from("follow_ups")
+          .update({
+            status: "scheduled",
+            follow_up_appointment_id: insertedAppointment.id,
+            due_at: startsAt,
+          })
+          .eq("id", String(schedulingFollowUpId))
+          .eq("clinic_id", clinicId);
+
+        if (followUpScheduleError) {
+          console.error(
+            "Could not schedule follow-up in Supabase:",
+            followUpScheduleError
+          );
+          setConflictMessage(
+            `The appointment was created, but the follow-up could not be marked scheduled: ${followUpScheduleError.message}`
+          );
+          return;
+        }
+      }
+
       const updatedFollowUps = followUps.map((record) =>
-        record.id === schedulingFollowUpId
+        String(record.id) === String(schedulingFollowUpId)
           ? {
               ...record,
               status: "Scheduled" as FollowUpStatus,
@@ -2164,15 +2305,15 @@ export default function AppointmentsPage() {
     );
   };
 
-  const createFollowUpRecord = (
+  const createFollowUpRecord = async (
     appointment: Appointment
   ) => {
     /*
      * Prevent recursive follow-up loops.
      *
-     * A completed treatment should create a follow-up.
-     * A completed follow-up / Skin analysis appointment should NOT create
-     * another follow-up record.
+     * A completed treatment should create one follow-up.
+     * Completing a Skin analysis/follow-up appointment must never create
+     * another follow-up and cause a recursive loop.
      */
     const normalizedTreatment =
       appointment.treatment
@@ -2180,30 +2321,33 @@ export default function AppointmentsPage() {
         .toLowerCase();
 
     const isAnalysisAppointment =
-      normalizedTreatment ===
-        "skin analysis" ||
-      normalizedTreatment ===
-        "skin analysis follow-up" ||
-      normalizedTreatment ===
-        "follow-up skin analysis";
+      normalizedTreatment === "skin analysis" ||
+      normalizedTreatment === "skin analysis follow-up" ||
+      normalizedTreatment === "follow-up skin analysis";
+
+    const appointmentDatabaseId =
+      appointment.supabaseId ||
+      (isUuid(appointment.id) ? String(appointment.id) : null);
 
     const isExistingFollowUpAppointment =
       followUps.some(
         (record) =>
-          record.followUpAppointmentId ===
-          appointment.id
+          String(record.followUpAppointmentId ?? "") ===
+          String(appointment.id) ||
+          (appointmentDatabaseId != null &&
+            String(record.followUpAppointmentId ?? "") ===
+              appointmentDatabaseId)
       );
 
-    if (
-      isAnalysisAppointment ||
-      isExistingFollowUpAppointment
-    ) {
+    if (isAnalysisAppointment || isExistingFollowUpAppointment) {
       return;
     }
+
     const existing = followUps.find(
       (record) =>
-        record.appointmentId ===
-        appointment.id
+        String(record.appointmentId) === String(appointment.id) ||
+        (appointmentDatabaseId != null &&
+          String(record.appointmentId) === appointmentDatabaseId)
     );
 
     if (existing) return;
@@ -2215,24 +2359,115 @@ export default function AppointmentsPage() {
           patient.name === appointment.patient
       )?.id;
 
+    if (
+      !clinicId ||
+      !appointmentDatabaseId ||
+      !isUuid(patientId)
+    ) {
+      console.warn(
+        "Follow-up was not created because its clinic, patient or source appointment is not linked to Supabase."
+      );
+      return;
+    }
+
+    const practitionerUuid =
+      isUuid(appointment.practitionerId)
+        ? String(appointment.practitionerId)
+        : null;
+
+    const firstFollowUpDate = getNextWorkingDate(
+      addDaysToIsoDate(appointment.rawDate, 1),
+      activePractitioners
+    );
+
+    const dueAt = zonedDateTimeToUtcIso(
+      firstFollowUpDate || addDaysToIsoDate(appointment.rawDate, 1),
+      "09:00",
+      clinicTimeZone
+    );
+
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      console.warn("Follow-up was not created because the session has expired.");
+      return;
+    }
+
+    const { data: existingRow, error: existingError } = await supabase
+      .from("follow_ups")
+      .select(
+        "id, patient_id, practitioner_id, source_appointment_id, follow_up_appointment_id, due_at, status, reason, created_at"
+      )
+      .eq("clinic_id", clinicId)
+      .eq("source_appointment_id", appointmentDatabaseId)
+      .limit(1)
+      .maybeSingle();
+
+    if (existingError) {
+      console.error("Could not check existing Supabase follow-up:", existingError);
+      return;
+    }
+
+    let persistedRow = existingRow;
+
+    if (!persistedRow) {
+      const { data, error } = await supabase
+        .from("follow_ups")
+        .insert({
+          clinic_id: clinicId,
+          patient_id: String(patientId),
+          practitioner_id: practitionerUuid,
+          source_appointment_id: appointmentDatabaseId,
+          source_analysis_id: null,
+          follow_up_appointment_id: null,
+          due_at: dueAt,
+          status: "due",
+          reason: appointment.treatment,
+          notes: `Follow-up after ${appointment.treatment} completed on ${appointment.date}.`,
+          completed_at: null,
+          created_by: user.id,
+        })
+        .select(
+          "id, patient_id, practitioner_id, source_appointment_id, follow_up_appointment_id, due_at, status, reason, created_at"
+        )
+        .single();
+
+      if (error || !data) {
+        console.error("Could not create Supabase follow-up:", error);
+        return;
+      }
+
+      persistedRow = data;
+    }
+
     const record: FollowUpRecord = {
-      id: Date.now(),
-      appointmentId: appointment.id,
+      id: String(persistedRow.id),
+      appointmentId: appointmentDatabaseId,
       patientId,
       patient: appointment.patient,
       treatment: appointment.treatment,
       completedDate: appointment.date,
       completedRawDate: appointment.rawDate,
       practitioner: appointment.practitioner,
-      practitionerId:
-        appointment.practitionerId,
-      status: "Due",
-      createdAt: new Date().toISOString(),
+      practitionerId: appointment.practitionerId,
+      status: mapFollowUpStatus(persistedRow.status || "due"),
+      createdAt: persistedRow.created_at || new Date().toISOString(),
+      followUpAppointmentId:
+        persistedRow.follow_up_appointment_id || undefined,
     };
+
+    const withoutSourceDuplicate = followUps.filter(
+      (item) =>
+        String(item.id) !== String(record.id) &&
+        String(item.appointmentId) !== String(appointmentDatabaseId)
+    );
 
     saveFollowUps([
       record,
-      ...followUps,
+      ...withoutSourceDuplicate,
     ]);
   };
 
@@ -2241,11 +2476,16 @@ export default function AppointmentsPage() {
   ) =>
     followUps.find(
       (record) =>
-        record.appointmentId ===
-        appointmentId
+        String(record.appointmentId) === String(appointmentId) ||
+        appointments.some(
+          (appointment) =>
+            appointment.id === appointmentId &&
+            appointment.supabaseId != null &&
+            String(record.appointmentId) === String(appointment.supabaseId)
+        )
     ) || null;
 
-  const deleteFollowUp = (
+  const deleteFollowUp = async (
     appointment: Appointment
   ) => {
     const followUp =
@@ -2266,10 +2506,27 @@ export default function AppointmentsPage() {
       return;
     }
 
+    if (isUuid(followUp.id)) {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("follow_ups")
+        .delete()
+        .eq("id", String(followUp.id))
+        .eq("clinic_id", clinicId);
+
+      if (error) {
+        console.error("Could not delete Supabase follow-up:", error);
+        setUpdateConfirmed(
+          `Could not delete follow-up: ${error.message}`
+        );
+        return;
+      }
+    }
+
     const updatedFollowUps =
       followUps.filter(
         (record) =>
-          record.id !== followUp.id
+          String(record.id) !== String(followUp.id)
       );
 
     saveFollowUps(
@@ -2277,8 +2534,9 @@ export default function AppointmentsPage() {
     );
 
     if (
-      schedulingFollowUpId ===
-      followUp.id
+      schedulingFollowUpId !== null &&
+      String(schedulingFollowUpId) ===
+        String(followUp.id)
     ) {
       setSchedulingFollowUpId(
         null
@@ -2294,12 +2552,12 @@ export default function AppointmentsPage() {
       try {
         const parsedBooking =
           JSON.parse(storedBooking) as {
-            followUpId?: number;
+            followUpId?: string | number;
           };
 
         if (
-          parsedBooking.followUpId ===
-          followUp.id
+          String(parsedBooking.followUpId ?? "") ===
+          String(followUp.id)
         ) {
           localStorage.removeItem(
             "dermisFollowUpBooking"
@@ -2321,12 +2579,12 @@ export default function AppointmentsPage() {
       try {
         const parsedSource =
           JSON.parse(storedSource) as {
-            followUpId?: number;
+            followUpId?: string | number;
           };
 
         if (
-          parsedSource.followUpId ===
-          followUp.id
+          String(parsedSource.followUpId ?? "") ===
+          String(followUp.id)
         ) {
           localStorage.removeItem(
             "dermisFollowUpSource"
@@ -2434,8 +2692,10 @@ export default function AppointmentsPage() {
     const practitioner =
       practitionersAvailableOnDate.find(
         (item) =>
-          item.id ===
-          appointment.practitionerId
+          practitionerMatchesId(
+            item,
+            appointment.practitionerId
+          )
       ) ||
       practitionersAvailableOnDate[0];
 
@@ -2460,7 +2720,7 @@ export default function AppointmentsPage() {
     });
   };
 
-  const openFollowUpAnalysis = (
+  const openFollowUpAnalysis = async (
     appointment: Appointment
   ) => {
     const patient =
@@ -2483,9 +2743,32 @@ export default function AppointmentsPage() {
       );
 
     if (followUp) {
+      if (isUuid(followUp.id)) {
+        const supabase = createClient();
+        const { error } = await supabase
+          .from("follow_ups")
+          .update({
+            status: "analysis_started",
+            completed_at: null,
+          })
+          .eq("id", String(followUp.id))
+          .eq("clinic_id", clinicId);
+
+        if (error) {
+          console.error(
+            "Could not start follow-up analysis in Supabase:",
+            error
+          );
+          setUpdateConfirmed(
+            `Could not start follow-up analysis: ${error.message}`
+          );
+          return;
+        }
+      }
+
       const updatedFollowUps =
         followUps.map((record) =>
-          record.id === followUp.id
+          String(record.id) === String(followUp.id)
             ? {
                 ...record,
                 status:
@@ -2500,10 +2783,13 @@ export default function AppointmentsPage() {
     localStorage.setItem(
       "dermisFollowUpSource",
       JSON.stringify({
-        appointmentId: appointment.id,
+        followUpId: followUp?.id,
+        appointmentId:
+          appointment.supabaseId || appointment.id,
         patientId:
-          appointment.patientId,
-        patient: appointment.patient,
+          patient?.id || appointment.patientId,
+        patient:
+          patient?.name || appointment.patient,
         treatment:
           appointment.treatment,
         completedDate:
@@ -2786,7 +3072,7 @@ export default function AppointmentsPage() {
     if (status === "Completed") {
       if (!wasAlreadyCompleted) {
         recordCompletedTreatment(appointment);
-        createFollowUpRecord(appointment);
+        await createFollowUpRecord(appointment);
 
         if (isUuid(appointment.patientId)) {
           const supabase = createClient();

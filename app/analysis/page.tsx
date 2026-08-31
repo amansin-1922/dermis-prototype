@@ -1930,13 +1930,17 @@ export default function AnalysisPage() {
         if (isUuid(String(followUpSource.followUpId || ""))) {
           const { error: followUpError } = await supabase
             .from("follow_ups")
-            .update({ status: "completed" })
+            .update({
+              status: "completed",
+              completed_at: analysisTimestamp,
+              source_analysis_id: String(savedRow.id),
+            })
             .eq("id", String(followUpSource.followUpId))
             .eq("clinic_id", resolvedClinicId);
 
           if (followUpError) {
             console.warn(
-              "Analysis saved, but the Supabase follow-up status was not updated:",
+              "Analysis saved, but the Supabase follow-up completion details were not updated:",
               followUpError
             );
           }
