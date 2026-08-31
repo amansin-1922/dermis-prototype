@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import Sidebar from "../components/sidebar";
+import { createClient } from "@/app/lib/supabase-browser";
 
 type ImageSlot = "front" | "left" | "right";
 
@@ -25,7 +26,9 @@ type UploadedImages = {
 };
 
 type Patient = {
-  id: number;
+  id: string | number;
+  legacyId?: number;
+  clinicId?: string;
   name: string;
   email: string;
   phone: string;
@@ -65,11 +68,16 @@ type ClinicalProfile = {
 };
 
 type AnalysisRecord = {
-  id: number;
+  id: string | number;
+  patientId?: string | number;
   date: string;
   score: number;
   image: string;
   metrics: SkinMetric[];
+  change?: number;
+  recommendations?: TreatmentRecommendation[];
+  summary?: string;
+  expectedImprovement?: string;
 };
 
 type FollowUpStatus =
@@ -79,24 +87,24 @@ type FollowUpStatus =
   | "Completed";
 
 type FollowUpRecord = {
-  id: number;
-  appointmentId: number;
-  patientId?: number;
+  id: string | number;
+  appointmentId: string | number;
+  patientId?: string | number;
   patient: string;
   treatment: string;
   completedDate: string;
   completedRawDate?: string;
   practitioner?: string;
-  practitionerId?: number;
+  practitionerId?: string | number;
   status: FollowUpStatus;
   createdAt: string;
-  followUpAppointmentId?: number;
+  followUpAppointmentId?: string | number;
 };
 
 type FollowUpSource = {
-  followUpId?: number;
-  appointmentId?: number;
-  patientId?: number;
+  followUpId?: string | number;
+  appointmentId?: string | number;
+  patientId?: string | number;
   patient: string;
   treatment: string;
   completedDate: string;
@@ -228,6 +236,48 @@ function getTodayClinicalDate() {
       year: "numeric",
     }
   );
+}
+
+function isUuid(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      value
+    )
+  );
+}
+
+function calculateAge(dateOfBirth: string | null) {
+  if (!dateOfBirth) return 0;
+
+  const birthDate = new Date(`${dateOfBirth}T00:00:00`);
+  if (Number.isNaN(birthDate.getTime())) return 0;
+
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDifference = today.getMonth() - birthDate.getMonth();
+
+  if (
+    monthDifference < 0 ||
+    (monthDifference === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age -= 1;
+  }
+
+  return Math.max(age, 0);
+}
+
+function formatClinicalDate(value: string | null | undefined) {
+  if (!value) return getTodayClinicalDate();
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return getTodayClinicalDate();
+
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 const defaultPatients: Patient[] = [
@@ -405,6 +455,10 @@ export default function AnalysisPage() {
   });
 
   const [saved, setSaved] = useState(false);
+  const [savingAnalysis, setSavingAnalysis] = useState(false);
+  const [clinicId, setClinicId] = useState<string | null>(null);
+  const [primaryPractitionerId, setPrimaryPractitionerId] =
+    useState<string | null>(null);
 
   const [historicalAnalysis, setHistoricalAnalysis] =
     useState<AnalysisRecord | null>(null);
@@ -494,8 +548,8 @@ export default function AnalysisPage() {
         const exists =
           availablePatients.some(
             (patient) =>
-              patient.id ===
-              parsedPatient.id
+              String(patient.id) ===
+              String(parsedPatient.id)
           );
 
         if (!exists) {
@@ -541,7 +595,7 @@ export default function AnalysisPage() {
           type HistoricalAnalysisHandoff =
             Partial<AnalysisRecord> & {
               patient?: string;
-              patientId?: number;
+              patientId?: string | number;
             };
 
           const parsedSelectedAnalysis =
@@ -555,11 +609,14 @@ export default function AnalysisPage() {
            * used when opening an old record.
            */
           const historicalPatient =
-            typeof parsedSelectedAnalysis.patientId === "number"
+            parsedSelectedAnalysis.patientId != null
               ? availablePatients.find(
                   (patient) =>
-                    patient.id ===
-                    parsedSelectedAnalysis.patientId
+                    String(patient.id) ===
+                    String(parsedSelectedAnalysis.patientId) ||
+                    (patient.legacyId != null &&
+                      String(patient.legacyId) ===
+                        String(parsedSelectedAnalysis.patientId))
                 )
               : typeof parsedSelectedAnalysis.patient === "string"
                 ? availablePatients.find(
@@ -596,14 +653,16 @@ export default function AnalysisPage() {
           if (storedHistory) {
             try {
               const parsedHistory: Record<
-                number,
+                string,
                 AnalysisRecord[]
               > = JSON.parse(storedHistory);
 
               previousHistory =
-                parsedHistory[
-                  resolvedPatient.id
-                ] || [];
+                parsedHistory[String(resolvedPatient.id)] ||
+                (resolvedPatient.legacyId != null
+                  ? parsedHistory[String(resolvedPatient.legacyId)]
+                  : []) ||
+                [];
             } catch (error) {
               console.error(
                 "Could not load historical analysis history:",
@@ -659,7 +718,8 @@ export default function AnalysisPage() {
               };
 
               const validId =
-                typeof mergedRecord.id === "number";
+                typeof mergedRecord.id === "number" ||
+                typeof mergedRecord.id === "string";
 
               const validDate =
                 typeof mergedRecord.date === "string";
@@ -682,7 +742,7 @@ export default function AnalysisPage() {
               }
 
               return {
-                id: mergedRecord.id as number,
+                id: mergedRecord.id as string | number,
                 date: mergedRecord.date as string,
                 score: mergedRecord.score as number,
                 image:
@@ -818,6 +878,318 @@ export default function AnalysisPage() {
   }, []);
 
   /*
+   * SUPABASE SYNC
+   *
+   * Supabase is authoritative for patients and saved skin analyses.
+   * localStorage remains a compatibility cache for the patient profile,
+   * progress and follow-up modules while those areas are migrated.
+   */
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadSupabaseAnalysisData = async () => {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user || cancelled) return;
+
+        const { data: membership, error: membershipError } = await supabase
+          .from("clinic_memberships")
+          .select("clinic_id")
+          .eq("user_id", user.id)
+          .eq("active", true)
+          .limit(1)
+          .maybeSingle();
+
+        if (membershipError || !membership?.clinic_id || cancelled) {
+          if (membershipError) {
+            console.error("Could not resolve clinic membership:", membershipError);
+          }
+          return;
+        }
+
+        const resolvedClinicId = String(membership.clinic_id);
+        setClinicId(resolvedClinicId);
+
+        const [patientResult, practitionerResult, analysisResultResponse] =
+          await Promise.all([
+            supabase
+              .from("patients")
+              .select(
+                "id, legacy_id, first_name, last_name, email, phone, date_of_birth, status, primary_concern, last_visit_at"
+              )
+              .eq("clinic_id", resolvedClinicId)
+              .order("created_at", { ascending: true }),
+            supabase
+              .from("practitioners")
+              .select("id, is_primary")
+              .eq("clinic_id", resolvedClinicId)
+              .eq("active", true)
+              .order("is_primary", { ascending: false })
+              .limit(1),
+            supabase
+              .from("skin_analyses")
+              .select(
+                "id, patient_id, analysis_date, overall_score, score_change, metrics, recommendations, ai_summary, expected_improvement, image_path"
+              )
+              .eq("clinic_id", resolvedClinicId)
+              .order("analysis_date", { ascending: true }),
+          ]);
+
+        if (cancelled) return;
+
+        if (patientResult.error) {
+          console.error("Could not load Supabase patients:", patientResult.error);
+          return;
+        }
+
+        if (analysisResultResponse.error) {
+          console.error(
+            "Could not load Supabase skin analyses:",
+            analysisResultResponse.error
+          );
+          return;
+        }
+
+        const practitionerRow = Array.isArray(practitionerResult.data)
+          ? practitionerResult.data[0]
+          : null;
+
+        if (practitionerRow?.id) {
+          setPrimaryPractitionerId(String(practitionerRow.id));
+        }
+
+        const analysisRows = Array.isArray(analysisResultResponse.data)
+          ? analysisResultResponse.data
+          : [];
+
+        const analysisCounts = new Map<string, number>();
+        const historyByPatient: Record<string, AnalysisRecord[]> = {};
+
+        for (const row of analysisRows) {
+          const patientId = String(row.patient_id);
+          const metrics = Array.isArray(row.metrics)
+            ? (row.metrics as SkinMetric[])
+            : [];
+          const recommendations = Array.isArray(row.recommendations)
+            ? (row.recommendations as TreatmentRecommendation[])
+            : [];
+
+          const record: AnalysisRecord = {
+            id: String(row.id),
+            patientId,
+            date: formatClinicalDate(row.analysis_date),
+            score: Number(row.overall_score ?? 0),
+            image: typeof row.image_path === "string" ? row.image_path : "",
+            metrics,
+            change:
+              row.score_change == null ? undefined : Number(row.score_change),
+            recommendations,
+            summary:
+              typeof row.ai_summary === "string" ? row.ai_summary : undefined,
+            expectedImprovement:
+              typeof row.expected_improvement === "string"
+                ? row.expected_improvement
+                : undefined,
+          };
+
+          historyByPatient[patientId] = [
+            ...(historyByPatient[patientId] || []),
+            record,
+          ];
+          analysisCounts.set(patientId, (analysisCounts.get(patientId) || 0) + 1);
+        }
+
+        let cachedPatients: Patient[] = [];
+        try {
+          const cachedPatientsRaw = localStorage.getItem("dermisPatients");
+          cachedPatients = cachedPatientsRaw ? JSON.parse(cachedPatientsRaw) : [];
+        } catch {
+          cachedPatients = [];
+        }
+
+        const mappedPatients: Patient[] = (patientResult.data || []).map((row) => {
+          const rowId = String(row.id);
+          const cached = cachedPatients.find(
+            (item) =>
+              String(item.id) === rowId ||
+              (row.legacy_id != null &&
+                String(item.id) === String(row.legacy_id)) ||
+              (row.legacy_id != null &&
+                String(item.legacyId ?? "") === String(row.legacy_id))
+          );
+          const name = `${row.first_name || ""} ${row.last_name || ""}`.trim();
+
+          const patient: Patient = {
+            id: rowId,
+            legacyId: row.legacy_id ?? undefined,
+            clinicId: resolvedClinicId,
+            name,
+            email: row.email || "",
+            phone: row.phone || "",
+            age: calculateAge(row.date_of_birth),
+            lastVisit: row.last_visit_at
+              ? formatClinicalDate(row.last_visit_at)
+              : cached?.lastVisit || "No visits yet",
+            status:
+              String(row.status || "active").toLowerCase() === "inactive"
+                ? "Inactive"
+                : "Active",
+            concern: row.primary_concern || "",
+            analyses: analysisCounts.get(rowId) || 0,
+          };
+
+          if (patient.legacyId != null && historyByPatient[rowId]) {
+            historyByPatient[String(patient.legacyId)] = historyByPatient[rowId];
+          }
+
+          return patient;
+        });
+
+        localStorage.setItem(
+          "dermisAnalysisHistory",
+          JSON.stringify(historyByPatient)
+        );
+        localStorage.setItem("dermisPatients", JSON.stringify(mappedPatients));
+
+        setPatients(mappedPatients);
+
+        const storedSelectedPatient = localStorage.getItem("dermisSelectedPatient");
+        let cachedSelected: Patient | null = null;
+        if (storedSelectedPatient) {
+          try {
+            cachedSelected = JSON.parse(storedSelectedPatient);
+          } catch {
+            cachedSelected = null;
+          }
+        }
+
+        const matchedSelected =
+          mappedPatients.find(
+            (patient) =>
+              cachedSelected != null &&
+              (String(patient.id) === String(cachedSelected.id) ||
+                (patient.legacyId != null &&
+                  String(patient.legacyId) === String(cachedSelected.id)) ||
+                (cachedSelected.legacyId != null &&
+                  String(patient.legacyId ?? "") ===
+                    String(cachedSelected.legacyId)))
+          ) ||
+          mappedPatients.find(
+            (patient) =>
+              cachedSelected != null && patient.email === cachedSelected.email
+          ) ||
+          mappedPatients[0];
+
+        if (matchedSelected) {
+          setSelectedPatient(matchedSelected);
+          localStorage.setItem(
+            "dermisSelectedPatient",
+            JSON.stringify(matchedSelected)
+          );
+        }
+
+        const isHistoryMode =
+          new URLSearchParams(window.location.search).get("mode") === "history";
+
+        if (isHistoryMode) {
+          const selectedAnalysisRaw = localStorage.getItem("dermisSelectedAnalysis");
+
+          if (selectedAnalysisRaw) {
+            try {
+              const handoff = JSON.parse(selectedAnalysisRaw) as
+                Partial<AnalysisRecord> & {
+                  patient?: string;
+                  patientId?: string | number;
+                };
+
+              const historyPatient =
+                mappedPatients.find(
+                  (patient) =>
+                    handoff.patientId != null &&
+                    (String(patient.id) === String(handoff.patientId) ||
+                      String(patient.legacyId ?? "") ===
+                        String(handoff.patientId))
+                ) ||
+                mappedPatients.find(
+                  (patient) => handoff.patient && patient.name === handoff.patient
+                ) ||
+                matchedSelected;
+
+              if (historyPatient) {
+                const history = historyByPatient[String(historyPatient.id)] || [];
+                const selectedIndex = history.findIndex(
+                  (record) =>
+                    (handoff.id != null && String(record.id) === String(handoff.id)) ||
+                    (handoff.date != null &&
+                      handoff.score != null &&
+                      record.date === handoff.date &&
+                      record.score === Number(handoff.score))
+                );
+                const record = selectedIndex >= 0 ? history[selectedIndex] : null;
+
+                if (record) {
+                  const previousRecord =
+                    selectedIndex > 0 ? history[selectedIndex - 1] : null;
+                  const change =
+                    record.change ??
+                    (previousRecord ? record.score - previousRecord.score : 0);
+
+                  setSelectedPatient(historyPatient);
+                  localStorage.setItem(
+                    "dermisSelectedPatient",
+                    JSON.stringify(historyPatient)
+                  );
+                  setHistoricalAnalysis(record);
+                  setImages({
+                    front: record.image || null,
+                    left: null,
+                    right: null,
+                  });
+                  setAnalysisResult({
+                    score: record.score,
+                    change,
+                    metrics: record.metrics,
+                    priorities: buildPriorityInsights(record.metrics),
+                    recommendations:
+                      record.recommendations?.length
+                        ? record.recommendations
+                        : buildRecommendations(record.metrics),
+                    summary:
+                      record.summary ||
+                      `Saved historical assessment for ${historyPatient.name} from ${record.date}. Overall skin score: ${record.score}/100.`,
+                    expectedImprovement:
+                      record.expectedImprovement ||
+                      (record.score >= 85
+                        ? "Maintain current progress"
+                        : "+4–8 points over the next treatment cycle"),
+                  });
+                  setSaved(true);
+                  setProgress(100);
+                  setStep(3);
+                }
+              }
+            } catch (error) {
+              console.error("Could not restore Supabase historical analysis:", error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Could not load Supabase analysis data:", error);
+      }
+    };
+
+    void loadSupabaseAnalysisData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /*
    * PROGRESS 0 → 100
    */
   useEffect(() => {
@@ -912,16 +1284,18 @@ export default function AnalysisPage() {
       if (storedHistory) {
         try {
           const parsedHistory: Record<
-            number,
+            string,
             AnalysisRecord[]
           > = JSON.parse(
             storedHistory
           );
 
           const patientHistory =
-            parsedHistory[
-              selectedPatient.id
-            ] || [];
+            parsedHistory[String(selectedPatient.id)] ||
+            (selectedPatient.legacyId != null
+              ? parsedHistory[String(selectedPatient.legacyId)]
+              : []) ||
+            [];
 
           if (
             patientHistory.length > 0
@@ -962,11 +1336,15 @@ export default function AnalysisPage() {
         6: 59,
       };
 
+      const startingScoreKey =
+        selectedPatient.legacyId ??
+        (typeof selectedPatient.id === "number"
+          ? selectedPatient.id
+          : 0);
+
       const baselineScore =
         previousScore ??
-        startingScores[
-          selectedPatient.id
-        ] ??
+        startingScores[startingScoreKey] ??
         64 +
           Math.floor(
             Math.random() * 8
@@ -1171,7 +1549,7 @@ export default function AnalysisPage() {
 
     if (
       followUpSource &&
-      followUpSource.patientId !== patient.id &&
+      String(followUpSource.patientId ?? "") !== String(patient.id) &&
       followUpSource.patient !== patient.name
     ) {
       setFollowUpSource(null);
@@ -1187,434 +1565,398 @@ export default function AnalysisPage() {
    * SAVE ANALYSIS
    */
   const saveAnalysis = async () => {
-    /*
-     * Prevent duplicate clicking.
-     */
-    if (saved) return;
+    if (saved || savingAnalysis) return;
 
-    const analysisDate =
-      getTodayClinicalDate();
-
-    const analysisMetrics =
-      analysisResult.metrics;
-
-    const treatmentItems: TreatmentItem[] =
-      analysisResult.recommendations.map(
-        (recommendation) => ({
-          name: recommendation.name,
-          reason:
-            recommendation.reason,
-          price:
-            recommendation.price,
-        })
-      );
-
-    /*
-     * ANALYSIS PHOTO HISTORY
-     */
-    const savedAnalysisHistory =
-      localStorage.getItem(
-        "dermisAnalysisHistory"
-      );
-
-    let analysisHistory: Record<
-      number,
-      AnalysisRecord[]
-    > = {};
-
-    if (savedAnalysisHistory) {
-      try {
-        analysisHistory =
-          JSON.parse(
-            savedAnalysisHistory
-          );
-      } catch (error) {
-        console.error(
-          "Could not load analysis history:",
-          error
-        );
-      }
-    }
-
-    /*
-     * COMPACT EXISTING PHOTO HISTORY
-     *
-     * Older versions of this prototype stored the original full-resolution
-     * base64 photo. Compress those legacy records before writing the history
-     * back so existing users are repaired automatically.
-     */
-    const compactedHistory: Record<
-      number,
-      AnalysisRecord[]
-    > = {};
-
-    for (
-      const [patientId, records] of
-      Object.entries(analysisHistory)
-    ) {
-      compactedHistory[
-        Number(patientId)
-      ] = await Promise.all(
-        (Array.isArray(records)
-          ? records
-          : []
-        ).map(async (record) => ({
-          ...record,
-          image: record.image
-            ? await compressImageDataUrl(
-                record.image
-              )
-            : "",
-        }))
-      );
-    }
-
-    analysisHistory =
-      compactedHistory;
-
-    const patientHistory =
-      analysisHistory[
-        selectedPatient.id
-      ] || [];
-
-    const compactFrontImage =
-      images.front
-        ? await compressImageDataUrl(
-            images.front
-          )
-        : "";
-
-    const newAnalysisRecord: AnalysisRecord =
-      {
-        id: Date.now(),
-        date: analysisDate,
-        score:
-          analysisResult.score,
-        image:
-          compactFrontImage,
-        metrics:
-          analysisResult.metrics,
-      };
-
-    analysisHistory[
-      selectedPatient.id
-    ] = [
-      ...patientHistory,
-      newAnalysisRecord,
-    ];
-
-    let historySaved = false;
+    setSavingAnalysis(true);
 
     try {
-      localStorage.setItem(
-        "dermisAnalysisHistory",
-        JSON.stringify(
-          analysisHistory
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error("Your session has expired. Please sign in again.");
+      }
+
+      let resolvedClinicId =
+        clinicId ||
+        (typeof selectedPatient.clinicId === "string"
+          ? selectedPatient.clinicId
+          : null);
+
+      if (!resolvedClinicId) {
+        const { data: membership, error: membershipError } = await supabase
+          .from("clinic_memberships")
+          .select("clinic_id")
+          .eq("user_id", user.id)
+          .eq("active", true)
+          .limit(1)
+          .maybeSingle();
+
+        if (membershipError || !membership?.clinic_id) {
+          throw new Error("Could not resolve your clinic membership.");
+        }
+
+        resolvedClinicId = String(membership.clinic_id);
+        setClinicId(resolvedClinicId);
+      }
+
+      let patientUuid = isUuid(String(selectedPatient.id))
+        ? String(selectedPatient.id)
+        : null;
+
+      if (!patientUuid) {
+        let patientQuery = supabase
+          .from("patients")
+          .select("id")
+          .eq("clinic_id", resolvedClinicId);
+
+        if (selectedPatient.legacyId != null) {
+          patientQuery = patientQuery.eq("legacy_id", selectedPatient.legacyId);
+        } else if (typeof selectedPatient.id === "number") {
+          patientQuery = patientQuery.eq("legacy_id", selectedPatient.id);
+        } else {
+          patientQuery = patientQuery.eq("email", selectedPatient.email);
+        }
+
+        const { data: patientRow, error: patientError } =
+          await patientQuery.limit(1).maybeSingle();
+
+        if (patientError || !patientRow?.id) {
+          throw new Error("Could not match this patient to the Supabase record.");
+        }
+
+        patientUuid = String(patientRow.id);
+      }
+
+      let resolvedPractitionerId =
+        primaryPractitionerId && isUuid(primaryPractitionerId)
+          ? primaryPractitionerId
+          : null;
+
+      if (!resolvedPractitionerId) {
+        const { data: practitionerRow } = await supabase
+          .from("practitioners")
+          .select("id")
+          .eq("clinic_id", resolvedClinicId)
+          .eq("active", true)
+          .order("is_primary", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (practitionerRow?.id) {
+          resolvedPractitionerId = String(practitionerRow.id);
+          setPrimaryPractitionerId(resolvedPractitionerId);
+        }
+      }
+
+      const { data: consultationRow } = await supabase
+        .from("consultations")
+        .select("id")
+        .eq("clinic_id", resolvedClinicId)
+        .eq("patient_id", patientUuid)
+        .order("consultation_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const analysisTimestamp = new Date().toISOString();
+      const compactFrontImage = images.front
+        ? await compressImageDataUrl(images.front)
+        : "";
+
+      const { data: savedRow, error: saveError } = await supabase
+        .from("skin_analyses")
+        .insert({
+          clinic_id: resolvedClinicId,
+          patient_id: patientUuid,
+          practitioner_id: resolvedPractitionerId,
+          consultation_id: consultationRow?.id || null,
+          analysis_date: analysisTimestamp,
+          overall_score: analysisResult.score,
+          score_change: analysisResult.change,
+          concerns: analysisResult.priorities,
+          metrics: analysisResult.metrics,
+          recommendations: analysisResult.recommendations,
+          ai_summary: analysisResult.summary,
+          expected_improvement: analysisResult.expectedImprovement,
+          // Temporary compatibility storage. This will move to Supabase Storage
+          // when the clinical image-storage migration is completed.
+          image_path: compactFrontImage || null,
+          thumbnail_path: null,
+          model_name: "Velyquo Demo Simulator",
+          model_version: "prototype-1",
+          created_by: user.id,
+        })
+        .select(
+          "id, patient_id, analysis_date, overall_score, score_change, metrics, recommendations, ai_summary, expected_improvement, image_path"
         )
-      );
+        .single();
 
-      historySaved = true;
-    } catch (error) {
-      /*
-       * If storage is already very full, retry with smaller photos.
-       * We preserve the first photo (baseline) and the five newest photos
-       * for each patient. Older middle records keep their scores/metrics,
-       * but their image is removed to prevent localStorage from overflowing.
-       */
-      console.warn(
-        "Analysis history exceeded localStorage quota. Retrying with a compact history.",
-        error
-      );
+      if (saveError || !savedRow) {
+        throw new Error(saveError?.message || "The analysis could not be saved.");
+      }
 
-      const quotaSafeHistory: Record<
-        number,
-        AnalysisRecord[]
-      > = {};
+      const analysisDate = formatClinicalDate(savedRow.analysis_date);
+      const analysisMetrics = Array.isArray(savedRow.metrics)
+        ? (savedRow.metrics as SkinMetric[])
+        : analysisResult.metrics;
+      const savedRecommendations = Array.isArray(savedRow.recommendations)
+        ? (savedRow.recommendations as TreatmentRecommendation[])
+        : analysisResult.recommendations;
 
-      for (
-        const [patientId, records] of
-        Object.entries(
-          analysisHistory
-        )
-      ) {
-        const safeRecords =
-          Array.isArray(records)
-            ? records
-            : [];
+      const newAnalysisRecord: AnalysisRecord = {
+        id: String(savedRow.id),
+        patientId: patientUuid,
+        date: analysisDate,
+        score: Number(savedRow.overall_score ?? analysisResult.score),
+        image:
+          typeof savedRow.image_path === "string"
+            ? savedRow.image_path
+            : compactFrontImage,
+        metrics: analysisMetrics,
+        change:
+          savedRow.score_change == null
+            ? analysisResult.change
+            : Number(savedRow.score_change),
+        recommendations: savedRecommendations,
+        summary:
+          typeof savedRow.ai_summary === "string"
+            ? savedRow.ai_summary
+            : analysisResult.summary,
+        expectedImprovement:
+          typeof savedRow.expected_improvement === "string"
+            ? savedRow.expected_improvement
+            : analysisResult.expectedImprovement,
+      };
 
-        const lastFiveStart =
-          Math.max(
-            1,
-            safeRecords.length - 5
-          );
+      let analysisHistory: Record<string, AnalysisRecord[]> = {};
+      const storedHistory = localStorage.getItem("dermisAnalysisHistory");
 
-        quotaSafeHistory[
-          Number(patientId)
-        ] = await Promise.all(
-          safeRecords.map(
-            async (
-              record,
-              index
-            ) => {
-              const keepPhoto =
-                index === 0 ||
-                index >=
-                  lastFiveStart;
+      if (storedHistory) {
+        try {
+          analysisHistory = JSON.parse(storedHistory);
+        } catch (error) {
+          console.error("Could not read local analysis compatibility history:", error);
+        }
+      }
 
-              return {
-                ...record,
-                image:
-                  keepPhoto &&
-                  record.image
-                    ? await compressImageDataUrl(
-                        record.image,
-                        480,
-                        0.5
-                      )
-                    : "",
-              };
-            }
-          )
-        );
+      const currentHistory =
+        analysisHistory[patientUuid] ||
+        (selectedPatient.legacyId != null
+          ? analysisHistory[String(selectedPatient.legacyId)]
+          : []) ||
+        [];
+
+      const updatedHistory = [...currentHistory, newAnalysisRecord];
+      analysisHistory[patientUuid] = updatedHistory;
+
+      if (selectedPatient.legacyId != null) {
+        analysisHistory[String(selectedPatient.legacyId)] = updatedHistory;
       }
 
       try {
         localStorage.setItem(
           "dermisAnalysisHistory",
-          JSON.stringify(
-            quotaSafeHistory
-          )
+          JSON.stringify(analysisHistory)
+        );
+      } catch (storageError) {
+        console.warn(
+          "Local compatibility cache is full. Saving analysis history without photos.",
+          storageError
         );
 
-        analysisHistory =
-          quotaSafeHistory;
-
-        historySaved = true;
-      } catch (retryError) {
-        console.error(
-          "Could not save compact analysis history:",
-          retryError
-        );
-      }
-    }
-
-    if (!historySaved) {
-      window.alert(
-        "The browser storage is full. The analysis could not be saved. Remove older prototype data or use a fresh browser profile, then try again."
-      );
-      return;
-    }
-
-    /*
-     * LATEST ANALYSIS
-     */
-    localStorage.setItem(
-      "dermisLatestAnalysis",
-      JSON.stringify({
-        patient:
-          selectedPatient.name,
-        patientId:
-          selectedPatient.id,
-        score:
-          analysisResult.score,
-        date: analysisDate,
-        metrics:
-          analysisResult.metrics,
-      })
-    );
-
-    /*
-     * CLINICAL PROFILE
-     */
-    let clinicalProfiles: Record<
-      number,
-      ClinicalProfile
-    > = {};
-
-    const storedProfiles =
-      localStorage.getItem(
-        "dermisClinicalProfiles"
-      );
-
-    if (storedProfiles) {
-      try {
-        clinicalProfiles =
-          JSON.parse(
-            storedProfiles
+        const photoSafeHistory: Record<string, AnalysisRecord[]> = {};
+        for (const [key, records] of Object.entries(analysisHistory)) {
+          photoSafeHistory[key] = (Array.isArray(records) ? records : []).map(
+            (record) => ({ ...record, image: "" })
           );
-      } catch (error) {
-        console.error(
-          "Could not read clinical profiles:",
-          error
-        );
-      }
-    }
+        }
 
-    const existingProfile =
-      clinicalProfiles[
-        selectedPatient.id
-      ];
-
-    const newTimelineItem: TimelineItem =
-      {
-        date: analysisDate,
-        title:
-          "AI skin analysis completed",
-        description: `Latest skin assessment completed for ${selectedPatient.name}. Overall skin score: ${analysisResult.score}/100. Primary treatment focus remains ${selectedPatient.concern.toLowerCase()}.`,
-        type: "Analysis",
-      };
-
-    const updatedProfile: ClinicalProfile =
-      {
-        score:
-          analysisResult.score,
-
-        change:
-          analysisResult.change > 0
-            ? `+${analysisResult.change}`
-            : String(
-                analysisResult.change
-              ),
-
-        skinType:
-          existingProfile?.skinType &&
-          existingProfile.skinType !==
-            "Not assessed"
-            ? existingProfile.skinType
-            : getSkinType(
-                selectedPatient
-              ),
-
-        metrics:
-          analysisMetrics,
-
-        timeline: [
-          newTimelineItem,
-          ...(existingProfile?.timeline ||
-            []),
-        ],
-
-        treatments:
-          treatmentItems,
-      };
-
-    clinicalProfiles[
-      selectedPatient.id
-    ] = updatedProfile;
-
-    localStorage.setItem(
-      "dermisClinicalProfiles",
-      JSON.stringify(
-        clinicalProfiles
-      )
-    );
-
-    /*
-     * UPDATE PATIENT RECORD
-     */
-    const updatedPatient: Patient =
-      {
-        ...selectedPatient,
-
-        lastVisit:
-          analysisDate,
-
-        analyses:
-          selectedPatient.analyses +
-          1,
-      };
-
-    const updatedPatients =
-      patients.map((patient) =>
-        patient.id ===
-        selectedPatient.id
-          ? updatedPatient
-          : patient
-      );
-
-    setPatients(updatedPatients);
-
-    setSelectedPatient(
-      updatedPatient
-    );
-
-    localStorage.setItem(
-      "dermisPatients",
-      JSON.stringify(
-        updatedPatients
-      )
-    );
-
-    localStorage.setItem(
-      "dermisSelectedPatient",
-      JSON.stringify(
-        updatedPatient
-      )
-    );
-
-    /*
-     * COMPLETE FOLLOW-UP
-     *
-     * A follow-up is only completed after
-     * this new analysis has actually been saved.
-     */
-    if (followUpSource) {
-      const storedFollowUps =
-        localStorage.getItem(
-          "dermisFollowUps"
-        );
-
-      if (storedFollowUps) {
         try {
-          const parsedFollowUps =
-            JSON.parse(storedFollowUps);
-
-          if (Array.isArray(parsedFollowUps)) {
-            const updatedFollowUps =
-              parsedFollowUps.map(
-                (followUp: FollowUpRecord) => {
-                  const matchesFollowUp =
-                    typeof followUpSource.followUpId === "number"
-                      ? followUp.id === followUpSource.followUpId
-                      : typeof followUpSource.appointmentId === "number"
-                        ? followUp.appointmentId ===
-                          followUpSource.appointmentId
-                        : false;
-
-                  if (!matchesFollowUp) {
-                    return followUp;
-                  }
-
-                  return {
-                    ...followUp,
-                    status:
-                      "Completed" as FollowUpStatus,
-                  };
-                }
-              );
-
-            localStorage.setItem(
-              "dermisFollowUps",
-              JSON.stringify(
-                updatedFollowUps
-              )
-            );
-          }
-        } catch (error) {
-          console.error(
-            "Could not complete follow-up:",
-            error
+          localStorage.setItem(
+            "dermisAnalysisHistory",
+            JSON.stringify(photoSafeHistory)
+          );
+        } catch (retryError) {
+          console.warn(
+            "Could not update the local analysis compatibility cache:",
+            retryError
           );
         }
       }
 
-      localStorage.removeItem(
-        "dermisFollowUpSource"
+      localStorage.setItem(
+        "dermisLatestAnalysis",
+        JSON.stringify({
+          id: newAnalysisRecord.id,
+          patient: selectedPatient.name,
+          patientId: patientUuid,
+          score: newAnalysisRecord.score,
+          date: analysisDate,
+          metrics: analysisMetrics,
+        })
       );
-      setFollowUpSource(null);
-    }
 
-    setSaved(true);
+      const treatmentItems: TreatmentItem[] = savedRecommendations.map(
+        (recommendation) => ({
+          name: recommendation.name,
+          reason: recommendation.reason,
+          price: recommendation.price,
+        })
+      );
+
+      let clinicalProfiles: Record<string, ClinicalProfile> = {};
+      const storedProfiles = localStorage.getItem("dermisClinicalProfiles");
+
+      if (storedProfiles) {
+        try {
+          clinicalProfiles = JSON.parse(storedProfiles);
+        } catch (error) {
+          console.error("Could not read clinical profiles:", error);
+        }
+      }
+
+      const existingProfile =
+        clinicalProfiles[patientUuid] ||
+        (selectedPatient.legacyId != null
+          ? clinicalProfiles[String(selectedPatient.legacyId)]
+          : undefined);
+
+      const newTimelineItem: TimelineItem = {
+        date: analysisDate,
+        title: "AI skin analysis completed",
+        description: `Latest skin assessment completed for ${selectedPatient.name}. Overall skin score: ${newAnalysisRecord.score}/100. Primary treatment focus remains ${selectedPatient.concern.toLowerCase()}.`,
+        type: "Analysis",
+      };
+
+      const updatedProfile: ClinicalProfile = {
+        score: newAnalysisRecord.score,
+        change:
+          Number(newAnalysisRecord.change || 0) > 0
+            ? `+${newAnalysisRecord.change}`
+            : String(newAnalysisRecord.change || 0),
+        skinType:
+          existingProfile?.skinType && existingProfile.skinType !== "Not assessed"
+            ? existingProfile.skinType
+            : getSkinType(selectedPatient),
+        metrics: analysisMetrics,
+        timeline: [newTimelineItem, ...(existingProfile?.timeline || [])],
+        treatments: treatmentItems,
+      };
+
+      clinicalProfiles[patientUuid] = updatedProfile;
+      if (selectedPatient.legacyId != null) {
+        clinicalProfiles[String(selectedPatient.legacyId)] = updatedProfile;
+      }
+      localStorage.setItem(
+        "dermisClinicalProfiles",
+        JSON.stringify(clinicalProfiles)
+      );
+
+      const { error: patientUpdateError } = await supabase
+        .from("patients")
+        .update({ last_visit_at: analysisTimestamp })
+        .eq("id", patientUuid)
+        .eq("clinic_id", resolvedClinicId);
+
+      if (patientUpdateError) {
+        console.warn(
+          "Analysis saved, but patient last visit could not be updated:",
+          patientUpdateError
+        );
+      }
+
+      const updatedPatient: Patient = {
+        ...selectedPatient,
+        id: patientUuid,
+        clinicId: resolvedClinicId,
+        lastVisit: analysisDate,
+        analyses: updatedHistory.length,
+      };
+
+      const updatedPatients = patients.map((patient) =>
+        String(patient.id) === String(selectedPatient.id) ||
+        String(patient.id) === patientUuid
+          ? updatedPatient
+          : patient
+      );
+
+      setPatients(updatedPatients);
+      setSelectedPatient(updatedPatient);
+      localStorage.setItem("dermisPatients", JSON.stringify(updatedPatients));
+      localStorage.setItem(
+        "dermisSelectedPatient",
+        JSON.stringify(updatedPatient)
+      );
+
+      if (followUpSource) {
+        const storedFollowUps = localStorage.getItem("dermisFollowUps");
+
+        if (storedFollowUps) {
+          try {
+            const parsedFollowUps = JSON.parse(storedFollowUps);
+
+            if (Array.isArray(parsedFollowUps)) {
+              const updatedFollowUps = parsedFollowUps.map(
+                (followUp: FollowUpRecord) => {
+                  const matchesFollowUp =
+                    followUpSource.followUpId != null
+                      ? String(followUp.id) === String(followUpSource.followUpId)
+                      : followUpSource.appointmentId != null
+                        ? String(followUp.appointmentId) ===
+                          String(followUpSource.appointmentId)
+                        : false;
+
+                  return matchesFollowUp
+                    ? {
+                        ...followUp,
+                        status: "Completed" as FollowUpStatus,
+                      }
+                    : followUp;
+                }
+              );
+
+              localStorage.setItem(
+                "dermisFollowUps",
+                JSON.stringify(updatedFollowUps)
+              );
+            }
+          } catch (error) {
+            console.error("Could not complete follow-up:", error);
+          }
+        }
+
+        if (isUuid(String(followUpSource.followUpId || ""))) {
+          const { error: followUpError } = await supabase
+            .from("follow_ups")
+            .update({ status: "completed" })
+            .eq("id", String(followUpSource.followUpId))
+            .eq("clinic_id", resolvedClinicId);
+
+          if (followUpError) {
+            console.warn(
+              "Analysis saved, but the Supabase follow-up status was not updated:",
+              followUpError
+            );
+          }
+        }
+
+        localStorage.removeItem("dermisFollowUpSource");
+        setFollowUpSource(null);
+      }
+
+      setSaved(true);
+    } catch (error) {
+      console.error("Could not save Supabase skin analysis:", error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "The analysis could not be saved.";
+      window.alert(message);
+    } finally {
+      setSavingAnalysis(false);
+    }
   };
 
   const scoreChangeText =
@@ -2229,10 +2571,13 @@ export default function AnalysisPage() {
                       <button
                         type="button"
                         onClick={saveAnalysis}
+                        disabled={savingAnalysis || saved}
                         className={`flex w-fit items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium ${
                           saved
                             ? "bg-[#E8EEE5] text-[#62715D]"
-                            : "bg-[#171717] text-white hover:bg-[#333]"
+                            : savingAnalysis
+                              ? "cursor-wait bg-[#3E5144] text-white"
+                              : "bg-[#171717] text-white hover:bg-[#333]"
                         }`}
                       >
 
@@ -2250,7 +2595,9 @@ export default function AnalysisPage() {
 
                         {saved
                           ? "Analysis saved"
-                          : "Save analysis"}
+                          : savingAnalysis
+                            ? "Saving…"
+                            : "Save analysis"}
 
                       </button>
                     )}
@@ -3005,10 +3352,11 @@ function getPatientStartingMetrics(
     ],
   };
 
-  return (
-    profiles[patient.id] ||
-    baseMetrics
-  );
+  const profileKey =
+    patient.legacyId ??
+    (typeof patient.id === "number" ? patient.id : 0);
+
+  return profiles[profileKey] || baseMetrics;
 }
 
 function getMetricStatus(
@@ -3044,10 +3392,11 @@ function getSkinType(
     6: "Oily",
   };
 
-  return (
-    skinTypes[patient.id] ||
-    "Combination"
-  );
+  const skinTypeKey =
+    patient.legacyId ??
+    (typeof patient.id === "number" ? patient.id : 0);
+
+  return skinTypes[skinTypeKey] || "Combination";
 }
 
 function StepItem({
@@ -3297,7 +3646,7 @@ function AnalysisHistory({
 
     try {
       const parsedHistory: Record<
-        number,
+        string,
         AnalysisRecord[]
       > = JSON.parse(
         storedHistory
